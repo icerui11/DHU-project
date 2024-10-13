@@ -1,0 +1,69 @@
+m255
+K4
+z2
+!s11e vcom 2023.4 2023.10, Oct 10 2023
+13
+!s112 1.1
+!i10d 8192
+!i10e 25
+!i10f 100
+cModel Technology
+Z0 dC:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/modelsim
+Pmisc
+Z1 DPx7 techmap 7 gencomp 0 22 3;VT2iHbV3^iUgFKU:3N=1
+Z2 DPx5 grlib 7 devices 0 22 l0[FWI<LUj>7:@W:f4OJh1
+Z3 DPx5 grlib 7 version 0 22 V>Yl@fjcBJ[8LREbbazoI1
+Z4 DPx5 grlib 6 stdlib 0 22 TFm9lO3=5=DI1aDATHm;K3
+Z5 DPx5 grlib 6 config 0 22 fWTI_GmL527<LSCFN4@k`0
+Z6 DPx5 grlib 12 config_types 0 22 SdHNN=DZgXmTHRH08gA=n1
+Z7 DPx4 ieee 11 numeric_std 0 22 F8@]:i<mFK7<TjIzKcTGi0
+Z8 DPx5 grlib 4 amba 0 22 D>f>ISe55V_;dENEE[kUX3
+Z9 DPx3 std 6 textio 0 22 LS[?81n5ZHWBI9JkBZTV<2
+Z10 DPx4 ieee 14 std_logic_1164 0 22 6<US`=mgl_dFdCEFF7J=m1
+!i122 0
+Z11 w1708097201
+R0
+Z12 8C:/Users/yinrui/Desktop/SHyLoc_ip/grlib-gpl-2020.1-b4251/lib/gaisler/misc/misc.vhd
+Z13 FC:/Users/yinrui/Desktop/SHyLoc_ip/grlib-gpl-2020.1-b4251/lib/gaisler/misc/misc.vhd
+l0
+L38 1713
+V@OZZGzQJVXjfaJMnLVTFO0
+!s100 cNCkeRojc3LK451:a^67:3
+Z14 OW;C;2023.4;77
+32
+b1
+Z15 !s110 1728844767
+!i10b 1
+Z16 !s108 1728844767.000000
+Z17 !s90 -reportprogress|300|-work|gaisler|C:/Users/yinrui/Desktop/SHyLoc_ip/grlib-gpl-2020.1-b4251/lib/gaisler/misc/misc.vhd|
+!s107 C:/Users/yinrui/Desktop/SHyLoc_ip/grlib-gpl-2020.1-b4251/lib/gaisler/misc/misc.vhd|
+!i113 1
+Z18 o-work gaisler -O0
+Z19 tExplicit 1 CvgOpt 0
+Bbody
+DPx4 work 4 misc 0 22 @OZZGzQJVXjfaJMnLVTFO0
+R1
+R2
+R3
+R4
+R5
+R6
+R7
+R8
+R9
+R10
+!i122 0
+l0
+L1753 56
+V7dFBVzJUSN3:a6Rl9zg_d3
+!s100 QCDiz<oSe00VoLTYhUiC60
+R14
+32
+R15
+!i10b 1
+R16
+R17
+Z20 !s107 C:/Users/yinrui/Desktop/SHyLoc_ip/grlib-gpl-2020.1-b4251/lib/gaisler/misc/misc.vhd|
+!i113 1
+R18
+R19
