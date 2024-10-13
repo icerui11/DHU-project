@@ -1,0 +1,1 @@
+vcom -08 -quiet -check_synthesis -work spw_codec $DUT/simulation/src/4links/spw_rtl/spw.vhd
