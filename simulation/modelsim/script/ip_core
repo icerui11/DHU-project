@@ -1,1 +1,1 @@
-vcom -08 -quiet -check_synthesis -
+vcom -08 -quiet -check_synthesis -work work $
