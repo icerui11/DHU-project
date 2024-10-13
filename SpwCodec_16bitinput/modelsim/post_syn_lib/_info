@@ -1,0 +1,114 @@
+m255
+K4
+z2
+!s11e vcom 2023.4 2023.10, Oct 10 2023
+13
+!s112 1.1
+!i10d 8192
+!i10e 25
+!i10f 100
+cModel Technology
+Z0 dC:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/modelsim
+Eccsds121_top_wrapper
+Z1 w1713256048
+Z2 DPx12 shyloc_utils 16 shyloc_functions 0 22 aJE]5QQU>^L8HeE=`WhT70
+Z3 DPx10 shyloc_121 18 ccsds121_constants 0 22 gOAz^Hn18^:H8G<nY<o=O2
+Z4 DPx4 ieee 11 numeric_std 0 22 F8@]:i<mFK7<TjIzKcTGi0
+Z5 DPx10 shyloc_121 19 ccsds121_parameters 0 22 oEz=[BTjE6`Feo9lCJdBd2
+Z6 DPx12 shyloc_utils 4 amba 0 22 CZ>=:2P>b7c=Sk^HIi[jZ3
+Z7 DPx3 std 6 textio 0 22 LS[?81n5ZHWBI9JkBZTV<2
+Z8 DPx4 ieee 14 std_logic_1164 0 22 6<US`=mgl_dFdCEFF7J=m1
+!i122 1
+R0
+Z9 8C:/Users/yinrui/Desktop/SHyLoc_ip/shyloc_ip-main/CCSDS121IP-VHDL/src/post_syn/ccsds121_top_wrapper.vhd
+Z10 FC:/Users/yinrui/Desktop/SHyLoc_ip/shyloc_ip-main/CCSDS121IP-VHDL/src/post_syn/ccsds121_top_wrapper.vhd
+l0
+L50 1
+V39?WP:4Xco6mQCm`^S0>U1
+!s100 g2k1OBRQUBA60zTF:b5a;0
+Z11 OW;C;2023.4;77
+31
+Z12 !s110 1728843240
+!i10b 1
+Z13 !s108 1728843240.000000
+Z14 !s90 -reportprogress|300|-93|-quiet|-check_synthesis|-work|post_syn_lib|C:/Users/yinrui/Desktop/SHyLoc_ip/shyloc_ip-main/CCSDS121IP-VHDL/src/post_syn/ccsds121_top_wrapper.vhd|
+!s107 C:/Users/yinrui/Desktop/SHyLoc_ip/shyloc_ip-main/CCSDS121IP-VHDL/src/post_syn/ccsds121_top_wrapper.vhd|
+!i113 1
+Z15 o-quiet -93 -check_synthesis -work post_syn_lib -O0
+Z16 tExplicit 1 CvgOpt 0
+Aarch
+DEx10 shyloc_121 19 ccsds121_shyloc_top 0 22 fCLciOldR:oadVKZ_fL420
+R2
+R3
+R4
+R5
+R6
+R7
+R8
+DEx4 work 20 ccsds121_top_wrapper 0 22 39?WP:4Xco6mQCm`^S0>U1
+!i122 1
+l92
+L87 47
+VGCZOzB=8mXWjoVEL8QNE?2
+!s100 S]BI0iXdWOzJTGAd]l1h80
+R11
+31
+R12
+!i10b 1
+R13
+R14
+Z17 !s107 C:/Users/yinrui/Desktop/SHyLoc_ip/shyloc_ip-main/CCSDS121IP-VHDL/src/post_syn/ccsds121_top_wrapper.vhd|
+!i113 1
+R15
+R16
+Eccsds123_top_wrapper
+Z18 w1712736124
+R6
+R2
+Z19 DPx10 shyloc_123 18 ccsds123_constants 0 22 Vo5VgE]SfI4W3JK_V[NWH2
+Z20 DPx10 shyloc_123 19 ccsds123_parameters 0 22 kk9NA9[Uo`Bj35QF1]<Mn1
+R4
+R7
+R8
+!i122 0
+R0
+Z21 8C:/Users/yinrui/Desktop/SHyLoc_ip/shyloc_ip-main/CCSDS123IP-VHDL/src/post_syn/ccsds123_top_wrapper.vhd
+Z22 FC:/Users/yinrui/Desktop/SHyLoc_ip/shyloc_ip-main/CCSDS123IP-VHDL/src/post_syn/ccsds123_top_wrapper.vhd
+l0
+L59 1
+VDOiRm_`d[6Z]e?^fTPg3U0
+!s100 BDQ`El^EN?X96>fDAB62M2
+R11
+31
+Z23 !s110 1728843237
+!i10b 1
+Z24 !s108 1728843237.000000
+Z25 !s90 -reportprogress|300|-93|-quiet|-check_synthesis|-work|post_syn_lib|C:/Users/yinrui/Desktop/SHyLoc_ip/shyloc_ip-main/CCSDS123IP-VHDL/src/post_syn/ccsds123_top_wrapper.vhd|
+Z26 !s107 C:/Users/yinrui/Desktop/SHyLoc_ip/shyloc_ip-main/CCSDS123IP-VHDL/src/post_syn/ccsds123_top_wrapper.vhd|
+!i113 1
+R15
+R16
+Abeh
+R6
+R2
+R19
+R20
+R4
+R7
+R8
+DEx4 work 20 ccsds123_top_wrapper 0 22 DOiRm_`d[6Z]e?^fTPg3U0
+!i122 0
+l239
+L133 178
+VInRHHSa[ZV=kXO2>oknfe2
+!s100 j49X2EXbCT50LgkHBIjfj0
+R11
+31
+R23
+!i10b 1
+R24
+R25
+R26
+!i113 1
+R15
+R16

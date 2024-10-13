@@ -1,0 +1,72 @@
+m255
+K4
+z2
+!s11f vlog 2023.4 2023.10, Oct 10 2023
+!s11e vcom 2023.4 2023.10, Oct 10 2023
+13
+!s112 1.1
+!i10d 8192
+!i10e 25
+!i10f 100
+cModel Technology
+Z0 dC:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/modelsim
+^#rmap_context
+33
+Z1 !s110 1728846055
+!i10b 0
+Z2 w1717159818
+!i122 4
+R0
+Z3 8C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/ip4l_context_RTG4.vhd
+Z4 FC:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/ip4l_context_RTG4.vhd
+l0
+L16 1
+V72beZi<H58LnMoz]H1X6g2
+!s100 VWiZQ8J^]0?`^ao>V1h8S2
+Z5 OW;C;2023.4;77
+Z6 !s108 1728846055.000000
+Z7 !s90 -reportprogress|300|-2008|-quiet|-work|work|C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/ip4l_context_RTG4.vhd|
+Z8 !s107 C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/ip4l_context_RTG4.vhd|
+!i113 1
+Z9 o-quiet -2008 -work work -O0
+Z10 tExplicit 1 CvgOpt 0
+^#router_context
+33
+R1
+!i10b 0
+R2
+!i122 4
+R0
+R3
+R4
+l0
+L30 1
+V[ERC5VgA]58zDIL`YYN9a2
+!s100 V79MXc6Z4FcOJeSKbVJUJ3
+R5
+R6
+R7
+R8
+!i113 1
+R9
+R10
+^#spw_context
+33
+R1
+!i10b 0
+R2
+!i122 4
+R0
+R3
+R4
+l0
+L5 1
+VHnYi6A2VjDZXHnlh6<e6E1
+!s100 0JP:lBJzBdnj;iZ6=Lz7^2
+R5
+R6
+R7
+R8
+!i113 1
+R9
+R10

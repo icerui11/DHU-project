@@ -1,0 +1,394 @@
+m255
+K4
+z2
+!s11e vcom 2023.4 2023.10, Oct 10 2023
+13
+!s112 1.1
+!i10d 8192
+!i10e 25
+!i10f 100
+cModel Technology
+Z0 dC:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/modelsim
+Pallmem
+Z1 DPx3 std 6 textio 0 22 LS[?81n5ZHWBI9JkBZTV<2
+Z2 DPx4 ieee 14 std_logic_1164 0 22 6<US`=mgl_dFdCEFF7J=m1
+!i122 2
+Z3 w1708097211
+R0
+8C:/Users/yinrui/Desktop/SHyLoc_ip/grlib-gpl-2020.1-b4251/lib/techmap/maps/allmem.vhd
+FC:/Users/yinrui/Desktop/SHyLoc_ip/grlib-gpl-2020.1-b4251/lib/techmap/maps/allmem.vhd
+l0
+L30 1996
+V7[>[BQYoZ_l;P9GeEJ2:h3
+!s100 af^8Y[0]9_dR;C_iA@hE80
+Z4 OW;C;2023.4;77
+32
+Z5 !s110 1728843227
+!i10b 1
+Z6 !s108 1728843227.000000
+!s90 -reportprogress|300|-work|techmap|C:/Users/yinrui/Desktop/SHyLoc_ip/grlib-gpl-2020.1-b4251/lib/techmap/maps/allmem.vhd|
+!s107 C:/Users/yinrui/Desktop/SHyLoc_ip/grlib-gpl-2020.1-b4251/lib/techmap/maps/allmem.vhd|
+!i113 1
+Z7 o-work techmap -O0
+Z8 tExplicit 1 CvgOpt 0
+Pgencomp
+Z9 DPx5 grlib 12 config_types 0 22 SdHNN=DZgXmTHRH08gA=n1
+Z10 DPx5 grlib 6 config 0 22 fWTI_GmL527<LSCFN4@k`0
+R1
+R2
+!i122 0
+R3
+R0
+8C:/Users/yinrui/Desktop/SHyLoc_ip/grlib-gpl-2020.1-b4251/lib/techmap/gencomp/gencomp.vhd
+FC:/Users/yinrui/Desktop/SHyLoc_ip/grlib-gpl-2020.1-b4251/lib/techmap/gencomp/gencomp.vhd
+l0
+L33 2321
+V3;VT2iHbV3^iUgFKU:3N=1
+!s100 d;RgkfBL9g?FJFNhF18;53
+R4
+32
+!s110 1728843226
+!i10b 1
+Z11 !s108 1728843226.000000
+!s90 -reportprogress|300|-work|techmap|C:/Users/yinrui/Desktop/SHyLoc_ip/grlib-gpl-2020.1-b4251/lib/techmap/gencomp/gencomp.vhd|
+!s107 C:/Users/yinrui/Desktop/SHyLoc_ip/grlib-gpl-2020.1-b4251/lib/techmap/gencomp/gencomp.vhd|
+!i113 1
+R7
+R8
+Egeneric_regfile_3p
+R3
+Z12 DPx5 grlib 7 version 0 22 V>Yl@fjcBJ[8LREbbazoI1
+Z13 DPx4 ieee 11 numeric_std 0 22 F8@]:i<mFK7<TjIzKcTGi0
+Z14 DPx5 grlib 6 stdlib 0 22 TFm9lO3=5=DI1aDATHm;K3
+R1
+R2
+!i122 1
+R0
+Z15 8C:/Users/yinrui/Desktop/SHyLoc_ip/grlib-gpl-2020.1-b4251/lib/techmap/inferred/memory_inferred.vhd
+Z16 FC:/Users/yinrui/Desktop/SHyLoc_ip/grlib-gpl-2020.1-b4251/lib/techmap/inferred/memory_inferred.vhd
+l0
+L288 1
+VGGWQ<CH[XISNZDLlP]an10
+!s100 RF2MN6iMRLO;c?<3:aYc73
+R4
+32
+R5
+!i10b 1
+R11
+Z17 !s90 -reportprogress|300|-work|techmap|C:/Users/yinrui/Desktop/SHyLoc_ip/grlib-gpl-2020.1-b4251/lib/techmap/inferred/memory_inferred.vhd|
+Z18 !s107 C:/Users/yinrui/Desktop/SHyLoc_ip/grlib-gpl-2020.1-b4251/lib/techmap/inferred/memory_inferred.vhd|
+!i113 1
+R7
+R8
+Artl
+R12
+R13
+R14
+R1
+R2
+DEx4 work 18 generic_regfile_3p 0 22 GGWQ<CH[XISNZDLlP]an10
+!i122 1
+l320
+L310 72
+Va:M_1>U<02l7@6UYB713W0
+!s100 z=V:BaKO58__a:DT6kO`i3
+R4
+32
+R5
+!i10b 1
+R11
+R17
+R18
+!i113 1
+R7
+R8
+Egeneric_regfile_4p
+R3
+R12
+R13
+R14
+R1
+R2
+!i122 1
+R0
+R15
+R16
+l0
+L389 1
+V;jH<M=c@L40ZAOIVd3e[B0
+!s100 7OM<TbL7J:f1;1ohc7ba[2
+R4
+32
+R5
+!i10b 1
+R11
+R17
+R18
+!i113 1
+R7
+R8
+Artl
+R12
+R13
+R14
+R1
+R2
+DEx4 work 18 generic_regfile_4p 0 22 ;jH<M=c@L40ZAOIVd3e[B0
+!i122 1
+l427
+L417 89
+VYcjI7J?0n]Pal?Dnk3hiR2
+!s100 D`9DaiJ?2ZZKl@HX32m[e3
+R4
+32
+R5
+!i10b 1
+R11
+R17
+R18
+!i113 1
+R7
+R8
+Egeneric_syncram
+R3
+R12
+R13
+R14
+R1
+R2
+!i122 1
+R0
+R15
+R16
+l0
+L32 1
+VIE=[NNizNH^Mz`d76og@@3
+!s100 Y7ia;1`2;1IR]<FYJOdh[3
+R4
+32
+R5
+!i10b 1
+R11
+R17
+R18
+!i113 1
+R7
+R8
+Abehavioral
+R12
+R13
+R14
+R1
+R2
+DEx4 work 15 generic_syncram 0 22 IE=[NNizNH^Mz`d76og@@3
+!i122 1
+l51
+L44 34
+V6oSjBnjVaK;^4YAVMnBcM3
+!s100 EU=T>`0_Bc2YQmMgjN12F1
+R4
+32
+R5
+!i10b 1
+R11
+R17
+R18
+!i113 1
+R7
+R8
+Egeneric_syncram_2p
+R3
+R12
+R13
+R14
+R1
+R2
+!i122 1
+R0
+R15
+R16
+l0
+L137 1
+VCUNL`8k2kG5PD?IYAC^bR1
+!s100 Kbmdh0@UNk0Hk[W78Mcn:3
+R4
+32
+R5
+!i10b 1
+R11
+R17
+R18
+!i113 1
+R7
+R8
+Abehav
+R12
+R13
+R14
+R1
+R2
+DEx4 work 18 generic_syncram_2p 0 22 CUNL`8k2kG5PD?IYAC^bR1
+!i122 1
+l162
+L157 53
+V@UmmoJ5@>4INE@BPXIVnX0
+!s100 ^>[[jb?QMcdIN6OkRbM353
+R4
+32
+R5
+!i10b 1
+R11
+R17
+R18
+!i113 1
+R7
+R8
+Egeneric_syncram_2p_reg
+R3
+R12
+R13
+R14
+R1
+R2
+!i122 1
+R0
+R15
+R16
+l0
+L219 1
+V[6E=0cUeU0k[5K`KKVi:53
+!s100 1<]N8[C1WGF667F;Bz>3[3
+R4
+32
+R5
+!i10b 1
+R11
+R17
+R18
+!i113 1
+R7
+R8
+Abehav
+R12
+R13
+R14
+R1
+R2
+DEx4 work 22 generic_syncram_2p_reg 0 22 [6E=0cUeU0k[5K`KKVi:53
+!i122 1
+l244
+L237 45
+VHnbJ6`o?_^E:Z0JV[;JKe0
+!s100 PlS6;:R]OdGPCBK77?zRQ0
+R4
+32
+R5
+!i10b 1
+R11
+R17
+R18
+!i113 1
+R7
+R8
+Egeneric_syncram_reg
+R3
+R12
+R13
+R14
+R1
+R2
+!i122 1
+R0
+R15
+R16
+l0
+L84 1
+VW?9c@`iMNX8R9aWo<E:M_1
+!s100 X0>oTDN>O_1k]9d_YRJCi2
+R4
+32
+R5
+!i10b 1
+R11
+R17
+R18
+!i113 1
+R7
+R8
+Abehavioral
+R12
+R13
+R14
+R1
+R2
+DEx4 work 19 generic_syncram_reg 0 22 W?9c@`iMNX8R9aWo<E:M_1
+!i122 1
+l104
+L95 34
+VdDfMWGXDE_`PEE3`G;gZS1
+!s100 ;CQPYMO9M@306>Y3<cb_D3
+R4
+32
+R5
+!i10b 1
+R11
+R17
+R18
+!i113 1
+R7
+R8
+Esyncram
+Z19 w1708097212
+Z20 DPx4 work 6 allmem 0 22 7[>[BQYoZ_l;P9GeEJ2:h3
+Z21 DPx4 work 7 gencomp 0 22 3;VT2iHbV3^iUgFKU:3N=1
+R12
+R13
+R14
+R9
+R10
+R1
+R2
+!i122 3
+R0
+Z22 8C:/Users/yinrui/Desktop/SHyLoc_ip/grlib-gpl-2020.1-b4251/lib/techmap/maps/syncram.vhd
+Z23 FC:/Users/yinrui/Desktop/SHyLoc_ip/grlib-gpl-2020.1-b4251/lib/techmap/maps/syncram.vhd
+l0
+L36 1
+V?V>gE2F[>d;S?kPf6C:;o0
+!s100 3odhR?mec_l_mDKYI@kD>3
+R4
+32
+R5
+!i10b 1
+R6
+Z24 !s90 -reportprogress|300|-work|techmap|C:/Users/yinrui/Desktop/SHyLoc_ip/grlib-gpl-2020.1-b4251/lib/techmap/maps/syncram.vhd|
+!s107 C:/Users/yinrui/Desktop/SHyLoc_ip/grlib-gpl-2020.1-b4251/lib/techmap/maps/syncram.vhd|
+!i113 1
+R7
+R8
+Artl
+R20
+R21
+R12
+R13
+R14
+R9
+R10
+R1
+R2
+DEx4 work 7 syncram 0 22 ?V>gE2F[>d;S?kPf6C:;o0
+!i122 3
+l74
+L51 440
+VzPnDH_A3cOZVU<^5Q<zeH1
+!s100 DnF0iCGb742JPM78^?[KH1
+R4
+32
+R5
+!i10b 1
+R6
+R24
+Z25 !s107 C:/Users/yinrui/Desktop/SHyLoc_ip/grlib-gpl-2020.1-b4251/lib/techmap/maps/syncram.vhd|
+!i113 1
+R7
+R8

@@ -6,7 +6,7 @@
 set GRLIB C:/Users/yinrui/Desktop/SHyLoc_ip/grlib-gpl-2020.1-b4251
 set SRC121 C:/Users/yinrui/Desktop/SHyLoc_ip/shyloc_ip-main/CCSDS121IP-VHDL
 set SRC C:/Users/yinrui/Desktop/SHyLoc_ip/shyloc_ip-main/CCSDS123IP-VHDL
-# set the working directory
+# set the working directory, do $DUT/SpwCodec_16bitinput/script/DUT_16bitInput_DO.tcl
 set DUT C:/Users/yinrui/Desktop/Envison_DHU/DHU-project
 # 
 set lib_exists [file exists work]
@@ -51,5 +51,9 @@ vcom -work shyloc_121 -93 -explicit  $SRC/modelsim/tb_stimuli/30_Test/ccsds121_p
 do $SRC/modelsim/tb_scripts/ip_core.do
 do $SRC/modelsim/tb_scripts/ip_core_block.do
 do $DUT/SpwCodec_16bitinput/script/spw_core.tcl
-#set tb test parameters
-vcom -work 
+#testbench for DUT_16bitInput
+vcom -work work -2008 -explicit $DUT/SpwCodec_16bitinput/RTL/spw_utils/DUT_16bitInput_tb.vhd
+#start the simulate
+vsim work.DUT_16bitInput_tb -voptargs=+acc=bcglnprst+DUT_16bitInput_tb
+onbreak {resume}
+run -all

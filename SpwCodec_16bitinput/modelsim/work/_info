@@ -1,0 +1,128 @@
+m255
+K4
+z2
+!s11e vcom 2023.4 2023.10, Oct 10 2023
+13
+!s112 1.1
+!i10d 8192
+!i10e 25
+!i10f 100
+cModel Technology
+Z0 dC:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/modelsim
+^#rmap_context
+Z1 w1717151388
+!i122 1
+R0
+Z2 8C:/Users/yinrui/Desktop/opensource_r102_RTG4/src/4links/common_packages/ip4l_context.vhd
+Z3 FC:/Users/yinrui/Desktop/opensource_r102_RTG4/src/4links/common_packages/ip4l_context.vhd
+l0
+L17 1
+VH@Sec<KZLXJDO_@e`i7VO0
+!s100 oG:QbheEVdaeK3KNB4K=b3
+Z4 OW;C;2023.4;77
+33
+Z5 !s110 1728846423
+!i10b 0
+Z6 !s108 1728846423.000000
+Z7 !s90 -reportprogress|300|-work|work|-2008|-explicit|-stats=none|C:/Users/yinrui/Desktop/opensource_r102_RTG4/src/4links/common_packages/ip4l_context.vhd|
+Z8 !s107 C:/Users/yinrui/Desktop/opensource_r102_RTG4/src/4links/common_packages/ip4l_context.vhd|
+!i113 1
+Z9 o-work work -2008 -explicit -O0
+Z10 tExplicit 1 CvgOpt 0
+^#router_context
+R1
+!i122 1
+R0
+R2
+R3
+l0
+L33 1
+VGG`KzWal>:CcVbbTP^]6?1
+!s100 gd3YDRE_B@;gikPS6IT>K1
+R4
+33
+R5
+!i10b 0
+R6
+R7
+R8
+!i113 1
+R9
+R10
+^#spw_context
+R1
+!i122 1
+R0
+R2
+R3
+l0
+L5 1
+VFhB02FLIOefniAL<9Z[_Y0
+!s100 gYJ8VSCf_>o[`2VnQ5^Jk1
+R4
+33
+R5
+!i10b 0
+R6
+R7
+R8
+!i113 1
+R9
+R10
+Espw_ctrl
+Z11 w1716976816
+Z12 D^#x4 work 11 spw_context 0 22 FhB02FLIOefniAL<9Z[_Y0
+Z13 DPx3 std 3 env 0 22 QPZJVBPkV?55nUWhDzFik0
+Z14 DPx4 ieee 15 std_logic_arith 0 22 B[jVX6I8iRX2o6WYW0BB>3
+Z15 DPx3 spw 9 spw_codes 0 22 ;k9P]]Q_Z3IUVGd6NnY_l2
+Z16 DPx4 ieee 9 math_real 0 22 :8NNHF3SFI6^on5?4X[S`1
+Z17 DPx4 ieee 16 std_logic_textio 0 22 C8j>g0lzF^EAA]5<S6PY32
+Z18 DPx3 spw 14 spw_data_types 0 22 oj9oAYKXHcC`9FDjE20a]1
+Z19 DPx4 ieee 11 numeric_std 0 22 F8@]:i<mFK7<TjIzKcTGi0
+Z20 DPx3 std 6 textio 0 22 LS[?81n5ZHWBI9JkBZTV<2
+Z21 DPx4 ieee 14 std_logic_1164 0 22 6<US`=mgl_dFdCEFF7J=m1
+!i122 2
+R0
+Z22 8C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/modelsim/spw_ctrl.vhd
+Z23 FC:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/modelsim/spw_ctrl.vhd
+l0
+L64 1
+V1cU<<Oi;2Je]I?jSlY?7c1
+!s100 CmLhAPl3b`CFKc2gfdYKS3
+R4
+33
+Z24 !s110 1728846541
+!i10b 1
+Z25 !s108 1728846541.000000
+Z26 !s90 -reportprogress|300|-work|work|-2008|-explicit|-stats=none|C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/modelsim/spw_ctrl.vhd|
+!s107 C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/modelsim/spw_ctrl.vhd|
+!i113 1
+R9
+R10
+Artl
+R12
+R13
+R14
+R15
+R16
+R17
+R18
+R19
+R20
+R21
+DEx4 work 8 spw_ctrl 0 22 1cU<<Oi;2Je]I?jSlY?7c1
+!i122 2
+l158
+L101 214
+Vld3DPA:cJMgQCfg1ccEMg0
+!s100 eOYPO93cW4lz4o7Z1AX?T2
+R4
+33
+R24
+!i10b 1
+R25
+R26
+Z27 !s107 C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/modelsim/spw_ctrl.vhd|
+!i113 1
+R9
+R10
