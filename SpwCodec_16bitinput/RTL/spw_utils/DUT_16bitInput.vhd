@@ -241,7 +241,7 @@ begin
 -- Component instances
 ----------------------------------------------------------------------
 -- ccsds121_top_wrapper_0
-ccsds121_top_wrapper_0 : entity shyloc_121.ccsds121_top_wrapper
+ccsds121_top_wrapper_0 : entity post_syn_lib.ccsds121_top_wrapper
     port map( 
         -- Inputs
         Clk_S                    => Clk_S,
