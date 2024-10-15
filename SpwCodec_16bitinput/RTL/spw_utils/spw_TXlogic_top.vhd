@@ -49,6 +49,7 @@ port(
     spw_Sout_p      : out   std_logic := '0';
     spw_Sout_n      : out   std_logic := '1';
     
+    spw_Connected_mon : out std_logic;                             -- asserted when SpW Link is Connected for testbench
     spw_error       : out     std_logic := '0'
 );
 end spw_TXlogic_top;

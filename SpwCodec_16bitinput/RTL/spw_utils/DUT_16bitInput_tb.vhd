@@ -144,6 +144,8 @@ begin
             spw_Din_p  => spw_Dout_p_txnet,
             spw_Sin_n  => spw_Sin_n,
             spw_Sin_p  => spw_Sout_p_txnet,
+            ForceStop  => ForceStop,
+            Finished   => Finished,
             spw_Dout_p => spw_Dout_p_net,  
             spw_Sout_p => spw_Sout_p_net
         );
@@ -168,6 +170,7 @@ begin
     -- Stimulus process
     stim_proc: process
     begin
+        ForceStop <= '0';
         rst_n_spw <= '0';
         Rst_AHB <= '0';
         Rst_N <= '0';
