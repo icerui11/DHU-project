@@ -8,8 +8,8 @@ use ieee.numeric_std.all;
 --! Use shyloc_utils
 library shyloc_utils;
 
-context work.spw_context;
-use work.all;
+--context work.spw_context;
+--use work.all;
 
 --! fifop2_base entity. FIFO memory element. 
 entity asym_FIFO is

@@ -33,6 +33,7 @@ entity DUT_16bitInput is
         spw_Din_p  : in  std_logic;
         spw_Sin_n  : in  std_logic;
         spw_Sin_p  : in  std_logic;
+        ForceStop  : in  std_logic;                  -- in TB file input
         -- Outputs
         Finished   : out std_logic;                  -- for TB file closed
         spw_Dout_p : out std_logic;
@@ -180,7 +181,7 @@ signal CoreAHBLite_C0_0_HRDATA_M0                     : std_logic_vector(31 down
 signal CoreAHBLite_C0_0_HREADY_M0                     : std_logic;
 signal CoreAHBLite_C0_0_HRESP_M0                      : std_logic_vector(1 downto 0);
 signal Error                                          : std_logic;
-signal forcestop_out_0_forcestop_out                  : std_logic;
+--signal forcestop_out_0_forcestop_out                  : std_logic;          --DUT direkt in tb input forcestop signal
 signal Ready                                          : std_logic;
 signal spw_Dout_p_net_0                               : std_logic;
 signal spw_rxlogic_top_0_ccsds_data                   : std_logic_vector(15 downto 0);
@@ -287,7 +288,7 @@ ccsds123_top_wrapper_0 : entity post_syn_lib.ccsds123_top_wrapper
         Clk_AHB                  => Clk_AHB,
         Rst_AHB                  => Rst_AHB,
         DataIn_NewValid          => spw_rxlogic_top_0_ccsds_datanewValid,
-        ForceStop                => forcestop_out_0_forcestop_out,
+        ForceStop                => ForceStop,
         AHBSlave123_In_HSEL      => GND_net,
         AHBSlave123_In_HWRITE    => GND_net,
         AHBSlave123_In_HREADY    => GND_net,
@@ -389,11 +390,11 @@ COREAHBLSRAM_C0_0 : COREAHBLSRAM_C0
         HRESP     => CoreAHBLite_C0_0_AHBmslave4_HRESP 
         );
 -- forcestop_out_0
-forcestop_out_0 : entity src.forcestop_out
-    port map( 
+--forcestop_out_0 : entity src.forcestop_out
+--    port map( 
         -- Outputs
-        forcestop_out => forcestop_out_0_forcestop_out 
-        );
+--        forcestop_out => forcestop_out_0_forcestop_out 
+--        );
 -- spw_rxlogic_top_0
 spw_rxlogic_top_0 : spw_rxlogic_top_fifo
     port map( 

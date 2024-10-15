@@ -53,8 +53,10 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 -- Library For rtg4 technology specific Primitives
-library rtg4; 
-use rtg4.all;
+--library rtg4; 
+--use rtg4.all;
+library smartfusion2;
+use smartfusion2.all;
 ----------------------------------------------------------------------------------------------------------------------------------
 -- Package Declarations --
 ----------------------------------------------------------------------------------------------------------------------------------
