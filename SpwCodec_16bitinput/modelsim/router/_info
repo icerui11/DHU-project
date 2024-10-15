@@ -18,7 +18,7 @@ Z5 DPx4 ieee 16 std_logic_textio 0 22 C8j>g0lzF^EAA]5<S6PY32
 Z6 DPx4 ieee 11 numeric_std 0 22 F8@]:i<mFK7<TjIzKcTGi0
 Z7 DPx3 std 6 textio 0 22 LS[?81n5ZHWBI9JkBZTV<2
 Z8 DPx4 ieee 14 std_logic_1164 0 22 6<US`=mgl_dFdCEFF7J=m1
-!i122 6
+!i122 4
 Z9 w1717156062
 R0
 Z10 8C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/router/router_pckg.vhd
@@ -30,9 +30,9 @@ VIATVQ]20dOREg>cE3]JGc3
 Z12 OW;C;2023.4;77
 33
 b1
-Z13 !s110 1728847056
+Z13 !s110 1728918025
 !i10b 1
-Z14 !s108 1728847056.000000
+Z14 !s108 1728918025.000000
 Z15 !s90 -reportprogress|300|-2008|-quiet|-work|router|C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/router/router_pckg.vhd|
 Z16 !s107 C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/router/router_pckg.vhd|
 !i113 1
@@ -48,7 +48,7 @@ R5
 R6
 R7
 R8
-!i122 6
+!i122 4
 l0
 L164 94
 V`E:UYP>n8GY:j9m:XG3He2
@@ -73,7 +73,7 @@ R5
 R6
 R7
 R8
-!i122 7
+!i122 5
 Z20 w1716976806
 R0
 Z21 8C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/router/router_records.vhd
@@ -103,7 +103,7 @@ R5
 R6
 R7
 R8
-!i122 7
+!i122 5
 l0
 Z26 L208 15
 Z27 VRTX@ODIl^QKadSjTMMz5O0

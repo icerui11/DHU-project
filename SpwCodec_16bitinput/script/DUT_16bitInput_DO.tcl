@@ -46,6 +46,12 @@ vlib shyloc_123
 set lib_exists [file exists post_syn_lib]
 if $lib_exists==1 {vdel -all -lib post_syn_lib}
 vlib post_syn_lib
+set lib_exists [file exists BROM]
+if $lib_exists==1 {vdel -all -lib BROM}
+vlib BROM
+set lib_exists [file exists src]
+if $lib_exists==1 {vdel -all -lib src}
+vlib src
 vcom -work shyloc_123 -93 -explicit  $SRC/modelsim/tb_stimuli/30_Test/ccsds123_parameters.vhd
 vcom -work shyloc_121 -93 -explicit  $SRC/modelsim/tb_stimuli/30_Test/ccsds121_parameters.vhd
 do $SRC/modelsim/tb_scripts/ip_core.do

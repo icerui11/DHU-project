@@ -58,6 +58,7 @@ architecture behavior of DUT_16bitInput_tb is
             spw_Din_p  : in  std_logic;
             spw_Sin_n  : in  std_logic;
             spw_Sin_p  : in  std_logic;
+            ForceStop  : in  std_logic;                    -- tb forcestop the DUT
             Finished   : out std_logic;
             spw_Dout_p : out std_logic;
             spw_Sout_p : out std_logic
@@ -86,6 +87,7 @@ architecture behavior of DUT_16bitInput_tb is
 
     signal spw_Connected_mon  : std_logic;
 
+    signal ForceStop : std_logic := '0';                  -- for tb forcestop the DUT
     -- for file close
     signal Finished : std_logic;
     file     out_file			: text; 
