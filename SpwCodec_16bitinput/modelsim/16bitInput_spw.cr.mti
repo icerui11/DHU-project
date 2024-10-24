@@ -1,1 +1,152 @@
+C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/modelsim/DUT_16bitInput.vhd {2 {vcom -work work -2008 -explicit -stats=none C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/modelsim/DUT_16bitInput.vhd
+Model Technology ModelSim Microsemi Pro vcom 2023.4 Compiler 2023.10 Oct 10 2023
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Compiling entity DUT_16bitInput
+-- Compiling architecture RTL of DUT_16bitInput
+** Warning: (vcom-1654) check_sythesis has been deprecated. 
+** Warning: (vcom-1654) check_sythesis has been deprecated. 
+-- Loading package AMBA
+-- Loading package NUMERIC_STD
+-- Loading package ccsds121_parameters
+** Warning: (vcom-1654) check_sythesis has been deprecated. 
+** Warning: (vcom-1654) check_sythesis has been deprecated. 
+-- Loading package shyloc_functions
+-- Loading package ccsds121_constants
+-- Loading entity ccsds121_top_wrapper
+** Warning: (vcom-1654) check_sythesis has been deprecated. 
+-- Loading package ccsds123_parameters
+** Warning: (vcom-1654) check_sythesis has been deprecated. 
+-- Loading package ccsds123_constants
+-- Loading entity ccsds123_top_wrapper
 
+} {} {}} C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/modelsim/spw_wrap_top_level_RTG4.vhd {2 {vcom -work work -2008 -explicit -stats=none C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/modelsim/spw_wrap_top_level_RTG4.vhd
+Model Technology ModelSim Microsemi Pro vcom 2023.4 Compiler 2023.10 Oct 10 2023
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading context declaration router_context
+-- Loading package std_logic_textio
+-- Loading package MATH_REAL
+-- Loading package spw_data_types
+-- Loading package std_logic_arith
+-- Loading package spw_codes
+-- Loading package router_pckg
+-- Loading package router_records
+-- Loading package rmap_initiator_lib
+-- Loading package ENV
+-- Compiling entity spw_wrap_top_level_RTG4
+-- Compiling architecture rtl of spw_wrap_top_level_RTG4
+** Warning: (vcom-1654) check_sythesis has been deprecated. 
+-- Loading context declaration spw_context
+-- Loading entity spw_RTG4
+
+} {} {}} C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/modelsim/asym_FIFO.vhd {1 {vcom -work work -2008 -explicit -stats=none C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/modelsim/asym_FIFO.vhd
+Model Technology ModelSim Microsemi Pro vcom 2023.4 Compiler 2023.10 Oct 10 2023
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Compiling entity asym_FIFO
+-- Compiling architecture arch of asym_FIFO
+-- Loading entity reg_bank_inf_asym2
+
+} {} {}} C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/modelsim/spw_rxlogic_top_fifo.vhd {1 {vcom -work work -2008 -explicit -stats=none C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/modelsim/spw_rxlogic_top_fifo.vhd
+Model Technology ModelSim Microsemi Pro vcom 2023.4 Compiler 2023.10 Oct 10 2023
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading context declaration spw_context
+-- Loading package std_logic_textio
+-- Loading package MATH_REAL
+-- Loading package spw_data_types
+-- Loading package std_logic_arith
+-- Loading package spw_codes
+-- Loading package ENV
+-- Compiling entity spw_rxlogic_top_fifo
+-- Compiling architecture rtl of spw_rxlogic_top_fifo
+-- Loading context declaration router_context
+-- Loading package router_pckg
+-- Loading package router_records
+-- Loading package rmap_initiator_lib
+-- Loading entity spw_wrap_top_level_RTG4
+-- Loading entity spw_datactrl_fifo
+-- Loading entity asym_FIFO
+
+} {} {}} C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/modelsim/spw_datacontroller.vhd {1 {vcom -work work -2008 -explicit -stats=none C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/modelsim/spw_datacontroller.vhd
+Model Technology ModelSim Microsemi Pro vcom 2023.4 Compiler 2023.10 Oct 10 2023
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Compiling entity spw_datacontroller
+-- Compiling architecture rtl of spw_datacontroller
+
+} {} {}} C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/modelsim/reg_bank_inf_asym2.vhd {1 {vcom -work work -2008 -explicit -stats=none C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/modelsim/reg_bank_inf_asym2.vhd
+Model Technology ModelSim Microsemi Pro vcom 2023.4 Compiler 2023.10 Oct 10 2023
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Compiling entity reg_bank_inf_asym2
+-- Compiling architecture arch_reset_flavour of reg_bank_inf_asym2
+
+} {} {}} C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/modelsim/ROM_Package.vhd {1 {vcom -work work -2002 -explicit -stats=none C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/modelsim/ROM_Package.vhd
+Model Technology ModelSim Microsemi Pro vcom 2023.4 Compiler 2023.10 Oct 10 2023
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Compiling package ROM_Package
+
+} {} {}} C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/modelsim/Brom_data.vhd {2 {vcom -work work -2002 -explicit -stats=none C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/modelsim/Brom_data.vhd
+Model Technology ModelSim Microsemi Pro vcom 2023.4 Compiler 2023.10 Oct 10 2023
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+** Warning: (vcom-1654) check_sythesis has been deprecated. 
+-- Loading package ROM_Package
+-- Compiling entity Brom_data
+-- Compiling architecture rtl of Brom_data
+
+} {} {}} C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/modelsim/spw_8bitto16.vhd {1 {vcom -work work -2008 -explicit -stats=none C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/modelsim/spw_8bitto16.vhd
+Model Technology ModelSim Microsemi Pro vcom 2023.4 Compiler 2023.10 Oct 10 2023
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package std_logic_arith
+-- Compiling entity spw_8bitto16
+-- Compiling architecture rtl of spw_8bitto16
+
+} {} {}} C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/modelsim/spw_datactrl_fifo.vhd {1 {vcom -work work -2008 -explicit -stats=none C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/modelsim/spw_datactrl_fifo.vhd
+Model Technology ModelSim Microsemi Pro vcom 2023.4 Compiler 2023.10 Oct 10 2023
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Compiling entity spw_datactrl_fifo
+-- Compiling architecture rtl of spw_datactrl_fifo
+-- Loading package std_logic_arith
+-- Loading entity spw_8bitto16
+
+} {} {}} C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/RTL/spw_utils/DUT_16bitInput_tb.vhd {1 {vcom -work work -2008 -explicit -stats=none C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/RTL/spw_utils/DUT_16bitInput_tb.vhd
+Model Technology ModelSim Microsemi Pro vcom 2023.4 Compiler 2023.10 Oct 10 2023
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package std_logic_textio
+-- Loading context declaration spw_context
+-- Loading package MATH_REAL
+-- Loading package spw_data_types
+-- Loading package std_logic_arith
+-- Loading package spw_codes
+-- Loading package ENV
+-- Compiling entity DUT_16bitInput_tb
+-- Compiling architecture behavior of DUT_16bitInput_tb
+
+} {} {}}

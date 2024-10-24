@@ -14,34 +14,34 @@ Z1 w1728848416
 Z2 DPx4 ieee 11 numeric_std 0 22 F8@]:i<mFK7<TjIzKcTGi0
 Z3 DPx3 std 6 textio 0 22 LS[?81n5ZHWBI9JkBZTV<2
 Z4 DPx4 ieee 14 std_logic_1164 0 22 6<US`=mgl_dFdCEFF7J=m1
-!i122 52
+!i122 129
 R0
-Z5 8C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/RTL/spw_utils/asym_FIFO.vhd
-Z6 FC:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/RTL/spw_utils/asym_FIFO.vhd
+Z5 8C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/modelsim/asym_FIFO.vhd
+Z6 FC:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/modelsim/asym_FIFO.vhd
 l0
 L15 1
-VT>AYJaG@_b9g@MB?LKz@U3
+VhgETYMC2aK]m_oB_F0AT12
 !s100 i;Rb5<NUFDJ:5Mzjm3j`K3
 Z7 OW;C;2023.4;77
 33
-Z8 !s110 1728918028
+Z8 !s110 1729764698
 !i10b 1
-Z9 !s108 1728918028.000000
-Z10 !s90 -reportprogress|300|-2008|-quiet|-check_synthesis|-work|work|C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/RTL/spw_utils/asym_FIFO.vhd|
-Z11 !s107 C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/RTL/spw_utils/asym_FIFO.vhd|
+Z9 !s108 1729764698.000000
+Z10 !s90 -reportprogress|300|-work|work|-2008|-explicit|-stats=none|C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/modelsim/asym_FIFO.vhd|
+Z11 !s107 C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/modelsim/asym_FIFO.vhd|
 !i113 1
-Z12 o-quiet -2008 -check_synthesis -work work -O0
+Z12 o-work work -2008 -explicit -O0
 Z13 tExplicit 1 CvgOpt 0
 Aarch
-Z14 DEx4 work 18 reg_bank_inf_asym2 0 22 ;[eMNSh6ONgQ34inICK<[3
+Z14 DEx4 work 18 reg_bank_inf_asym2 0 22 NXWYSRWNca2LzNz^Wk2hJ2
 R2
 R3
 R4
-Z15 DEx4 work 9 asym_fifo 0 22 T>AYJaG@_b9g@MB?LKz@U3
-!i122 52
+Z15 DEx4 work 9 asym_fifo 0 22 hgETYMC2aK]m_oB_F0AT12
+!i122 129
 l74
 L48 305
-VaPU[BTAI_6`d;dKXTaH6`3
+VMbM;Y92FLL=zzEfFL1SEC2
 !s100 Y;eQXb9_EKGhF@kUZ=d7>0
 R7
 33
@@ -53,48 +53,228 @@ R11
 !i113 1
 R12
 R13
-Edut_16bitinput
-w1726649892
+Ebrom_data
+Z16 w1726750492
+Z17 DPx4 brom 11 rom_package 0 22 ^6SYAdlhIcI5]AQQ57]R22
+R2
 R3
 R4
-!i122 58
+!i122 127
 R0
-8C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/RTL/spw_utils/DUT_16bitInput.vhd
-FC:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/RTL/spw_utils/DUT_16bitInput.vhd
+Z18 8C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/modelsim/Brom_data.vhd
+Z19 FC:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/modelsim/Brom_data.vhd
 l0
-L23 1
-V2fO3DBnbha9WjWjze[YH;2
-!s100 TQ1lM<1`3jFOZ0D19DSfm2
+Z20 L23 1
+VX4Q1^j=0bTMGB2;2e@j=Z0
+!s100 IjSb2]e>j^]OXLYj32HWg2
+R7
+32
+Z21 !s110 1729764697
+!i10b 1
+Z22 !s108 1729764697.000000
+Z23 !s90 -reportprogress|300|-work|work|-2002|-explicit|-stats=none|C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/modelsim/Brom_data.vhd|
+Z24 !s107 C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/modelsim/Brom_data.vhd|
+!i113 1
+Z25 o-work work -2002 -explicit -O0
+R13
+Artl
+R17
+R2
+R3
+R4
+DEx4 work 9 brom_data 0 22 X4Q1^j=0bTMGB2;2e@j=Z0
+!i122 127
+l45
+L41 34
+Vi:AK8J_QEkXDL[@L737^82
+!s100 98LKfH2>UabJKdX0T93QU1
+R7
+32
+R21
+!i10b 1
+R22
+R23
+R24
+!i113 1
+R25
+R13
+Edut_16bitinput
+Z26 w1728984592
+R3
+R4
+!i122 136
+R0
+Z27 8C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/modelsim/DUT_16bitInput.vhd
+Z28 FC:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/modelsim/DUT_16bitInput.vhd
+l0
+R20
+VgDhDM2I8j48o4dXnTY2[j0
+!s100 8YVVaz2MXBT51:TU_PSDz1
 R7
 33
-Z16 !s110 1728918029
+Z29 !s110 1729764699
 !i10b 1
-!s108 1728918029.000000
-!s90 -reportprogress|300|-2008|-quiet|-check_synthesis|-work|work|C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/RTL/spw_utils/DUT_16bitInput.vhd|
-!s107 C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/RTL/spw_utils/DUT_16bitInput.vhd|
+Z30 !s108 1729764699.000000
+Z31 !s90 -reportprogress|300|-work|work|-2008|-explicit|-stats=none|C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/modelsim/DUT_16bitInput.vhd|
+Z32 !s107 C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/modelsim/DUT_16bitInput.vhd|
+!i113 1
+R12
+R13
+Artl
+Z33 DPx10 shyloc_123 18 ccsds123_constants 0 22 Vo5VgE]SfI4W3JK_V[NWH2
+Z34 DPx10 shyloc_123 19 ccsds123_parameters 0 22 kk9NA9[Uo`Bj35QF1]<Mn1
+Z35 DEx12 post_syn_lib 20 ccsds123_top_wrapper 0 22 DOiRm_`d[6Z]e?^fTPg3U0
+Z36 DPx12 shyloc_utils 16 shyloc_functions 0 22 aJE]5QQU>^L8HeE=`WhT70
+Z37 DPx10 shyloc_121 18 ccsds121_constants 0 22 gOAz^Hn18^:H8G<nY<o=O2
+R2
+Z38 DPx10 shyloc_121 19 ccsds121_parameters 0 22 oEz=[BTjE6`Feo9lCJdBd2
+Z39 DPx12 shyloc_utils 4 amba 0 22 CZ>=:2P>b7c=Sk^HIi[jZ3
+Z40 DEx12 post_syn_lib 20 ccsds121_top_wrapper 0 22 39?WP:4Xco6mQCm`^S0>U1
+R3
+R4
+DEx4 work 14 dut_16bitinput 0 22 gDhDM2I8j48o4dXnTY2[j0
+!i122 136
+l213
+L46 384
+VG3SUU>O`<e@azXdY;jWTY2
+!s100 A4hdBM0KU5CFC<RCjdaCd0
+R7
+33
+R29
+!i10b 1
+R30
+R31
+R32
+!i113 1
+R12
+R13
+Edut_16bitinput_noahb
+Z41 w1729679562
+R3
+R4
+!i122 103
+R0
+Z42 8C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/RTL/spw_utils/DUT_16bitInput_noAHB.vhd
+Z43 FC:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/RTL/spw_utils/DUT_16bitInput_noAHB.vhd
+l0
+R20
+VAm1AJEzT5jT5R=P?5Hi?[2
+!s100 gT=OkkSYcSJ_OOoNoo`A?0
+R7
+33
+Z44 !s110 1729679568
+!i10b 1
+Z45 !s108 1729679568.000000
+Z46 !s90 -reportprogress|300|-2008|-quiet|-check_synthesis|-work|work|C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/RTL/spw_utils/DUT_16bitInput_noAHB.vhd|
+Z47 !s107 C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/RTL/spw_utils/DUT_16bitInput_noAHB.vhd|
+!i113 1
+Z48 o-quiet -2008 -check_synthesis -work work -O0
+R13
+Artl
+R33
+R34
+R35
+R36
+R37
+R2
+R38
+R39
+R40
+R3
+R4
+DEx4 work 20 dut_16bitinput_noahb 0 22 Am1AJEzT5jT5R=P?5Hi?[2
+!i122 103
+l158
+L46 277
+VaN5]3?aFBHcKVD`Qf^e^O3
+!s100 :NDWcm?FPY?DDN7cIUKIW3
+R7
+33
+R44
+!i10b 1
+R45
+R46
+R47
+!i113 1
+R48
+R13
+Edut_16bitinput_tb
+Z49 w1729758912
+Z50 D^#x4 work 11 spw_context 0 22 HnYi6A2VjDZXHnlh6<e6E1
+Z51 DPx3 std 3 env 0 22 QPZJVBPkV?55nUWhDzFik0
+Z52 DPx4 ieee 15 std_logic_arith 0 22 B[jVX6I8iRX2o6WYW0BB>3
+Z53 DPx3 spw 9 spw_codes 0 22 ;k9P]]Q_Z3IUVGd6NnY_l2
+Z54 DPx4 ieee 9 math_real 0 22 :8NNHF3SFI6^on5?4X[S`1
+Z55 DPx3 spw 14 spw_data_types 0 22 oj9oAYKXHcC`9FDjE20a]1
+Z56 DPx4 ieee 16 std_logic_textio 0 22 C8j>g0lzF^EAA]5<S6PY32
+R2
+R3
+R4
+!i122 137
+R0
+Z57 8C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/RTL/spw_utils/DUT_16bitInput_tb.vhd
+Z58 FC:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/RTL/spw_utils/DUT_16bitInput_tb.vhd
+l0
+Z59 L10 1
+VhCam8I:o6GIchPED5Y:<K3
+!s100 dX8iU9XJbbh36;I[I@JFM1
+R7
+33
+R29
+!i10b 1
+R30
+Z60 !s90 -reportprogress|300|-work|work|-2008|-explicit|-stats=none|C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/RTL/spw_utils/DUT_16bitInput_tb.vhd|
+Z61 !s107 C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/RTL/spw_utils/DUT_16bitInput_tb.vhd|
+!i113 1
+R12
+R13
+Abehavior
+R50
+R51
+R52
+R53
+R54
+R55
+R56
+R2
+R3
+R4
+DEx4 work 17 dut_16bitinput_tb 0 22 hCam8I:o6GIchPED5Y:<K3
+!i122 137
+l99
+L13 247
+V2C7I7Y8X@OGDi?BR<ljCe1
+!s100 W7nXad6z8c34`eWk3fN`J3
+R7
+33
+R29
+!i10b 1
+R30
+R60
+R61
 !i113 1
 R12
 R13
 Ereg_bank_inf_asym2
-Z17 w1726649949
+Z62 w1726649949
 R2
 R3
 R4
-!i122 51
+!i122 130
 R0
-Z18 8C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/RTL/spw_utils/reg_bank_inf_asym2.vhd
-Z19 FC:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/RTL/spw_utils/reg_bank_inf_asym2.vhd
+Z63 8C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/modelsim/reg_bank_inf_asym2.vhd
+Z64 FC:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/modelsim/reg_bank_inf_asym2.vhd
 l0
 L9 1
-V;[eMNSh6ONgQ34inICK<[3
+VNXWYSRWNca2LzNz^Wk2hJ2
 !s100 ]GPliXVfl_a_:nhZN1eSg1
 R7
 33
 R8
 !i10b 1
 R9
-Z20 !s90 -reportprogress|300|-2008|-quiet|-check_synthesis|-work|work|C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/RTL/spw_utils/reg_bank_inf_asym2.vhd|
-Z21 !s107 C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/RTL/spw_utils/reg_bank_inf_asym2.vhd|
+Z65 !s90 -reportprogress|300|-work|work|-2008|-explicit|-stats=none|C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/modelsim/reg_bank_inf_asym2.vhd|
+Z66 !s107 C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/modelsim/reg_bank_inf_asym2.vhd|
 !i113 1
 R12
 R13
@@ -103,201 +283,224 @@ R2
 R3
 R4
 R14
-!i122 51
+!i122 130
 l36
 L33 44
-V;WD6;Tg?64G_fNJ;=]g:?0
+VTAO82BjX=7Di@3NZ@>Se]3
 !s100 :QR>A1KmS8dCiMFH:hY_C0
 R7
 33
 R8
 !i10b 1
 R9
-R20
-R21
+R65
+R66
 !i113 1
 R12
 R13
 ^#rmap_context
-Z22 w1717159818
-!i122 35
+Z67 w1717159818
+!i122 0
 R0
-Z23 8C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/ip4l_context_RTG4.vhd
-Z24 FC:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/ip4l_context_RTG4.vhd
+Z68 8C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/ip4l_context_RTG4.vhd
+Z69 FC:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/ip4l_context_RTG4.vhd
 l0
-Z25 L16 1
+Z70 L16 1
 V72beZi<H58LnMoz]H1X6g2
 !s100 VWiZQ8J^]0?`^ao>V1h8S2
 R7
 33
-Z26 !s110 1728918025
+Z71 !s110 1728984688
 !i10b 0
-Z27 !s108 1728918025.000000
-Z28 !s90 -reportprogress|300|-2008|-quiet|-work|work|C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/ip4l_context_RTG4.vhd|
-Z29 !s107 C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/ip4l_context_RTG4.vhd|
+Z72 !s108 1728984688.000000
+Z73 !s90 -reportprogress|300|-2008|-quiet|-work|work|C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/ip4l_context_RTG4.vhd|
+Z74 !s107 C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/ip4l_context_RTG4.vhd|
 !i113 1
-Z30 o-quiet -2008 -work work -O0
+Z75 o-quiet -2008 -work work -O0
+R13
+Prom_package
+R2
+R3
+R4
+!i122 126
+w1726750484
+R0
+8C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/modelsim/ROM_Package.vhd
+FC:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/modelsim/ROM_Package.vhd
+l0
+L19 3081
+VbEYRkUn;CX2Ff=:>`3W4@1
+!s100 hL1dFz3?RjR0[LD@jV7K63
+R7
+32
+R21
+!i10b 1
+R22
+!s90 -reportprogress|300|-work|work|-2002|-explicit|-stats=none|C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/modelsim/ROM_Package.vhd|
+!s107 C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/modelsim/ROM_Package.vhd|
+!i113 1
+R25
 R13
 ^#router_context
-R22
-!i122 35
+R67
+!i122 0
 R0
-R23
-R24
+R68
+R69
 l0
-Z31 L30 1
+Z76 L30 1
 V[ERC5VgA]58zDIL`YYN9a2
 !s100 V79MXc6Z4FcOJeSKbVJUJ3
 R7
 33
-R26
+R71
 !i10b 0
-R27
-R28
-R29
+R72
+R73
+R74
 !i113 1
-R30
+R75
 R13
 Espw_8bitto16
-Z32 w1726649902
-Z33 DPx4 ieee 15 std_logic_arith 0 22 B[jVX6I8iRX2o6WYW0BB>3
+Z77 w1726649902
+R52
 R3
 R4
-!i122 53
+!i122 131
 R0
-Z34 8C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/RTL/spw_utils/spw_8bitto16.vhd
-Z35 FC:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/RTL/spw_utils/spw_8bitto16.vhd
+Z78 8C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/modelsim/spw_8bitto16.vhd
+Z79 FC:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/modelsim/spw_8bitto16.vhd
 l0
-L10 1
-V>lklYEXfgjS[A>eToW0hW2
+R59
+Vb8maR]^YFFcomkWLD0`0E0
 !s100 eQ48I>OWlRYZUF_UjfVZG3
 R7
 33
 R8
 !i10b 1
 R9
-Z36 !s90 -reportprogress|300|-2008|-quiet|-check_synthesis|-work|work|C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/RTL/spw_utils/spw_8bitto16.vhd|
-Z37 !s107 C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/RTL/spw_utils/spw_8bitto16.vhd|
+Z80 !s90 -reportprogress|300|-work|work|-2008|-explicit|-stats=none|C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/modelsim/spw_8bitto16.vhd|
+Z81 !s107 C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/modelsim/spw_8bitto16.vhd|
 !i113 1
 R12
 R13
 Artl
-R33
+R52
 R3
 R4
-DEx4 work 12 spw_8bitto16 0 22 >lklYEXfgjS[A>eToW0hW2
-!i122 53
+Z82 DEx4 work 12 spw_8bitto16 0 22 b8maR]^YFFcomkWLD0`0E0
+!i122 131
 l24
 L19 37
-V?NHaWgc1g@OMZ=l=jTWhG3
+VnF6UkDNdfQVl;N^9L21@G0
 !s100 z^IoA9_KH<X4RYBP_oiN<3
 R7
 33
 R8
 !i10b 1
 R9
-R36
-R37
+R80
+R81
 !i113 1
 R12
 R13
 ^#spw_context
-R22
-!i122 35
+R67
+!i122 0
 R0
-R23
-R24
+R68
+R69
 l0
 L5 1
 VHnYi6A2VjDZXHnlh6<e6E1
 !s100 0JP:lBJzBdnj;iZ6=Lz7^2
 R7
 33
-R26
+R71
 !i10b 0
-R27
-R28
-R29
+R72
+R73
+R74
 !i113 1
-R30
+R75
 R13
 Espw_ctrl
-Z38 w1728844631
-Z39 D^#x4 work 11 spw_context 0 22 HnYi6A2VjDZXHnlh6<e6E1
-Z40 DPx3 std 3 env 0 22 QPZJVBPkV?55nUWhDzFik0
-R33
-Z41 DPx3 spw 9 spw_codes 0 22 ;k9P]]Q_Z3IUVGd6NnY_l2
-Z42 DPx4 ieee 9 math_real 0 22 :8NNHF3SFI6^on5?4X[S`1
-Z43 DPx4 ieee 16 std_logic_textio 0 22 C8j>g0lzF^EAA]5<S6PY32
-Z44 DPx3 spw 14 spw_data_types 0 22 oj9oAYKXHcC`9FDjE20a]1
+Z83 w1728844631
+R50
+R51
+R52
+R53
+R54
+R56
+R55
 R2
 R3
 R4
-!i122 36
+!i122 1
 R0
-Z45 8C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_ctrl.vhd
-Z46 FC:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_ctrl.vhd
+Z84 8C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_ctrl.vhd
+Z85 FC:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_ctrl.vhd
 l0
-Z47 L64 1
+Z86 L64 1
 V8gVgIdZ3mHhYKBGQDaGza2
 !s100 CmLhAPl3b`CFKc2gfdYKS3
 R7
 33
-R26
+R71
 !i10b 1
-R27
-Z48 !s90 -reportprogress|300|-2008|-quiet|-check_synthesis|-work|work|C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_ctrl.vhd|
-Z49 !s107 C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_ctrl.vhd|
+R72
+Z87 !s90 -reportprogress|300|-2008|-quiet|-check_synthesis|-work|work|C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_ctrl.vhd|
+Z88 !s107 C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_ctrl.vhd|
 !i113 1
-R12
+R48
 R13
 Artl
-R39
-R40
-R33
-R41
-R42
-R43
-R44
+R50
+R51
+R52
+R53
+R54
+R56
+R55
 R2
 R3
 R4
-Z50 DEx4 work 8 spw_ctrl 0 22 8gVgIdZ3mHhYKBGQDaGza2
-!i122 36
+Z89 DEx4 work 8 spw_ctrl 0 22 8gVgIdZ3mHhYKBGQDaGza2
+!i122 1
 l158
 L101 214
 VEPeHmazWRY219[ZD?CD941
 !s100 eOYPO93cW4lz4o7Z1AX?T2
 R7
 33
-R26
+R71
 !i10b 1
-R27
-R48
-R49
+R72
+R87
+R88
 !i113 1
-R12
+R48
 R13
 Espw_datacontroller
-Z51 w1726835156
+Z90 w1726835156
 R2
 R3
 R4
-!i122 54
+!i122 132
 R0
-Z52 8C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/RTL/spw_utils/spw_datacontroller.vhd
-Z53 FC:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/RTL/spw_utils/spw_datacontroller.vhd
+Z91 8C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/modelsim/spw_datacontroller.vhd
+Z92 FC:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/modelsim/spw_datacontroller.vhd
 l0
 L28 1
-VZbSZE:<jzOT<o4@JzFOR50
+VS;G4[mkEI;3gaFJDI?=2L1
 !s100 n979gPB`Rc:hfkAYkg14_3
 R7
 33
 R8
 !i10b 1
 R9
-Z54 !s90 -reportprogress|300|-2008|-quiet|-check_synthesis|-work|work|C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/RTL/spw_utils/spw_datacontroller.vhd|
-Z55 !s107 C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/RTL/spw_utils/spw_datacontroller.vhd|
+Z93 !s90 -reportprogress|300|-work|work|-2008|-explicit|-stats=none|C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/modelsim/spw_datacontroller.vhd|
+Z94 !s107 C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/modelsim/spw_datacontroller.vhd|
 !i113 1
 R12
 R13
@@ -305,1012 +508,1012 @@ Artl
 R2
 R3
 R4
-Z56 DEx4 work 18 spw_datacontroller 0 22 ZbSZE:<jzOT<o4@JzFOR50
-!i122 54
+Z95 DEx4 work 18 spw_datacontroller 0 22 S;G4[mkEI;3gaFJDI?=2L1
+!i122 132
 l123
 L82 171
-VS;;HAI[;IDeJ]?B`NWGmg2
+VEVg5gMKZ[0Vj6<GoR_hTj1
 !s100 V21mTS?DF_:BBIoEW?Ri31
 R7
 33
 R8
 !i10b 1
 R9
-R54
-R55
+R93
+R94
 !i113 1
 R12
 R13
 Espw_datactrl_fifo
-Z57 w1726649876
+Z96 w1728984366
 R2
 R3
 R4
-!i122 55
+!i122 133
 R0
-Z58 8C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/RTL/spw_utils/spw_datactrl_fifo.vhd
-Z59 FC:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/RTL/spw_utils/spw_datactrl_fifo.vhd
+Z97 8C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/modelsim/spw_datactrl_fifo.vhd
+Z98 FC:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/modelsim/spw_datactrl_fifo.vhd
 l0
-R31
-Vgz<fPP907>_;2:1TWDojE3
+R76
+V0fJZd`Q7^Xg[FDO5S2nN<1
 !s100 YSl9]^0L5`z3]:lP<i8Yi3
 R7
 33
 R8
 !i10b 1
 R9
-Z60 !s90 -reportprogress|300|-2008|-quiet|-check_synthesis|-work|work|C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/RTL/spw_utils/spw_datactrl_fifo.vhd|
-Z61 !s107 C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/RTL/spw_utils/spw_datactrl_fifo.vhd|
+Z99 !s90 -reportprogress|300|-work|work|-2008|-explicit|-stats=none|C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/modelsim/spw_datactrl_fifo.vhd|
+Z100 !s107 C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/modelsim/spw_datactrl_fifo.vhd|
 !i113 1
 R12
 R13
 Artl
-R33
-DEx3 src 12 spw_8bitto16 0 22 hklF0CY<TNRYdzJ[0WfhB3
+R52
+R82
 R2
 R3
 R4
-Z62 DEx4 work 17 spw_datactrl_fifo 0 22 gz<fPP907>_;2:1TWDojE3
-!i122 55
+Z101 DEx4 work 17 spw_datactrl_fifo 0 22 0fJZd`Q7^Xg[FDO5S2nN<1
+!i122 133
 l119
 L89 170
-V7EXN@HXN=KT]Gh1AC<N3K2
-!s100 ?95n:6=hT=Z2B@7_Y`@U12
+VUkl8NLLUWGa?Y^d1nLd=N1
+!s100 AikgfW>`zRT;IL=Ug]k5]3
 R7
 33
 R8
 !i10b 1
 R9
-R60
-R61
+R99
+R100
 !i113 1
 R12
 R13
 Espw_fifo_2c
-Z63 w1728847535
-R39
-R40
-R33
-R41
-R42
-R43
-R44
+Z102 w1728847535
+R50
+R51
+R52
+R53
+R54
+R56
+R55
 R2
 R3
 R4
-!i122 37
+!i122 2
 R0
-Z64 8C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_fifo_2c.vhd
-Z65 FC:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_fifo_2c.vhd
+Z103 8C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_fifo_2c.vhd
+Z104 FC:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_fifo_2c.vhd
 l0
-Z66 L63 1
+Z105 L63 1
 VB<1X3gHgm9W6]TIk2ZE8z0
 !s100 HLGZ0;ljCe]::1:jgHD5d1
 R7
 33
-R26
+R71
 !i10b 1
-R27
-Z67 !s90 -reportprogress|300|-2008|-quiet|-check_synthesis|-work|work|C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_fifo_2c.vhd|
-Z68 !s107 C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_fifo_2c.vhd|
+R72
+Z106 !s90 -reportprogress|300|-2008|-quiet|-check_synthesis|-work|work|C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_fifo_2c.vhd|
+Z107 !s107 C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_fifo_2c.vhd|
 !i113 1
-R12
+R48
 R13
 Artl
-R39
-R40
-R33
-R41
-R42
-R43
-R44
+R50
+R51
+R52
+R53
+R54
+R56
+R55
 R2
 R3
 R4
-Z69 DEx4 work 11 spw_fifo_2c 0 22 B<1X3gHgm9W6]TIk2ZE8z0
-!i122 37
+Z108 DEx4 work 11 spw_fifo_2c 0 22 B<1X3gHgm9W6]TIk2ZE8z0
+!i122 2
 l190
 L94 251
 VTIabADiUU@6jYhk0Yochc0
 !s100 SbczDiX8mDGVX^Lkeh^Bm3
 R7
 33
-R26
+R71
 !i10b 1
-R27
-R67
-R68
+R72
+R106
+R107
 !i113 1
-R12
+R48
 R13
 Espw_filter_errors
-Z70 w1717145576
-R39
-R40
-R33
-R41
-R42
-R43
-R44
+Z109 w1717145576
+R50
+R51
+R52
+R53
+R54
+R56
+R55
 R2
 R3
 R4
-!i122 38
+!i122 3
 R0
-Z71 8C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_filter_errors.vhd
-Z72 FC:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_filter_errors.vhd
+Z110 8C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_filter_errors.vhd
+Z111 FC:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_filter_errors.vhd
 l0
-Z73 L62 1
+Z112 L62 1
 V^;M1zjgB7Vkdgb=L_h:ed3
 !s100 0AC:_8aJb=2`O5fec3;Z12
 R7
 33
-R26
+R71
 !i10b 1
-R27
-Z74 !s90 -reportprogress|300|-2008|-quiet|-check_synthesis|-work|work|C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_filter_errors.vhd|
-Z75 !s107 C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_filter_errors.vhd|
+R72
+Z113 !s90 -reportprogress|300|-2008|-quiet|-check_synthesis|-work|work|C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_filter_errors.vhd|
+Z114 !s107 C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_filter_errors.vhd|
 !i113 1
-R12
+R48
 R13
 Artl
-R39
-R40
-R33
-R41
-R42
-R43
-R44
+R50
+R51
+R52
+R53
+R54
+R56
+R55
 R2
 R3
 R4
-Z76 DEx4 work 17 spw_filter_errors 0 22 ^;M1zjgB7Vkdgb=L_h:ed3
-!i122 38
+Z115 DEx4 work 17 spw_filter_errors 0 22 ^;M1zjgB7Vkdgb=L_h:ed3
+!i122 3
 l122
 L86 109
 Vg2FQ=lP2oW8MgMIQS?MiX3
 !s100 z=cld`N8Mfj?:bW8E^1ZH2
 R7
 33
-R26
+R71
 !i10b 1
-R27
-R74
-R75
+R72
+R113
+R114
 !i113 1
-R12
+R48
 R13
 Espw_rtg4
-Z77 w1716977708
-R39
-R40
-R33
-R41
-R42
-R43
-R44
+Z116 w1716977708
+R50
+R51
+R52
+R53
+R54
+R56
+R55
 R2
 R3
 R4
-!i122 49
+!i122 14
 R0
-Z78 8C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_RTG4.vhd
-Z79 FC:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_RTG4.vhd
+Z117 8C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_RTG4.vhd
+Z118 FC:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_RTG4.vhd
 l0
-R47
+R86
 VW0Q[L9=VFl^0EdkD>JkFW1
 !s100 ?8YXJ0?5<QB0B>k8]WaOa1
 R7
 33
-Z80 !s110 1728918027
+Z119 !s110 1728984689
 !i10b 1
-Z81 !s108 1728918027.000000
-Z82 !s90 -reportprogress|300|-2008|-quiet|-check_synthesis|-work|work|C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_RTG4.vhd|
-Z83 !s107 C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_RTG4.vhd|
+Z120 !s108 1728984689.000000
+Z121 !s90 -reportprogress|300|-2008|-quiet|-check_synthesis|-work|work|C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_RTG4.vhd|
+Z122 !s107 C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_RTG4.vhd|
 !i113 1
-R12
+R48
 R13
 Artl
-R76
-Z84 DEx4 work 14 spw_rx_add_eep 0 22 I?_X0_mVmFkFZY`3087X83
-R69
-Z85 DEx4 work 14 spw_rx_to_data 0 22 =keme39ocjE=^WQ^c2ajB1
-Z86 DEx4 work 17 spw_rx_to_2b_rtg4 0 22 nm]`MIQLeVgR3;8`L=UnW3
-Z87 DEx4 work 15 spw_rx_bit_rate 0 22 E0a_a[7Q9Ljh<zP>?TB>]2
-Z88 DEx4 work 15 spw_timeout_det 0 22 WnBD9:V><2JV6m4K=EB^z0
-Z89 DEx4 work 19 spw_rx_flowcredit_x 0 22 =CdT4mi?c_Z5AbhRL?DP63
+R115
+Z123 DEx4 work 14 spw_rx_add_eep 0 22 I?_X0_mVmFkFZY`3087X83
+R108
+Z124 DEx4 work 14 spw_rx_to_data 0 22 =keme39ocjE=^WQ^c2ajB1
+Z125 DEx4 work 17 spw_rx_to_2b_rtg4 0 22 nm]`MIQLeVgR3;8`L=UnW3
+Z126 DEx4 work 15 spw_rx_bit_rate 0 22 E0a_a[7Q9Ljh<zP>?TB>]2
+Z127 DEx4 work 15 spw_timeout_det 0 22 WnBD9:V><2JV6m4K=EB^z0
+Z128 DEx4 work 19 spw_rx_flowcredit_x 0 22 =CdT4mi?c_Z5AbhRL?DP63
+R89
+Z129 DEx4 work 9 spw_tx_ds 0 22 2lBieRoiaT^1m@RBg>^VJ0
+Z130 DEx4 work 18 spw_tx_flowcontrol 0 22 hjAWh>nUILMLlQjXjT`W:3
+Z131 DEx4 work 14 spw_tx_discard 0 22 gM;_T<RZd6gW<Af]HCJJd2
 R50
-Z90 DEx4 work 9 spw_tx_ds 0 22 2lBieRoiaT^1m@RBg>^VJ0
-Z91 DEx4 work 18 spw_tx_flowcontrol 0 22 hjAWh>nUILMLlQjXjT`W:3
-Z92 DEx4 work 14 spw_tx_discard 0 22 gM;_T<RZd6gW<Af]HCJJd2
-R39
-R40
-R33
-R41
-R42
-R43
-R44
+R51
+R52
+R53
+R54
+R56
+R55
 R2
 R3
 R4
-Z93 DEx4 work 8 spw_rtg4 0 22 W0Q[L9=VFl^0EdkD>JkFW1
-!i122 49
+Z132 DEx4 work 8 spw_rtg4 0 22 W0Q[L9=VFl^0EdkD>JkFW1
+!i122 14
 l226
 L135 406
 VnfnSWRzX7eVX8iilTA<:C1
 !s100 C@8_SLRU^Y7^N:ZK`h0zi3
 R7
 33
-R80
+R119
 !i10b 1
-R81
-R82
-R83
+R120
+R121
+R122
 !i113 1
-R12
+R48
 R13
 Espw_rx_add_eep
-Z94 w1716976816
-R39
-R40
-R33
-R41
-R42
-R43
-R44
+Z133 w1716976816
+R50
+R51
+R52
+R53
+R54
+R56
+R55
 R2
 R3
 R4
-!i122 39
+!i122 4
 R0
-Z95 8C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_rx_add_eep.vhd
-Z96 FC:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_rx_add_eep.vhd
+Z134 8C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_rx_add_eep.vhd
+Z135 FC:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_rx_add_eep.vhd
 l0
-R66
+R105
 VI?_X0_mVmFkFZY`3087X83
 !s100 1H>kj^_AVc1n=A6h1k=^a2
 R7
 33
-R26
+R71
 !i10b 1
-R27
-Z97 !s90 -reportprogress|300|-2008|-quiet|-check_synthesis|-work|work|C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_rx_add_eep.vhd|
-Z98 !s107 C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_rx_add_eep.vhd|
+R72
+Z136 !s90 -reportprogress|300|-2008|-quiet|-check_synthesis|-work|work|C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_rx_add_eep.vhd|
+Z137 !s107 C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_rx_add_eep.vhd|
 !i113 1
-R12
+R48
 R13
 Artl
-R39
-R40
-R33
-R41
-R42
-R43
-R44
+R50
+R51
+R52
+R53
+R54
+R56
+R55
 R2
 R3
 R4
-R84
-!i122 39
+R123
+!i122 4
 l125
 L88 101
 VBD^[QD6YGW=MVnH:l2EKd2
 !s100 07CoV9`1cgHSLA@z2Tc[a3
 R7
 33
-R26
+R71
 !i10b 1
-R27
-R97
-R98
+R72
+R136
+R137
 !i113 1
-R12
+R48
 R13
 Espw_rx_bit_rate
-R94
-R39
-R40
-R33
-R41
-R42
-R43
-R44
+R133
+R50
+R51
+R52
+R53
+R54
+R56
+R55
 R2
 R3
 R4
-!i122 40
+!i122 5
 R0
-Z99 8C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_rx_bit_rate.vhd
-Z100 FC:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_rx_bit_rate.vhd
+Z138 8C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_rx_bit_rate.vhd
+Z139 FC:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_rx_bit_rate.vhd
 l0
-R47
+R86
 VE0a_a[7Q9Ljh<zP>?TB>]2
 !s100 f>ARkk:24U@izdc2k2jFE3
 R7
 33
-Z101 !s110 1728918026
+R71
 !i10b 1
-Z102 !s108 1728918026.000000
-Z103 !s90 -reportprogress|300|-2008|-quiet|-check_synthesis|-work|work|C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_rx_bit_rate.vhd|
-Z104 !s107 C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_rx_bit_rate.vhd|
+R72
+Z140 !s90 -reportprogress|300|-2008|-quiet|-check_synthesis|-work|work|C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_rx_bit_rate.vhd|
+Z141 !s107 C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_rx_bit_rate.vhd|
 !i113 1
-R12
+R48
 R13
 Artl
-R39
-R40
-R33
-R41
-R42
-R43
-R44
+R50
+R51
+R52
+R53
+R54
+R56
+R55
 R2
 R3
 R4
-R87
-!i122 40
+R126
+!i122 5
 l131
 L82 133
 VnMafOLii`F<n4Vz;5mPT91
 !s100 ;HCTgA8G1<[Sc]C3ERz_U0
 R7
 33
-R101
+R71
 !i10b 1
-R102
-R103
-R104
+R72
+R140
+R141
 !i113 1
-R12
+R48
 R13
 Espw_rx_flowcredit_x
-R94
-R39
-R40
-R33
-R41
-R42
-R43
-R44
+R133
+R50
+R51
+R52
+R53
+R54
+R56
+R55
 R2
 R3
 R4
-!i122 41
+!i122 6
 R0
-Z105 8C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_rx_flowcredit_x.vhd
-Z106 FC:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_rx_flowcredit_x.vhd
+Z142 8C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_rx_flowcredit_x.vhd
+Z143 FC:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_rx_flowcredit_x.vhd
 l0
-R73
+R112
 V=CdT4mi?c_Z5AbhRL?DP63
 !s100 a[<j454Va?0cY12X1POU:0
 R7
 33
-R101
+R71
 !i10b 1
-R102
-Z107 !s90 -reportprogress|300|-2008|-quiet|-check_synthesis|-work|work|C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_rx_flowcredit_x.vhd|
-Z108 !s107 C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_rx_flowcredit_x.vhd|
+R72
+Z144 !s90 -reportprogress|300|-2008|-quiet|-check_synthesis|-work|work|C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_rx_flowcredit_x.vhd|
+Z145 !s107 C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_rx_flowcredit_x.vhd|
 !i113 1
-R12
+R48
 R13
 Artl
-R39
-R40
-R33
-R41
-R42
-R43
-R44
+R50
+R51
+R52
+R53
+R54
+R56
+R55
 R2
 R3
 R4
-R89
-!i122 41
+R128
+!i122 6
 l136
 L87 153
 VgDzjb]G<VJXhI[@DZUdCn3
 !s100 Z;J6`TdfKLez=601VSD>A1
 R7
 33
-R101
+R71
 !i10b 1
-R102
-R107
-R108
+R72
+R144
+R145
 !i113 1
-R12
+R48
 R13
 Espw_rx_sync_rtg4
-Z109 w1716898560
-R39
-R40
-R33
-R41
-R42
-R43
-R44
+Z146 w1716898560
+R50
+R51
+R52
+R53
+R54
+R56
+R55
 R2
 R3
 R4
-!i122 42
+!i122 7
 R0
-Z110 8C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_rx_sync_RTG4.vhd
-Z111 FC:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_rx_sync_RTG4.vhd
+Z147 8C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_rx_sync_RTG4.vhd
+Z148 FC:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_rx_sync_RTG4.vhd
 l0
-R66
+R105
 VWDE>e62Q[E5NAD>eb0Ji<3
 !s100 M9`2nWo1CPgTbJmegzUJM0
 R7
 33
-R101
+R71
 !i10b 1
-R102
-Z112 !s90 -reportprogress|300|-2008|-quiet|-check_synthesis|-work|work|C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_rx_sync_RTG4.vhd|
-Z113 !s107 C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_rx_sync_RTG4.vhd|
+R72
+Z149 !s90 -reportprogress|300|-2008|-quiet|-check_synthesis|-work|work|C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_rx_sync_RTG4.vhd|
+Z150 !s107 C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_rx_sync_RTG4.vhd|
 !i113 1
-R12
+R48
 R13
 Artl
-R39
-R40
-R33
-R41
-R42
-R43
-R44
+R50
+R51
+R52
+R53
+R54
+R56
+R55
 R2
 R3
 R4
-Z114 DEx4 work 16 spw_rx_sync_rtg4 0 22 WDE>e62Q[E5NAD>eb0Ji<3
-!i122 42
+Z151 DEx4 work 16 spw_rx_sync_rtg4 0 22 WDE>e62Q[E5NAD>eb0Ji<3
+!i122 7
 l125
 L84 88
 VXm3Go9GglP6:Q1_88UhA;0
 !s100 AJ^]bUaQ;>UijRj=:IdgN0
 R7
 33
-R101
+R71
 !i10b 1
-R102
-R112
-R113
+R72
+R149
+R150
 !i113 1
-R12
+R48
 R13
 Espw_rx_to_2b_rtg4
-Z115 w1716977984
-R39
-R40
-R33
-R41
-R42
-R43
-R44
+Z152 w1716977984
+R50
+R51
+R52
+R53
+R54
+R56
+R55
 R2
 R3
 R4
-!i122 43
+!i122 8
 R0
-Z116 8C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_rx_to_2b_RTG4.vhd
-Z117 FC:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_rx_to_2b_RTG4.vhd
+Z153 8C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_rx_to_2b_RTG4.vhd
+Z154 FC:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_rx_to_2b_RTG4.vhd
 l0
-R66
+R105
 Vnm]`MIQLeVgR3;8`L=UnW3
 !s100 3NRjSoeC=0_Zz9Y7LMRk`1
 R7
 33
-R80
+R71
 !i10b 1
-R102
-Z118 !s90 -reportprogress|300|-2008|-quiet|-check_synthesis|-work|work|C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_rx_to_2b_RTG4.vhd|
-Z119 !s107 C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_rx_to_2b_RTG4.vhd|
+R72
+Z155 !s90 -reportprogress|300|-2008|-quiet|-check_synthesis|-work|work|C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_rx_to_2b_RTG4.vhd|
+Z156 !s107 C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_rx_to_2b_RTG4.vhd|
 !i113 1
-R12
+R48
 R13
 Artl
-R114
-R39
-R40
-R33
-R41
-R42
-R43
-R44
+R151
+R50
+R51
+R52
+R53
+R54
+R56
+R55
 R2
 R3
 R4
-R86
-!i122 43
+R125
+!i122 8
 l158
 L87 223
 VjP3z?X:m28EmR;[Vc]8W_0
 !s100 ^j8S7SKae1a8NOAmAj>hk3
 R7
 33
-R80
+R71
 !i10b 1
-R102
-R118
-R119
+R72
+R155
+R156
 !i113 1
-R12
+R48
 R13
 Espw_rx_to_data
-R94
-R39
-R40
-R33
-R41
-R42
-R43
-R44
+R133
+R50
+R51
+R52
+R53
+R54
+R56
+R55
 R2
 R3
 R4
-!i122 44
+!i122 9
 R0
-Z120 8C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_rx_to_data.vhd
-Z121 FC:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_rx_to_data.vhd
+Z157 8C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_rx_to_data.vhd
+Z158 FC:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_rx_to_data.vhd
 l0
-R66
+R105
 V=keme39ocjE=^WQ^c2ajB1
 !s100 kP_XJ5Z:W2zUE2_cF[WmJ3
 R7
 33
-R80
+R119
 !i10b 1
-R81
-Z122 !s90 -reportprogress|300|-2008|-quiet|-check_synthesis|-work|work|C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_rx_to_data.vhd|
-Z123 !s107 C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_rx_to_data.vhd|
+R120
+Z159 !s90 -reportprogress|300|-2008|-quiet|-check_synthesis|-work|work|C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_rx_to_data.vhd|
+Z160 !s107 C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_rx_to_data.vhd|
 !i113 1
-R12
+R48
 R13
 Artl
-R39
-R40
-R33
-R41
-R42
-R43
-R44
+R50
+R51
+R52
+R53
+R54
+R56
+R55
 R2
 R3
 R4
-R85
-!i122 44
+R124
+!i122 9
 l167
 L104 318
 VM9>9TYPCc:k31TFeg^l>Q3
 !s100 I8;l0jnOcb>DWzaFKA>e@1
 R7
 33
-R80
+R119
 !i10b 1
-R81
-R122
-R123
+R120
+R159
+R160
 !i113 1
-R12
+R48
 R13
 Espw_rxlogic_top_fifo
-Z124 w1726650465
-R39
-R40
-R33
-R41
-R42
-R43
-R44
+Z161 w1726650465
+R50
+R51
+R52
+R53
+R54
+R56
+R55
 R2
 R3
 R4
-!i122 56
+!i122 135
 R0
-Z125 8C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/RTL/spw_utils/spw_rxlogic_top_fifo.vhd
-Z126 FC:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/RTL/spw_utils/spw_rxlogic_top_fifo.vhd
+Z162 8C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/modelsim/spw_rxlogic_top_fifo.vhd
+Z163 FC:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/modelsim/spw_rxlogic_top_fifo.vhd
 l0
-R25
-VgOJ03CHC:YD=C27KDO<Qb0
+R70
+VjfzRKem6?D0Wc?:kP5YCm0
 !s100 5TU1Mfa8YdjT:?;8H`AOD1
 R7
 33
-R8
+R29
 !i10b 1
 R9
-Z127 !s90 -reportprogress|300|-2008|-quiet|-check_synthesis|-work|work|C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/RTL/spw_utils/spw_rxlogic_top_fifo.vhd|
-Z128 !s107 C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/RTL/spw_utils/spw_rxlogic_top_fifo.vhd|
+Z164 !s90 -reportprogress|300|-work|work|-2008|-explicit|-stats=none|C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/modelsim/spw_rxlogic_top_fifo.vhd|
+Z165 !s107 C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/modelsim/spw_rxlogic_top_fifo.vhd|
 !i113 1
 R12
 R13
 Artl
 R15
-R62
-Z129 D^#x4 work 14 router_context 0 22 [ERC5VgA]58zDIL`YYN9a2
-Z130 DPx4 rmap 18 rmap_initiator_lib 0 22 AMY?OZ@QjeBBU?7SYMMMF2
-Z131 DPx6 router 14 router_records 0 22 i:ndBSZ1]@4k<BH:d56G30
-Z132 DPx6 router 11 router_pckg 0 22 IATVQ]20dOREg>cE3]JGc3
-Z133 DEx4 work 23 spw_wrap_top_level_rtg4 0 22 9eObB61gEjmdGOlCS`^?j0
-R39
-R40
-R33
-R41
-R42
-R43
-R44
+R101
+Z166 D^#x4 work 14 router_context 0 22 [ERC5VgA]58zDIL`YYN9a2
+Z167 DPx4 rmap 18 rmap_initiator_lib 0 22 AMY?OZ@QjeBBU?7SYMMMF2
+Z168 DPx6 router 14 router_records 0 22 i:ndBSZ1]@4k<BH:d56G30
+Z169 DPx6 router 11 router_pckg 0 22 IATVQ]20dOREg>cE3]JGc3
+Z170 DEx4 work 23 spw_wrap_top_level_rtg4 0 22 mOlGhQB;4booiWW=YFS`m0
+R50
+R51
+R52
+R53
+R54
+R56
+R55
 R2
 R3
 R4
-DEx4 work 20 spw_rxlogic_top_fifo 0 22 gOJ03CHC:YD=C27KDO<Qb0
-!i122 56
+DEx4 work 20 spw_rxlogic_top_fifo 0 22 jfzRKem6?D0Wc?:kP5YCm0
+!i122 135
 l96
 L68 157
-VIKA1ZM0lOTj@NiUd?L?8l3
+V4S;5lUMOkW_Um@ed]]J[=3
 !s100 Jm>1D>V:JUUXN7NU]eWIE3
 R7
 33
-R8
+R29
 !i10b 1
 R9
-R127
-R128
+R164
+R165
 !i113 1
 R12
 R13
 Espw_timeout_det
-R94
-R39
-R40
-R33
-R41
-R42
-R43
-R44
+R133
+R50
+R51
+R52
+R53
+R54
+R56
+R55
 R2
 R3
 R4
-!i122 45
+!i122 10
 R0
-Z134 8C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_timeout_det.vhd
-Z135 FC:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_timeout_det.vhd
+Z171 8C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_timeout_det.vhd
+Z172 FC:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_timeout_det.vhd
 l0
-R73
+R112
 VWnBD9:V><2JV6m4K=EB^z0
 !s100 `dQ`jIjhLARBPzcdAT`681
 R7
 33
-R80
+R119
 !i10b 1
-R81
-Z136 !s90 -reportprogress|300|-2008|-quiet|-check_synthesis|-work|work|C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_timeout_det.vhd|
-Z137 !s107 C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_timeout_det.vhd|
+R120
+Z173 !s90 -reportprogress|300|-2008|-quiet|-check_synthesis|-work|work|C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_timeout_det.vhd|
+Z174 !s107 C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_timeout_det.vhd|
 !i113 1
-R12
+R48
 R13
 Artl
-R39
-R40
-R33
-R41
-R42
-R43
-R44
+R50
+R51
+R52
+R53
+R54
+R56
+R55
 R2
 R3
 R4
-R88
-!i122 45
+R127
+!i122 10
 l121
 L83 93
 Vo32ebe`fo_2O68^nog<nM3
 !s100 MHIK6zF3VnaU]RH>Sjb7n2
 R7
 33
-R80
+R119
 !i10b 1
-R81
-R136
-R137
+R120
+R173
+R174
 !i113 1
-R12
+R48
 R13
 Espw_tx_discard
-R94
-R39
-R40
-R33
-R41
-R42
-R43
-R44
+R133
+R50
+R51
+R52
+R53
+R54
+R56
+R55
 R2
 R3
 R4
-!i122 46
+!i122 11
 R0
-Z138 8C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_tx_discard.vhd
-Z139 FC:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_tx_discard.vhd
+Z175 8C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_tx_discard.vhd
+Z176 FC:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_tx_discard.vhd
 l0
-R73
+R112
 VgM;_T<RZd6gW<Af]HCJJd2
 !s100 HiGcYI4T=RTC4nYAf2XL;0
 R7
 33
-R80
+R119
 !i10b 1
-R81
-Z140 !s90 -reportprogress|300|-2008|-quiet|-check_synthesis|-work|work|C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_tx_discard.vhd|
-Z141 !s107 C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_tx_discard.vhd|
+R120
+Z177 !s90 -reportprogress|300|-2008|-quiet|-check_synthesis|-work|work|C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_tx_discard.vhd|
+Z178 !s107 C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_tx_discard.vhd|
 !i113 1
-R12
+R48
 R13
 Artl
-R39
-R40
-R33
-R41
-R42
-R43
-R44
+R50
+R51
+R52
+R53
+R54
+R56
+R55
 R2
 R3
 R4
-R92
-!i122 46
+R131
+!i122 11
 l124
 L86 87
 V[c9jAHKPSUI>RoJzZfiXD0
 !s100 kd3h6V7=F7:_6a8a@@?K:3
 R7
 33
-R80
+R119
 !i10b 1
-R81
-R140
-R141
+R120
+R177
+R178
 !i113 1
-R12
+R48
 R13
 Espw_tx_ds
-R94
-R39
-R40
-R33
-R41
-R42
-R43
-R44
+R133
+R50
+R51
+R52
+R53
+R54
+R56
+R55
 R2
 R3
 R4
-!i122 47
+!i122 12
 R0
-Z142 8C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_tx_ds.vhd
-Z143 FC:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_tx_ds.vhd
+Z179 8C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_tx_ds.vhd
+Z180 FC:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_tx_ds.vhd
 l0
-R47
+R86
 V2lBieRoiaT^1m@RBg>^VJ0
 !s100 hMUn=VVZf<^a<b`R5OQNA0
 R7
 33
-R80
+R119
 !i10b 1
-R81
-Z144 !s90 -reportprogress|300|-2008|-quiet|-check_synthesis|-work|work|C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_tx_ds.vhd|
-Z145 !s107 C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_tx_ds.vhd|
+R120
+Z181 !s90 -reportprogress|300|-2008|-quiet|-check_synthesis|-work|work|C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_tx_ds.vhd|
+Z182 !s107 C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_tx_ds.vhd|
 !i113 1
-R12
+R48
 R13
 Artl
-R39
-R40
-R33
-R41
-R42
-R43
-R44
+R50
+R51
+R52
+R53
+R54
+R56
+R55
 R2
 R3
 R4
-R90
-!i122 47
+R129
+!i122 12
 l172
 L109 341
 V9`A[bYRglcbV]0^C594721
 !s100 k`ESh212O`THTjX6c1ECN2
 R7
 33
-R80
+R119
 !i10b 1
-R81
-R144
-R145
+R120
+R181
+R182
 !i113 1
-R12
+R48
 R13
 Espw_tx_flowcontrol
-R94
-R39
-R40
-R33
-R41
-R42
-R43
-R44
+R133
+R50
+R51
+R52
+R53
+R54
+R56
+R55
 R2
 R3
 R4
-!i122 48
+!i122 13
 R0
-Z146 8C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_tx_flowcontrol.vhd
-Z147 FC:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_tx_flowcontrol.vhd
+Z183 8C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_tx_flowcontrol.vhd
+Z184 FC:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_tx_flowcontrol.vhd
 l0
-R66
+R105
 VhjAWh>nUILMLlQjXjT`W:3
 !s100 2VDEXmJ;<5FMaDm8NKVzC2
 R7
 33
-R80
+R119
 !i10b 1
-R81
-Z148 !s90 -reportprogress|300|-2008|-quiet|-check_synthesis|-work|work|C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_tx_flowcontrol.vhd|
-Z149 !s107 C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_tx_flowcontrol.vhd|
+R120
+Z185 !s90 -reportprogress|300|-2008|-quiet|-check_synthesis|-work|work|C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_tx_flowcontrol.vhd|
+Z186 !s107 C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_tx_flowcontrol.vhd|
 !i113 1
-R12
+R48
 R13
 Artl
-R39
-R40
-R33
-R41
-R42
-R43
-R44
+R50
+R51
+R52
+R53
+R54
+R56
+R55
 R2
 R3
 R4
-R91
-!i122 48
+R130
+!i122 13
 l132
 L91 124
 V5D><ad=amRR=i`B@__@^e1
 !s100 8@ZM;b1;O][_PAcKX]Aj51
 R7
 33
-R80
+R119
 !i10b 1
-R81
-R148
-R149
+R120
+R185
+R186
 !i113 1
-R12
+R48
 R13
 Espw_txlogic_top
-Z150 w1726835421
-R39
-R40
-R33
-R41
-R42
-R43
-R44
+Z187 w1729764600
+R50
+R51
+R52
+R53
+R54
+R56
+R55
 R2
 R3
 R4
-!i122 57
+!i122 138
 R0
-Z151 8C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/RTL/spw_utils/spw_TXlogic_top.vhd
-Z152 FC:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/RTL/spw_utils/spw_TXlogic_top.vhd
+Z188 8C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/RTL/spw_utils/spw_TXlogic_top.vhd
+Z189 FC:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/RTL/spw_utils/spw_TXlogic_top.vhd
 l0
-R25
-V0M;?CnD;LZF^HJo5n>1lZ0
-!s100 H5D@=Q4`n`5NCbfUMki>@1
+R70
+VlkNVeXgHf;D;7E>7TfZP63
+!s100 `5PYF@CXb^F;^NZeZf8VW3
 R7
 33
-R16
+Z190 !s110 1729764707
 !i10b 1
-R9
-Z153 !s90 -reportprogress|300|-2008|-quiet|-check_synthesis|-work|work|C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/RTL/spw_utils/spw_TXlogic_top.vhd|
-Z154 !s107 C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/RTL/spw_utils/spw_TXlogic_top.vhd|
+Z191 !s108 1729764707.000000
+Z192 !s90 -reportprogress|300|-work|work|-2008|-explicit|-stats=none|C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/RTL/spw_utils/spw_TXlogic_top.vhd|
+Z193 !s107 C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/RTL/spw_utils/spw_TXlogic_top.vhd|
 !i113 1
 R12
 R13
 Artl
-DPx4 brom 11 rom_package 0 22 ^6SYAdlhIcI5]AQQ57]R22
-DEx4 brom 9 brom_data 0 22 jEh[3X^YYGlaBT5P9Tdcm1
+R17
+Z194 DEx4 brom 9 brom_data 0 22 jEh[3X^YYGlaBT5P9Tdcm1
+R95
+R166
+R167
+R168
+R169
+R170
+R50
+R51
+R52
+R53
+R54
 R56
-R129
-R130
-R131
-R132
-R133
-R39
-R40
-R33
-R41
-R42
-R43
-R44
+R55
 R2
 R3
 R4
-DEx4 work 15 spw_txlogic_top 0 22 0M;?CnD;LZF^HJo5n>1lZ0
-!i122 57
-l78
-L56 140
-VPG_3:NTh_3n4ja<O6mC]h1
-!s100 FNl50U>1L[DQhOT2K;JiD1
+Z195 DEx4 work 15 spw_txlogic_top 0 22 lkNVeXgHf;D;7E>7TfZP63
+!i122 138
+l79
+Z196 L57 141
+Z197 VlH?SB5OT6?=c1N9Qla0kD0
+Z198 !s100 i[;iAkULK^T?22ijFibZd0
 R7
 33
-R16
+R190
 !i10b 1
-R9
-R153
-R154
+R191
+R192
+R193
 !i113 1
 R12
 R13
 Espw_wrap_top_level_rtg4
-Z155 w1728848330
-R129
-R40
-R130
-R131
-R33
-R41
-R44
-R42
-R43
-R132
+Z199 w1726650452
+R166
+R51
+R167
+R168
+R52
+R53
+R55
+R54
+R56
+R169
 R2
 R3
 R4
-!i122 50
+!i122 128
 R0
-Z156 8C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_wrap_top_level_RTG4.vhd
-Z157 FC:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_wrap_top_level_RTG4.vhd
+Z200 8C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/modelsim/spw_wrap_top_level_RTG4.vhd
+Z201 FC:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/modelsim/spw_wrap_top_level_RTG4.vhd
 l0
 L68 1
-V9eObB61gEjmdGOlCS`^?j0
-!s100 ^e8dHZnEVbRoTogX2C_cO2
+VmOlGhQB;4booiWW=YFS`m0
+!s100 WhnRYP]oQXC^]lHO<1J2i0
 R7
 33
 R8
 !i10b 1
-R81
-Z158 !s90 -reportprogress|300|-2008|-quiet|-check_synthesis|-work|work|C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_wrap_top_level_RTG4.vhd|
-Z159 !s107 C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw_rtl/spw_wrap_top_level_RTG4.vhd|
+R22
+Z202 !s90 -reportprogress|300|-work|work|-2008|-explicit|-stats=none|C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/modelsim/spw_wrap_top_level_RTG4.vhd|
+Z203 !s107 C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/modelsim/spw_wrap_top_level_RTG4.vhd|
 !i113 1
 R12
 R13
 Artl
-R39
-R93
-R129
-R40
-R130
-R131
-R33
-R41
-R44
-R42
-R43
+R50
 R132
+R166
+R51
+R167
+R168
+R52
+R53
+R55
+R54
+R56
+R169
 R2
 R3
 R4
-R133
-!i122 50
-l257
-L141 376
-Vo[GU97Y1=@z?;SahG69da2
-!s100 XD5J?LIj]HM1M9AF?DG5n0
+R170
+!i122 128
+l281
+L141 400
+VIOg`mL0HLOD8jbQf;gm911
+!s100 5c0k6Jjn4Pb^ihl9?226[1
 R7
 33
 R8
 !i10b 1
-R81
-R158
-R159
+R22
+R202
+R203
 !i113 1
 R12
 R13
