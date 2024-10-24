@@ -41,3 +41,4 @@ vcom -2008 -quiet -check_synthesis -work work $DUT/SpwCodec_16bitinput/RTL/spw_u
 vcom -2008 -quiet -check_synthesis -work work $DUT/SpwCodec_16bitinput/RTL/spw_utils/spw_rxlogic_top_fifo.vhd
 vcom -2008 -quiet -check_synthesis -work work $DUT/SpwCodec_16bitinput/RTL/spw_utils/spw_TXlogic_top.vhd
 vcom -2008 -quiet -check_synthesis -work work $DUT/SpwCodec_16bitinput/RTL/spw_utils/DUT_16bitInput.vhd
+vcom -2008 -quiet -check_synthesis -work work $DUT/SpwCodec_16bitinput/RTL/spw_utils/DUT_16bitInput_noAHB.vhd

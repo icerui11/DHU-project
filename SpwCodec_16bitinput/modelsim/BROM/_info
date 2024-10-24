@@ -15,7 +15,7 @@ Z2 DPx4 brom 11 rom_package 0 22 ^6SYAdlhIcI5]AQQ57]R22
 Z3 DPx4 ieee 11 numeric_std 0 22 F8@]:i<mFK7<TjIzKcTGi0
 Z4 DPx3 std 6 textio 0 22 LS[?81n5ZHWBI9JkBZTV<2
 Z5 DPx4 ieee 14 std_logic_1164 0 22 6<US`=mgl_dFdCEFF7J=m1
-!i122 5
+!i122 1
 R0
 Z6 8C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/RTL/spw_utils/Brom_data.vhd
 Z7 FC:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/RTL/spw_utils/Brom_data.vhd
@@ -25,40 +25,40 @@ VjEh[3X^YYGlaBT5P9Tdcm1
 !s100 IjSb2]e>j^]OXLYj32HWg2
 Z8 OW;C;2023.4;77
 33
-Z9 !s110 1728918028
+Z9 !s110 1728984690
 !i10b 1
-Z10 !s108 1728918028.000000
+Z10 !s108 1728984690.000000
 Z11 !s90 -reportprogress|300|-2008|-quiet|-check_synthesis|-work|Brom|C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/RTL/spw_utils/Brom_data.vhd|
-Z12 !s107 C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/RTL/spw_utils/Brom_data.vhd|
+!s107 C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/RTL/spw_utils/Brom_data.vhd|
 !i113 1
-Z13 o-quiet -2008 -check_synthesis -work Brom -O0
-Z14 tExplicit 1 CvgOpt 0
+Z12 o-quiet -2008 -check_synthesis -work Brom -O0
+Z13 tExplicit 1 CvgOpt 0
 Artl
 R2
 R3
 R4
 R5
-Z15 DEx4 work 9 brom_data 0 22 jEh[3X^YYGlaBT5P9Tdcm1
-!i122 5
+DEx4 work 9 brom_data 0 22 jEh[3X^YYGlaBT5P9Tdcm1
+!i122 1
 l45
-Z16 L41 34
-Z17 Vz3?^a@h`ca`1AhCTKEJ]X3
-Z18 !s100 98LKfH2>UabJKdX0T93QU1
+L41 34
+Vz3?^a@h`ca`1AhCTKEJ]X3
+!s100 98LKfH2>UabJKdX0T93QU1
 R8
 33
 R9
 !i10b 1
 R10
 R11
-R12
+Z14 !s107 C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/RTL/spw_utils/Brom_data.vhd|
 !i113 1
+R12
 R13
-R14
 Prom_package
 R3
 R4
 R5
-!i122 4
+!i122 0
 w1726750484
 R0
 8C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/RTL/spw_utils/ROM_Package.vhd
@@ -75,5 +75,5 @@ R10
 !s90 -reportprogress|300|-2008|-quiet|-check_synthesis|-work|Brom|C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/RTL/spw_utils/ROM_Package.vhd|
 !s107 C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/SpwCodec_16bitinput/RTL/spw_utils/ROM_Package.vhd|
 !i113 1
+R12
 R13
-R14

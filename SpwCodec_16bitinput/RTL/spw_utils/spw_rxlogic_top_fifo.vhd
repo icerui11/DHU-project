@@ -176,7 +176,7 @@ begin
     spw_Tx_data			=> 	spw_Tx_data(7 downto 0),	-- SpW Tx Data
     spw_Tx_Con			=> 	spw_Tx_data(8),				-- SpW Control Char Bit
     spw_Tx_OR			=> 	spw_Tx_OR,					-- SpW Tx Output Ready signal
-    spw_Tx_IR			=> 	spw_Tx_IR,			-- SpW Tx Input Ready signal
+    spw_Tx_IR			=> 	spw_Tx_IR,			        -- SpW Tx Input Ready signal
     
     spw_Rx_data			=>	spw_Rx_data(7 downto 0),
     spw_Rx_Con		    =>	spw_Rx_data(8),

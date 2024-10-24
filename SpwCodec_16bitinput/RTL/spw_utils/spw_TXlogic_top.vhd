@@ -79,6 +79,7 @@ architecture rtl of spw_TXlogic_top is
 begin 
     
     reset  <= '1' when rst_n = '0' else '0';                                -- microchip use active low reset
+    spw_Connected_mon <= spw_Connected;                                     -- for testbench
 
     spw_wrap_top_rtg4: entity work.spw_wrap_top_level_RTG4(rtl)
     generic map (
@@ -173,8 +174,8 @@ begin
     spw_Connected	 	=> 	spw_Connected,			-- asserted when SpW Link is Connected
     spw_Rx_ESC_ESC	 	=> 	spw_Rx_ESC_ESC,     	-- SpW ESC_ESC error 
     spw_ESC_EOP 	 	=> 	spw_Rx_ESC_EOP,   		-- SpW ESC_EOP error 
-    spw_ESC_EEP      	        => 	spw_Rx_ESC_EEP,     	-- SpW ESC_EEP error 
-    spw_Parity_error 	        => 	spw_Rx_Parity_error,    -- SpW Parity error
+    spw_ESC_EEP         => 	spw_Rx_ESC_EEP,     	-- SpW ESC_EEP error 
+    spw_Parity_error 	=> 	spw_Rx_Parity_error,    -- SpW Parity error
     
     error_out			=> 	spw_error						-- assert when error
 );

@@ -18,7 +18,7 @@ Z5 DPx4 ieee 16 std_logic_textio 0 22 C8j>g0lzF^EAA]5<S6PY32
 Z6 DPx4 ieee 11 numeric_std 0 22 F8@]:i<mFK7<TjIzKcTGi0
 Z7 DPx3 std 6 textio 0 22 LS[?81n5ZHWBI9JkBZTV<2
 Z8 DPx4 ieee 14 std_logic_1164 0 22 6<US`=mgl_dFdCEFF7J=m1
-!i122 8
+!i122 2
 Z9 w1717144672
 R0
 Z10 8C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw/SpaceWire_Sim_lib.vhd
@@ -30,16 +30,16 @@ VDYVoOA3f10GFc1=8hRAV:3
 Z12 OW;C;2023.4;77
 33
 b1
-Z13 !s110 1728918025
+Z13 !s110 1728984687
 !i10b 1
-Z14 !s108 1728918025.000000
+Z14 !s108 1728984687.000000
 Z15 !s90 -reportprogress|300|-2008|-quiet|-work|spw|C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw/SpaceWire_Sim_lib.vhd|
-Z16 !s107 C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw/SpaceWire_Sim_lib.vhd|
+!s107 C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw/SpaceWire_Sim_lib.vhd|
 !i113 1
-Z17 o-quiet -2008 -work spw -O0
-Z18 tExplicit 1 CvgOpt 0
+Z16 o-quiet -2008 -work spw -O0
+Z17 tExplicit 1 CvgOpt 0
 Bbody
-Z19 DPx4 work 17 spacewire_sim_lib 0 22 DYVoOA3f10GFc1=8hRAV:3
+DPx4 work 17 spacewire_sim_lib 0 22 DYVoOA3f10GFc1=8hRAV:3
 R1
 R2
 R3
@@ -48,21 +48,21 @@ R5
 R6
 R7
 R8
-!i122 8
+!i122 2
 l0
-Z20 L818 1743
-Z21 V0zVSjR[[oJK_z_XfzfMgn0
-Z22 !s100 n5lP=7oIjdU0o]TIZR=D91
+L818 1743
+V0zVSjR[[oJK_z_XfzfMgn0
+!s100 n5lP=7oIjdU0o]TIZR=D91
 R12
 33
 R13
 !i10b 1
 R14
 R15
-R16
+Z18 !s107 C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw/SpaceWire_Sim_lib.vhd|
 !i113 1
+R16
 R17
-R18
 Pspw_codes
 R4
 R5
@@ -71,11 +71,11 @@ R3
 R1
 R7
 R8
-!i122 7
-Z23 w1716976808
+!i122 1
+Z19 w1716976808
 R0
-Z24 8C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw/spw_codes.vhd
-Z25 FC:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw/spw_codes.vhd
+Z20 8C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw/spw_codes.vhd
+Z21 FC:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw/spw_codes.vhd
 l0
 L46 119
 V;k9P]]Q_Z3IUVGd6NnY_l2
@@ -85,12 +85,12 @@ R12
 b1
 R13
 !i10b 1
-Z26 !s108 1728918024.000000
-Z27 !s90 -reportprogress|300|-2008|-quiet|-work|spw|C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw/spw_codes.vhd|
-Z28 !s107 C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw/spw_codes.vhd|
+R14
+Z22 !s90 -reportprogress|300|-2008|-quiet|-work|spw|C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw/spw_codes.vhd|
+Z23 !s107 C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw/spw_codes.vhd|
 !i113 1
+R16
 R17
-R18
 Bbody
 DPx4 work 9 spw_codes 0 22 ;k9P]]Q_Z3IUVGd6NnY_l2
 R4
@@ -100,7 +100,7 @@ R3
 R1
 R7
 R8
-!i122 7
+!i122 1
 l0
 L167 15
 V`dVg?=;=`A7g5MckHN=Di0
@@ -109,23 +109,23 @@ R12
 33
 R13
 !i10b 1
-R26
-R27
-R28
+R14
+R22
+R23
 !i113 1
+R16
 R17
-R18
 Pspw_data_types
 R4
 R5
 R6
 R7
 R8
-!i122 6
-R23
+!i122 0
+R19
 R0
-Z29 8C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw/spw_data_types.vhd
-Z30 FC:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw/spw_data_types.vhd
+Z24 8C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw/spw_data_types.vhd
+Z25 FC:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw/spw_data_types.vhd
 l0
 L30 179
 Voj9oAYKXHcC`9FDjE20a]1
@@ -133,14 +133,14 @@ Voj9oAYKXHcC`9FDjE20a]1
 R12
 33
 b1
-Z31 !s110 1728918024
+R13
 !i10b 1
-R26
-Z32 !s90 -reportprogress|300|-2008|-quiet|-work|spw|C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw/spw_data_types.vhd|
-Z33 !s107 C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw/spw_data_types.vhd|
+R14
+Z26 !s90 -reportprogress|300|-2008|-quiet|-work|spw|C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw/spw_data_types.vhd|
+Z27 !s107 C:/Users/yinrui/Desktop/Envison_DHU/DHU-project/simulation/src/4links/spw/spw_data_types.vhd|
 !i113 1
+R16
 R17
-R18
 Bbody
 DPx4 work 14 spw_data_types 0 22 oj9oAYKXHcC`9FDjE20a]1
 R4
@@ -148,18 +148,18 @@ R5
 R6
 R7
 R8
-!i122 6
+!i122 0
 l0
 L210 58
 Vc^4YD8oWfCXd0LH6:VmPC0
 !s100 XTfRnbJc@8co1gAonf>OD3
 R12
 33
-R31
+R13
 !i10b 1
+R14
 R26
-R32
-R33
+R27
 !i113 1
+R16
 R17
-R18

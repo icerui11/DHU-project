@@ -171,22 +171,27 @@ begin
     stim_proc: process
     begin
         ForceStop <= '0';
-        rst_n_spw <= '0';
         Rst_AHB <= '0';
+        enable <= '0';
+        rst_n_spw <= '0';
         Rst_N <= '0';
-        wait for 10 ns;     -- Hold SPW reset state for 12.8 us
+       wait for 6.4 us;      --from ErrorReset to ErrorWait
+       enable <= '1';
+       wait for 12.9 us;     -- Hold SPW reset state for 12.8 us   from ErrorWait to Ready 
         rst_n_spw <= '1';
-       wait for 12.9 us;     -- Hold SPW reset state for 12.8 us
-
-
-
+        rx_cmd_ready <= '1';
+        rx_data_ready <= '1';
+       wait for 12.9 us; 
         -- Enable the transmit module
-        enable <= '1';
+    --    enable <= '1';
 
         -- Simulate some data transmission
         rx_cmd_ready <= '1';
         rx_data_ready <= '1';
         wait until spw_Connected_mon = '1'; 
+        report "spw has connected"
+        severity note;
+     --   enable <= '1';
         Rst_AHB <= '1';
         Rst_N <= '1';   
 
