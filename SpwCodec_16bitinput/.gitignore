@@ -1,0 +1,52 @@
+# ModelSim生成的文件
+modelsim/              # 这样会忽略整个modelsim文件夹
+*.mpf
+*.mti
+*.wlf
+*.dat
+transcript
+vsim.dbg
+work/
+work_lib/
+
+# ModelSim编译生成的文件
+*.vho
+*.sdo
+*.vo
+*.vcd
+
+# ModelSim备份文件
+*~
+*.bak
+
+# Quartus生成的文件(如果你也使用Quartus)
+db/
+incremental_db/
+simulation/
+timing/
+*.rpt
+*.summary
+*.done
+*.smsg
+*.jdi
+*.pin
+*.sof
+*.pof
+*.qws
+*.chg
+*.qpf
+*.qsf
+
+# 编辑器临时文件
+*.swp
+*.swo
+*~
+
+# 操作系统生成的文件
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
