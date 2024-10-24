@@ -42,7 +42,7 @@ entity spw_datacontroller is
 		ram_enable		: out 	std_logic									:= '0';
 		ram_data_in		: in 	std_logic_vector(7 downto 0) 				:= (others => '0');	-- data read from RAM
 		ram_addr_out	: out 	std_logic_vector(g_addr_width-1 downto 0) 	:= (others => '0');	-- address to ram data
-		
+		ram_IR			: in 	std_logic									;				-- RAM input data ready
 		-- SpW Data Signals
 		spw_Tx_data		: out   std_logic_vector(7 downto 0)	:= (others => '0');		-- SpW Tx_data
 		spw_Tx_Con		: out 	std_logic						:= '0';					-- SpW character control bit
@@ -164,9 +164,11 @@ begin
 						end if;	
 						
 					when read_mem =>														-- read memory state
-						s_ram_reg <= ram_data_in;											-- read RAM data into buffer. 
-						s_state <= spw_tx;													-- got to spw transmit state
-					
+						if (ram_IR = '1') then												-- make sure RAM data is ready
+					      s_ram_reg <= ram_data_in;											-- read RAM data into buffer. 
+						  s_state <= spw_tx;													-- got to spw transmit state
+					    end if;
+
 					when spw_tx =>															-- spacewire transmit state	
 						spw_Tx_data <= s_ram_reg;											-- output stored data
 						if(spw_Tx_IR = '1') then											-- spw ready for data ?

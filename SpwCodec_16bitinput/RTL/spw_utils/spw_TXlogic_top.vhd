@@ -75,6 +75,7 @@ architecture rtl of spw_TXlogic_top is
     signal         ram_data        : std_logic_vector(g_data_width-1 downto 0);
     signal         ram_addr        : std_logic_vector(g_addr_width-1 downto 0);
     signal         ram_enable      : std_logic;
+    signal         ram_OR          : std_logic;        --signal to indicate ram data output valid
 
 begin 
     
@@ -150,7 +151,7 @@ begin
     ram_enable			=> 	ram_enable,					-- ram enable
     ram_data_in			=> 	ram_data,					-- ram read data
     ram_addr_out		=> 	ram_addr,					-- address to read ram data
-    
+    ram_IR              =>  ram_OR,                    -- ram data output valid signal
     -- SpW Data Signals
     spw_Tx_data			=> 	spw_Tx_data(7 downto 0),	-- SpW Tx Data
     spw_Tx_Con			=> 	spw_Tx_data(8),				-- SpW Control Char Bit
@@ -192,6 +193,6 @@ begin
         clk             =>  clk,
         rst_n           =>  rst_n,
         rom_data_o      =>  ram_data,
-        DataIn_NewValid =>  open
+        DataIn_NewValid =>  ram_OR
     );
 end rtl;
