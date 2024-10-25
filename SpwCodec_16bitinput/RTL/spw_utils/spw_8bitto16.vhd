@@ -27,6 +27,7 @@ process(clk)
 begin 
     if rising_edge(clk) then
         if reset = '1' then
+            state <= wait_high;
             data_out_ccsds_temp <= (others => '0');
         else
             case state is 
