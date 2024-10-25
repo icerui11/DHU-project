@@ -31,6 +31,7 @@ begin
         else
             case state is 
                 when wait_high =>
+                    ccsds_datanewValid <= '0';
                     if rx_datavalid = '1' then
                         data_out_ccsds_temp(15 downto 8) <= data_in_spw;
                         state <= wait_low;
