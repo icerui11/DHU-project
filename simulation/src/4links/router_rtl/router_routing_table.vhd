@@ -38,6 +38,7 @@ entity router_routing_table is
 	port(
 		-- standard register control signals --
 		clk_in 		: in 	std_logic := '0';											-- clock in (rising_edge)
+        rst_in  : in    std_logic;                                              --import rst
 		enable_in 	: in 	std_logic := '0';											-- enable input (active high)
 		
 		wr_en		: in 	std_logic := '0';											-- write enable (asserted high)
@@ -134,7 +135,9 @@ architecture rtl of router_routing_table is
 	----------------------------------------------------------------------------------------------------------------------------
 	-- Attribute Declarations --
 	----------------------------------------------------------------------------------------------------------------------------
-	
+    attribute syn_ramstyle : string;
+    attribute syn_ramstyle of s_ram : signal is "lsram";
+    
 begin
 
 
@@ -156,12 +159,16 @@ begin
 	ram_proc:process(clk_in)
 	begin
 		if(rising_edge(clk_in)) then
+          if rst_in = '1' then                    
+              s_ram <= init_router_mem(256);
+          else
 			if(enable_in = '1') then
 				if(wr_en = '1') then
 					s_ram(to_integer(unsigned(wr_addr))) <= wr_data;
 				end if;
 				rd_data <= s_ram(to_integer(unsigned(rd_addr)));
 			end if;
+          end if;
 		end if;
 	end process;
 
