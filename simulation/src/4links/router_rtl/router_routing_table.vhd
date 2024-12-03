@@ -64,7 +64,10 @@ architecture rtl of router_routing_table is
 	----------------------------------------------------------------------------------------------------------------------------
 	-- Constant Declarations --
 	----------------------------------------------------------------------------------------------------------------------------
-
+    constant s_ram_reg_0 : std_logic_vector(data_width-1 downto 0) := "00000001";                    --initialize the port 0 value
+	constant s_ram_reg_1 : std_logic_vector(data_width-1 downto 0) := "00000000";
+	constant s_ram_reg_2 : std_logic_vector(data_width-1 downto 0) := "00000000";
+	constant s_ram_reg_3 : std_logic_vector(data_width-1 downto 0) := "00000000";
 	----------------------------------------------------------------------------------------------------------------------------
 	-- Type Declarations --
 	----------------------------------------------------------------------------------------------------------------------------
@@ -160,7 +163,10 @@ begin
 	begin
 		if(rising_edge(clk_in)) then
           if rst_in = '1' then                    
-              s_ram <= init_router_mem(256);
+              s_ram (0) <= s_ram_reg_0;
+			  s_ram (1) <= s_ram_reg_1;
+			  s_ram (2) <= s_ram_reg_2;
+			  s_ram (3) <= s_ram_reg_3;
           else
 			if(enable_in = '1') then
 				if(wr_en = '1') then
