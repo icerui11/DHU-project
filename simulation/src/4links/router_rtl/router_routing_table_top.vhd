@@ -106,7 +106,7 @@ architecture rtl of router_routing_table_top is
     signal init_wr_data : std_logic_vector(data_width-1 downto 0);
 
     signal shift : integer range 0 to 3 := 0;
-    signal 
+    signal init_done_r : std_logic := '0';
 	----------------------------------------------------------------------------------------------------------------------------
 	-- Variable Declarations --
 	----------------------------------------------------------------------------------------------------------------------------
@@ -118,7 +118,9 @@ begin
     init_fsm: process(clk_in)
     variable v_ram : t_ram(0 to (ram_depth*4)-1);
     variable element : std_logic_vector(31 downto 0) := (others => '0');
-    variable init_num : integer range 0 to c_num_ports := 0;
+
+    variable chunk : integer range 0 to 3 := 0;                                 --4 chunk for each read address
+    variable index : integer range 0 to c_num_ports := 0;
     begin
         if (rising_edge(clk_in)) then
             if (rst_in = '1') then
@@ -129,58 +131,66 @@ begin
 
                     when idle =>
                         rt_state <= initial;
-                        init_num := 0;
+                        index := 0;
 
                     when initial =>
-                        data_reg <= init_ram
-
-                        if (init_num < c_num_ports) then
-                           init_num := init_num + 1;
-
-
+                        data_reg <= init_ram;
+                        
+                        if index <= c_num_ports then
+                            element := (others => '0');
+                            element(index) := '1';
+                            init_wr_en <= '1';
+                            chunk := chunk + 1;
+                            if chunk = 0 then 
+                                wr_data_reg <= element(((8 * (chunk + 1)) - 1) downto (8 * chunk));
+                                wr_addr_reg <= wr_addr_reg + 1;
+                            elsif chunk = 1 then
+                                wr_data_reg <= element(((8 * (chunk + 1)) - 1) downto (8 * chunk));
+                                wr_addr_reg <= wr_addr_reg + 1;
+                            elsif chunk = 2 then
+                                wr_data_reg <= element(((8 * (chunk + 1)) - 1) downto (8 * chunk));
+                                wr_addr_reg <= wr_addr_reg + 1;
+                            elsif chunk = 3 then
+                                wr_data_reg <= element(((8 * (chunk + 1)) - 1) downto (8 * chunk));
+                                wr_addr_reg <= wr_addr_reg + 1;
+                                index := index + 1;                                                            --shift to next element
+                            end if;
                         else
-                            rt_state <= init_done;
+                            rt_state <= init_done;                                        --init done 
                         end if;
 
+                    when init_done =>
+                        init_wr_en <= '0';
+                    
+                    when others =>
+                        rt_state <= idle;
+
+                end case;
+            end if;
+        end if;
+    end process;
 
 
-
-
-                        v_ram(0) := (0 => '1', others => '0');
-                        v_ram(1) := (others => '0');
-                        v_ram(2) := (others => '0');
-                        v_ram(3) := (others => '0');
-                        for i in 0 to c_num_ports-1 loop
-                            element := (others => '0');
-                            element(v_counter) := '1';
-                            if(v_counter = c_num_ports-1) then
-                                v_counter := 1;
-                            else
-                                v_counter := (v_counter + 1);
-                            end if;
-                            for j in 0 to 3 loop
-                                v_ram(j+(ratio*i)) := element(((8*(j+1))-1) downto (8*j));
-                            end loop;
-                        end loop;
-     
-
-        process(clk_in)
+/*
+    process(clk_in)
         variable index : integer range 0 to c_num_ports := 0;
-    
+    --    variable element : t_ram(0 to (ram_depth*4)-1);
+        variable element : std_logic_vector(((data_width*4)-1) downto 0) := (others => '0');
+        variable v_ram : t_ram(0 to (c_num_ports*4)-1);
+        variable chunk : integer range 0 to 3 := 0;
         begin
         if rising_edge(clk) then
+        wr_data_reg <= data_reg;
+
             if reset = '1' then
                 -- Initialize signals on reset
                 index := 0;
                 v_counter <= 1;
-                element := (others => '0');
-
+    --            element := (others => '0');
+                wr_addr_reg <= (others => '0');
+                wr_data_reg <= (others => '0');
             else
-                if index < ram_depth then
-                    -- Construct the element based on v_counter
-                    element := (others => '0');
-                    element(v_counter) := '1';
-        
+                if rt_state = initial then
                     -- Update v_counter
                     if(v_counter = c_num_ports-1) then
                         v_counter <= 1;
@@ -198,7 +208,9 @@ begin
 
                 end if;
             end if;
-        end process;
+        end if;
+     end process;
+*/
 
     --ram component
     routing_table_ram: entity work.routing_table_ram(rtl)
@@ -221,17 +233,12 @@ begin
 	ram_proc:process(clk_in)
 	begin
 		if(rising_edge(clk_in)) then
-                s_ram (0) <= s_ram_reg_0;
-				s_ram (1) <= s_ram_reg_1;
-				s_ram (2) <= s_ram_reg_2;
-				s_ram (3) <= s_ram_reg_3;
 			if(enable_in = '1') then
 				if(wr_en = '1') then
 					s_ram(to_integer(unsigned(wr_addr))) <= wr_data;
 				end if;
 				rd_data <= s_ram(to_integer(unsigned(rd_addr)));
 			end if;
-
 		end if;
 	end process;
 
