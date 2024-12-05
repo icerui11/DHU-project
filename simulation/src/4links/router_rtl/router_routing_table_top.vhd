@@ -64,10 +64,7 @@ architecture rtl of router_routing_table_top is
 	----------------------------------------------------------------------------------------------------------------------------
 	-- Constant Declarations --
 	----------------------------------------------------------------------------------------------------------------------------
-    constant s_ram_reg_0 : std_logic_vector(data_width-1 downto 0) := "00000001";                    --initialize the port 0 value
-	constant s_ram_reg_1 : std_logic_vector(data_width-1 downto 0) := "00000000";
-	constant s_ram_reg_2 : std_logic_vector(data_width-1 downto 0) := "00000000";
-	constant s_ram_reg_3 : std_logic_vector(data_width-1 downto 0) := "00000000";
+
 	----------------------------------------------------------------------------------------------------------------------------
 	-- Type Declarations --
 	----------------------------------------------------------------------------------------------------------------------------
@@ -79,8 +76,6 @@ architecture rtl of router_routing_table_top is
     type init_state is (idle, initial, init_done);
     signal rt_state : init_state := idle;
 
-
-	
 	----------------------------------------------------------------------------------------------------------------------------
 	-- Entity Declarations --
 	----------------------------------------------------------------------------------------------------------------------------
@@ -99,7 +94,7 @@ architecture rtl of router_routing_table_top is
     signal wr_en_reg : std_logic := '0';
     signal wr_addr_reg : std_logic_vector(addr_width-1 downto 0) := (others => '0');
     signal wr_data_reg : std_logic_vector(data_width-1 downto 0) := (others => '0');
-
+    signal rd_data_reg : std_logic_vector(data_width-1 downto 0) := (others => '0');
     --control signals
     signal init_wr_en : std_logic;
     signal init_wr_addr : std_logic_vector(addr_width-1 downto 0);
@@ -116,7 +111,7 @@ begin
     wr_en_reg <= wr_en or init_wr_en;
 
     init_fsm: process(clk_in)
-    variable v_ram : t_ram(0 to (ram_depth*4)-1);
+
     variable element : std_logic_vector(31 downto 0) := (others => '0');
 
     variable chunk : integer range 0 to 3 := 0;                                 --4 chunk for each read address
@@ -161,7 +156,8 @@ begin
 
                     when init_done =>
                         init_wr_en <= '0';
-                    
+                        wr_addr_reg <= wr_addr;
+                        wr_data_reg <= wr_data;
                     when others =>
                         rt_state <= idle;
 
@@ -169,7 +165,6 @@ begin
             end if;
         end if;
     end process;
-
 
 /*
     process(clk_in)
@@ -180,8 +175,6 @@ begin
         variable chunk : integer range 0 to 3 := 0;
         begin
         if rising_edge(clk) then
-        wr_data_reg <= data_reg;
-
             if reset = '1' then
                 -- Initialize signals on reset
                 index := 0;
@@ -220,28 +213,16 @@ begin
     )                    
     port map(
         clk_in => clk_in,
-
-        wr_en => wr_en_reg,
-        wr_addr => wr_addr,
-        wr_data => wr_data,
+        enable_in => enable_in,
+        wr_en   => wr_en_reg,
+        wr_addr => wr_addr_reg,
+        wr_data => wr_data_reg,
 
         rd_addr => rd_addr,
-        rd_data => rd_data
+        rd_data => rd_data_reg
     );
 
-
-	ram_proc:process(clk_in)
-	begin
-		if(rising_edge(clk_in)) then
-			if(enable_in = '1') then
-				if(wr_en = '1') then
-					s_ram(to_integer(unsigned(wr_addr))) <= wr_data;
-				end if;
-				rd_data <= s_ram(to_integer(unsigned(rd_addr)));
-			end if;
-		end if;
-	end process;
-
+    rd_data <= rd_data_reg;
 	----------------------------------------------------------------------------------------------------------------------------
 	-- Asynchronous Processes --
 	----------------------------------------------------------------------------------------------------------------------------
