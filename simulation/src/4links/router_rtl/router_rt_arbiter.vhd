@@ -241,7 +241,7 @@ begin
     );
 
 	
-	shadow_rout_table_mem: entity work.router_routing_table(rtl)
+	shadow_rout_table_mem: entity work.router_routing_table_top(rtl)
 	generic map(
 		data_width	=> 8,			-- bit-width of ram element (0-31 = port number)
 		addr_width	=> 10
