@@ -28,7 +28,13 @@
      5. 具体的RAM读写数据在routing_table_ram中执行，因此top 中并不需要相应的逻辑
   2. 目的只是创建一个组合逻辑计算出相应的值，将这个值赋给RAM就行，不需要额外创建一个小RAM来给它赋值了, 因为每次只能给ram写一个数据，因此用 for loop 并不合适，因为这会生成一个并行的结构
   3. 注意for loop, even in sequential logic, the behavior of for loops depends on how they're written and synthesis tool optimization, if without state machine control, the loop will be unrolled into combinational logic, completing in one clock cycle. Only the final loop result will be registered.
-  4.
+  4
+
+routing_table_top code debug
+1. signal dont initialized, resulting in init_wr_addr being x, including reset 
+2. wr_data_reg assign to RAM, but first address has some error, it should be 00 00 00 01, 问题是时序逻辑中使用了两个地址register，所以每一次register 赋值都需要一个时钟周期
+3. 在FSM内使用variable 而不是signal，然后在 用组合逻辑给data, address赋值，when in init_done state, since wr_addr_reg and wr_data_reg updates are inside sequential logic, it causes a one clock cycle delay
+4. use combinational multiplexer, decide whether to use the input port or the initial signal based on the state of FSM
 
 
 
