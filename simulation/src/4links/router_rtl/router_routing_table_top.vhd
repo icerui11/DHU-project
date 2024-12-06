@@ -100,7 +100,7 @@ architecture rtl of router_routing_table_top is
  --   signal init_wr_addr : unsigned(addr_width-1 downto 0) := (others => '0');
   --  signal init_wr_data : std_logic_vector(data_width-1 downto 0);
 
-    signal shift : integer range 0 to 3 := 0;
+    signal index : integer range 0 to 31:= 0;
     signal init_done_r : std_logic := '0';
 	----------------------------------------------------------------------------------------------------------------------------
 	-- Variable Declarations --
@@ -118,7 +118,7 @@ begin
     variable init_wr_addr : unsigned(addr_width-1 downto 0) := (others => '0');
     variable init_wr_data : std_logic_vector(data_width-1 downto 0);
     variable chunk : integer range 0 to 3 := 0;                                 --4 chunk for each read address
-    variable index : integer range 0 to 31:= 0;
+ --   variable index : integer range 0 to 31:= 0;
     begin
         if (rising_edge(clk_in)) then
             if (rst_in = '1') then
@@ -127,7 +127,7 @@ begin
                 init_wr_addr := (others => '0');
                 element := (others => '0');
                 element(0) := '1';
-                index := 0;
+                index <= 0;
                 chunk := 0;
             else 
                 case rt_state is 
@@ -135,7 +135,7 @@ begin
                     when idle =>
    --                     init_wr_en := '1';                                                       --start init next cycle
                         rt_state <= get_pre_data;                                               --move to get_pre_data state
-                        index := 0;
+                        index <= 0;
     --                    init_wr_data := "00000001";
 
                     when get_pre_data =>  
@@ -144,7 +144,7 @@ begin
                          rt_state <= initial;                                                    --move to initial state
 
                     when initial =>                       
-                        if index <= c_num_ports then
+                        if index < c_num_ports then
                             element := (others => '0');
                             element(index) := '1';
                             init_wr_en := '1';
@@ -165,7 +165,7 @@ begin
                                 init_wr_data := element(((8 * (chunk + 1)) - 1) downto (8 * chunk));
                                 init_wr_addr := init_wr_addr + 1;
          --                       wr_addr_reg <= std_logic_vector(init_wr_addr);
-                                index := index + 1;                                                            --shift to next element
+                                index <= index + 1;                                                            --shift to next element
                             end if;
      --                       wr_addr_reg <= std_logic_vector(init_wr_addr);
                         else
