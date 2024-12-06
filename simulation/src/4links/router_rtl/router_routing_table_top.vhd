@@ -73,7 +73,7 @@ architecture rtl of router_routing_table_top is
 	
    
 	--state machine states
-    type init_state is (idle, initial, init_done);
+    type init_state is (idle, get_pre_data, initial, init_done);
     signal rt_state : init_state := idle;
 
 	----------------------------------------------------------------------------------------------------------------------------
@@ -96,9 +96,9 @@ architecture rtl of router_routing_table_top is
     signal wr_data_reg : std_logic_vector(data_width-1 downto 0) := (others => '0');
     signal rd_data_reg : std_logic_vector(data_width-1 downto 0) := (others => '0');
     --control signals
-    signal init_wr_en : std_logic;
-    signal init_wr_addr : std_logic_vector(addr_width-1 downto 0);
-    signal init_wr_data : std_logic_vector(data_width-1 downto 0);
+--    signal init_wr_en   : std_logic;
+ --   signal init_wr_addr : unsigned(addr_width-1 downto 0) := (others => '0');
+  --  signal init_wr_data : std_logic_vector(data_width-1 downto 0);
 
     signal shift : integer range 0 to 3 := 0;
     signal init_done_r : std_logic := '0';
@@ -107,64 +107,90 @@ architecture rtl of router_routing_table_top is
 	----------------------------------------------------------------------------------------------------------------------------
 	
 begin
-	--dual control 
-    wr_en_reg <= wr_en or init_wr_en;
 
+    rd_data <= rd_data_reg;                                        --assign read data to output
+
+    --state machine for initialisation
     init_fsm: process(clk_in)
 
     variable element : std_logic_vector(31 downto 0) := (others => '0');
-
+    variable init_wr_en   : std_logic := '0';
+    variable init_wr_addr : unsigned(addr_width-1 downto 0) := (others => '0');
+    variable init_wr_data : std_logic_vector(data_width-1 downto 0);
     variable chunk : integer range 0 to 3 := 0;                                 --4 chunk for each read address
-    variable index : integer range 0 to c_num_ports := 0;
+    variable index : integer range 0 to 31:= 0;
     begin
         if (rising_edge(clk_in)) then
             if (rst_in = '1') then
-                rt_state < idle;
-
+                rt_state <= idle;
+                init_wr_en := '0';
+                init_wr_addr := (others => '0');
+                element := (others => '0');
+                element(0) := '1';
+                index := 0;
+                chunk := 0;
             else 
                 case rt_state is 
 
                     when idle =>
-                        rt_state <= initial;
+   --                     init_wr_en := '1';                                                       --start init next cycle
+                        rt_state <= get_pre_data;                                               --move to get_pre_data state
                         index := 0;
+    --                    init_wr_data := "00000001";
 
-                    when initial =>
-                        data_reg <= init_ram;
-                        
+                    when get_pre_data =>  
+                         init_wr_data := "00000001";
+                         init_wr_en := '1';                                                       --start init next cycle
+                         rt_state <= initial;                                                    --move to initial state
+
+                    when initial =>                       
                         if index <= c_num_ports then
                             element := (others => '0');
                             element(index) := '1';
-                            init_wr_en <= '1';
-                            chunk := chunk + 1;
+                            init_wr_en := '1';
+                            chunk := (chunk + 1) mod 4;
                             if chunk = 0 then 
-                                wr_data_reg <= element(((8 * (chunk + 1)) - 1) downto (8 * chunk));
-                                wr_addr_reg <= wr_addr_reg + 1;
+                                init_wr_data := element(((8 * (chunk + 1)) - 1) downto (8 * chunk));
+                                init_wr_addr := init_wr_addr + 1;
+         --                       wr_addr_reg <= std_logic_vector(init_wr_addr);
                             elsif chunk = 1 then
-                                wr_data_reg <= element(((8 * (chunk + 1)) - 1) downto (8 * chunk));
-                                wr_addr_reg <= wr_addr_reg + 1;
+                                init_wr_data := element(((8 * (chunk + 1)) - 1) downto (8 * chunk));
+                                init_wr_addr := init_wr_addr + 1;
+         --                     wr_addr_reg <= std_logic_vector(init_wr_addr);
                             elsif chunk = 2 then
-                                wr_data_reg <= element(((8 * (chunk + 1)) - 1) downto (8 * chunk));
-                                wr_addr_reg <= wr_addr_reg + 1;
+                                init_wr_data := element(((8 * (chunk + 1)) - 1) downto (8 * chunk));
+                                init_wr_addr := init_wr_addr + 1;
+         --                       wr_addr_reg <= std_logic_vector(init_wr_addr);
                             elsif chunk = 3 then
-                                wr_data_reg <= element(((8 * (chunk + 1)) - 1) downto (8 * chunk));
-                                wr_addr_reg <= wr_addr_reg + 1;
+                                init_wr_data := element(((8 * (chunk + 1)) - 1) downto (8 * chunk));
+                                init_wr_addr := init_wr_addr + 1;
+         --                       wr_addr_reg <= std_logic_vector(init_wr_addr);
                                 index := index + 1;                                                            --shift to next element
                             end if;
+     --                       wr_addr_reg <= std_logic_vector(init_wr_addr);
                         else
                             rt_state <= init_done;                                        --init done 
+     --                       init_wr_en <= '0';                                            --stop init
                         end if;
 
                     when init_done =>
-                        init_wr_en <= '0';
-                        wr_addr_reg <= wr_addr;
-                        wr_data_reg <= wr_data;
+                        init_wr_en := '0';
+    --                    wr_addr_reg <= wr_addr;
+    --                    wr_data_reg <= wr_data;
                     when others =>
                         rt_state <= idle;
 
                 end case;
             end if;
         end if;
+        
+        --remove wr_addr logic for init_done state
+        wr_data_reg <= init_wr_data when (rt_state = initial or rt_state = get_pre_data)  else wr_data;                          --create mux for chose input or initial value
+        wr_addr_reg <= std_logic_vector(init_wr_addr) when rt_state = initial else wr_addr;
+        wr_en_reg   <= init_wr_en when rt_state = initial else wr_en;
     end process;
+
+
 
 /*
     process(clk_in)
@@ -221,8 +247,6 @@ begin
         rd_addr => rd_addr,
         rd_data => rd_data_reg
     );
-
-    rd_data <= rd_data_reg;
 	----------------------------------------------------------------------------------------------------------------------------
 	-- Asynchronous Processes --
 	----------------------------------------------------------------------------------------------------------------------------
