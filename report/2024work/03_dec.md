@@ -66,3 +66,20 @@ for mixed_width_ram structure, 和routing table一样也需要重新将ram初始
 2. 但是router IP core变为 none priority时port4 无法连接，相应连接出现 charracter Sequence Error
    1. 读取routing table都没有问题
    2. spacewire router其中一个port 在综合后出现无法与Brick MK4 连接的情况，错误原因时charracter Sequence Error，然后我添加了一些spw node4的信号进入内置logic analyse进行综合，又可以进行连接了，我检查了综合工具 spw node4 attribute syn\_noprune=1 ,因此应该不是综合工具prune 了spw 模块的register造成的。此外如果设置为priority 为fifo 没有出现port不能连接的情况spacewire router其中一个port 在综合后出现无法与Brick MK4 连接的情况，错误原因时charracter Sequence Error，然后我添加了一些spw node4的信号进行综合，又可以进行连接了，我检查了综合工具 spw node4 attribute syn\_noprune=1 ,因此应该不是综合工具prune 了spw 模块的register造成的。此外如果设置为priority 为fifo 没有出现port不能连接的情况我将port4 添加了
+
+08.12
+
+1. 8.5.3.9  a.  Character sequence error  The character sequence error shall be detected by the state machine in the  link interface.  b.  c.  d.  Any characters received before a NULL is received shall be ignored.   Once a NULL is received, an FCT received before a NULL is sent shall  indicate an error (i.e. FCT received in ErrorWait, Ready or Started state).   An N‐Char should only be expected after both a NULL and an FCT are  received otherwise an error occurs (i.e. N‐Char can only be received in  the Run state).  NOTE  In the state diagram of Figure 8‐2, the invalid  gotFCT or gotN‐Char events are shown explicitly,  rather than as a general character sequence error  event.          ==from ECSS-E-ST-50-12C
+2. 很奇怪的一点时后面发现所有port 都可以连接了，但是不排除是我修改了spw_rx_to_data 中将RxT 置0置于reset当中（不确定，因为当时的时候还是有情况不能连接，但是后面所有都能连接了）
+3. 对SpW 做过的改动
+
+   1. spw_rx_to_2b_RTG4
+
+   --keep the instance of bit_seen
+   attribute syn_preserve : boolean;
+   attribute syn_preserve of bit_seen : signal is true;
+
+   2. 在 spw_rx_sync_RTG4 中
+4. ![1733684406579](images/03_dec/1733684406579.png)
+5. 使用smartdebug 查看 spw_config_mem 但是发现和RMAP读出来的并不一致
+6. 并且最好用RMAP全部写一遍routing_table,以避免shadow routing table之间数据的不一致
