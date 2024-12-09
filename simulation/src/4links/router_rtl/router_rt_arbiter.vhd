@@ -13,7 +13,7 @@
 
 -- @ Revision #				:	2
 
--- File Description         :
+-- File Description         : has modified for initial RAM, 06.12.2024
 
 -- Document Number			:  xxx-xxxx-xxx
 ----------------------------------------------------------------------------------------------------------------------------------
@@ -224,12 +224,12 @@ begin
 		
     );
 	
-	rout_table_mem: entity work.mixed_width_ram(rtl)
+	rout_table_mem: entity work.mixed_width_ram_top_v2(rtl)
 	port map( 
 		
 		-- standard register control signals --
 		clk_in	=> clk_in,										-- clk input, rising edge trigger
-		
+		rst_in  => rst_in,
 		wr_en	=> 	axi_wr_en,
 		r_addr 	=> 	mem_rd_addr,
 		w_addr 	=>	axi_addr,
@@ -241,7 +241,7 @@ begin
     );
 
 	
-	shadow_rout_table_mem: entity work.router_routing_table_top(rtl)
+	shadow_rout_table_mem: entity work.router_routing_table_top_v2(rtl)
 	generic map(
 		data_width	=> 8,			-- bit-width of ram element (0-31 = port number)
 		addr_width	=> 10
@@ -250,7 +250,7 @@ begin
 		-- standard register control signals --
 		clk_in 		=> clk_in,										-- clock in (rising_edge)
 		enable_in 	=> enable,										-- enable input (active high)
-		
+		rst_in          => rst_in,
 		wr_en		=> axi_wr_en,									-- write enable (asserted high)
 		wr_addr		=> axi_addr,
 		wr_data 	=> axi_wr_data,
