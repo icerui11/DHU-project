@@ -55,12 +55,8 @@ end entity router_routing_table_top_v2;
 -- Code Description & Developer Notes --
 ---------------------------------------------------------------------------------------------------------------------------------
 
-	-- See Xilinx User Guide UG974 for US+ ram_style options. --
-	-- Instantiates Single-port, Single-clock, Read-first Xilinx RAM. 
-
 architecture rtl of router_routing_table_top_v2 is
 
-	attribute ram_style : string;
 	----------------------------------------------------------------------------------------------------------------------------
 	-- Constant Declarations --
 	----------------------------------------------------------------------------------------------------------------------------
@@ -68,10 +64,7 @@ architecture rtl of router_routing_table_top_v2 is
 	----------------------------------------------------------------------------------------------------------------------------
 	-- Type Declarations --
 	----------------------------------------------------------------------------------------------------------------------------
-	subtype mem_element is std_logic_vector(data_width-1 downto 0);				-- declare size of each memory element in RAM
-	type t_ram is array (natural range <>) of mem_element;						-- declare RAM as array of memory element
-	
-   
+
 	--state machine states
     type init_state is (idle, get_pre_data, initial_path, initial_logic, init_done);
     signal rt_state : init_state := idle;
@@ -87,8 +80,7 @@ architecture rtl of router_routing_table_top_v2 is
 	----------------------------------------------------------------------------------------------------------------------------
 	-- Signal Declarations --
 	----------------------------------------------------------------------------------------------------------------------------
-	signal s_ram : t_ram(0 to (2**addr_width)-1);             -- := init_router_mem(256);	-- declare ram and initialize using above function
-    signal data_reg : std_logic_vector(data_width-1 downto 0) := (others => '0');
+
 
     --signal for routing table ram
     signal wr_en_reg : std_logic := '0';
@@ -96,9 +88,7 @@ architecture rtl of router_routing_table_top_v2 is
     signal wr_data_reg : std_logic_vector(data_width-1 downto 0) := (others => '0');
     signal rd_data_reg : std_logic_vector(data_width-1 downto 0) := (others => '0');
     --control signals
---    signal init_wr_en   : std_logic;
- --   signal init_wr_addr : unsigned(addr_width-1 downto 0) := (others => '0');
-  --  signal init_wr_data : std_logic_vector(data_width-1 downto 0);
+
 
     signal index : integer range 0 to 31:= 0;
     signal init_done_r : std_logic := '0';
@@ -118,7 +108,7 @@ begin
     variable init_wr_addr : integer range 0 to 1023 := 0;                      --unsigned(addr_width-1 downto 0) := (others => '0');
     variable init_wr_data : std_logic_vector(data_width-1 downto 0);
     variable chunk : integer range 0 to 3 := 0;                                 --4 chunk for each read address
- --   variable index : integer range 0 to 31:= 0;
+
     begin
         if (rising_edge(clk_in)) then
             if (rst_in = '1') then
@@ -133,10 +123,8 @@ begin
                 case rt_state is 
 
                     when idle =>
-   --                     init_wr_en := '1';                                                       --start init next cycle
                         rt_state <= get_pre_data;                                               --move to get_pre_data state
                         index <= 0;
-    --                    init_wr_data := "00000001";
 
                     when get_pre_data =>  
                          init_wr_data := "00000001";
@@ -149,18 +137,15 @@ begin
                             element(index) := '1';                                                --set the port number
                             init_wr_en := '1';
                             chunk := (chunk + 1) mod 4;
+                            init_wr_addr := init_wr_addr + 1;
                             if chunk = 0 then 
                                 init_wr_data := element(((8 * (chunk + 1)) - 1) downto (8 * chunk));
-                                init_wr_addr := init_wr_addr + 1;
                             elsif chunk = 1 then
                                 init_wr_data := element(((8 * (chunk + 1)) - 1) downto (8 * chunk));
-                                init_wr_addr := init_wr_addr + 1;
                             elsif chunk = 2 then
                                 init_wr_data := element(((8 * (chunk + 1)) - 1) downto (8 * chunk));
-                                init_wr_addr := init_wr_addr + 1;
                             elsif chunk = 3 then
                                 init_wr_data := element(((8 * (chunk + 1)) - 1) downto (8 * chunk));
-                                init_wr_addr := init_wr_addr + 1;
                                 index <= index + 1;                                                            --shift to next element
                             end if;
 
@@ -178,24 +163,21 @@ begin
                     when initial_logic =>
 
                         if init_wr_addr < 1019 then                                             --initial logic address to 0xFC, FF is reserved
-       --                     init_wr_addr := init_wr_addr + 1;
+
                                 if index < c_num_ports then                                       --shift to next element and not exceed c_num_ports
                                 element := (others => '0');
                                 element(index) := '1';
                                 init_wr_en := '1';
                                 chunk := (chunk + 1) mod 4;
+                                init_wr_addr := init_wr_addr + 1;
                                     if chunk = 0 then 
                                         init_wr_data := element(((8 * (chunk + 1)) - 1) downto (8 * chunk));
-                                        init_wr_addr := init_wr_addr + 1;
                                     elsif chunk = 1 then
                                         init_wr_data := element(((8 * (chunk + 1)) - 1) downto (8 * chunk));
-                                        init_wr_addr := init_wr_addr + 1;
                                     elsif chunk = 2 then
                                         init_wr_data := element(((8 * (chunk + 1)) - 1) downto (8 * chunk));
-                                        init_wr_addr := init_wr_addr + 1;
                                     elsif chunk = 3 then
                                         init_wr_data := element(((8 * (chunk + 1)) - 1) downto (8 * chunk));
-                                        init_wr_addr := init_wr_addr + 1;
                                         index <= index + 1;                                                            --shift to next element
                                     end if;
                                 else 
