@@ -111,17 +111,22 @@ architecture rtl of mixed_width_ram is
 	----------------------------------------------------------------------------------------------------------------------------
 	type t_byte_ram is array (natural range <> ) of std_logic_vector(7 downto 0);
 
-	function init_router_mem (ram_depth : integer) return t_byte_ram is
-		variable ratio : integer := 4;
-		variable v_counter : integer range 1 to c_num_ports-1 := 1;
-		variable v_ram : t_byte_ram(0 to (ram_depth*ratio)-1);
+	subtype mem_element is std_logic_vector(7 downto 0);				-- declare size of each memory element in RAM
+	type t_ram is array (natural range <>) of mem_element;						-- declare RAM as array of memory element
+	
+	function get_router_mem (index : integer range 0 to 1023) return mem_element is               -- return singer element of ram
+		variable ram_element : mem_element;
+	        variable ratio : integer := 4;
+		variable v_counter : integer range 1 to c_num_ports-1  := 1;
+		variable ram_depth : integer := index/ratio;
+		variable v_ram : t_ram(0 to 1023);
 		Variable element : std_logic_vector(31 downto 0) := (others => '0');
 	begin
 		v_ram(0) := (0 => '1', others => '0');
 		v_ram(1) := (others => '0');
 		v_ram(2) := (others => '0');
 		v_ram(3) := (others => '0');
-		for i in 1 to ram_depth-1 loop
+		for i in 4 to ram_depth-1 loop
 			element := (others => '0');
 			element(v_counter) := '1';
 			if(v_counter = c_num_ports-1) then
@@ -129,14 +134,13 @@ architecture rtl of mixed_width_ram is
 			else
 				v_counter := (v_counter + 1);
 			end if;
-			
 			for j in 0 to ratio-1 loop
 				v_ram(j+(ratio*i)) := element(((8*(j+1))-1) downto (8*j));
 			end loop;
-		
+		ram_element := v_ram(index);
 		end loop;
 		
-		return v_ram;
+		return ram_element;
 	end function;
 
 	
@@ -149,7 +153,7 @@ architecture rtl of mixed_width_ram is
 	----------------------------------------------------------------------------------------------------------------------------
 	signal r_addr_int 	: integer range 0 to (2**r_addr'length)-1 := 0;
 	signal w_addr_int	: integer range 0 to (2**w_addr'length)-1 := 0;	
-	signal s_ram 		: t_byte_ram(0 to (2**w_addr'length)-1) := init_router_mem(256);
+	signal s_ram 		: t_byte_ram(0 to (2**w_addr'length)-1);                                --:= init_router_mem(256);
 	signal rd_conn      : t_byte_ram(0 to 3);
 	----------------------------------------------------------------------------------------------------------------------------
 	-- Variable Declarations --
@@ -183,27 +187,20 @@ begin
 	-- Synchronous Processes --
 	----------------------------------------------------------------------------------------------------------------------------
 	ram_proc: process(clk_in)
-	variable ram_index : integer range 0 to 255 := 0;
+	variable ram_index : integer range 0 to 1023 := 0;
 	--variable init_done : std_logic := '0';
-	variable row       : integer range 0 to 3 := 0;
+--	variable row       : integer range 0 to 3 := 0;
 	begin
 		if(rising_edge(clk_in)) then
 			if rst_in = '1' then
-	--			if init_done = '0' then
-					if ram_index < 255 then
-						for i in 0 to 3 loop                  
-						   s_ram(ram_index*4+i) <= init_router_mem(ram_index)(8*(i+1)-1 downto 8*i);
-						end loop;
+					if ram_index < 1023 then             
+						s_ram(ram_index) <= get_router_mem(ram_index);
 						ram_index := ram_index + 1;
-					elsif ram_index = 255 then
-	--					init_done := '1';
-						for i in 0 to 3 loop                  
-							s_ram(ram_index*4+i) <= init_router_mem(ram_index)(8*(i+1)-1 downto 8*i);
-						 end loop;
-						ram_index := ram_index + 1;
+					elsif ram_index = 1023 then            
+						s_ram(ram_index) <= get_router_mem(ram_index);
+						ram_index := 0;
 					end if;
-	--			end if;
-			else
+		    else
 				if(wr_en = '1') then
 					s_ram(w_addr_int) <= w_data;
 				end if;
