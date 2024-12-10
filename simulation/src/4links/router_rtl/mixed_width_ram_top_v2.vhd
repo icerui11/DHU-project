@@ -106,7 +106,7 @@ begin
 
     variable element : std_logic_vector(31 downto 0) := (others => '0');
     variable init_wr_en   : std_logic := '0';
-    variable init_wr_addr : integer range 0 to 1024 := 0;                      --unsigned(addr_width-1 downto 0) := (others => '0');
+    variable init_wr_addr : integer range 0 to 1023 := 0;                      --unsigned(addr_width-1 downto 0) := (others => '0');
     variable init_wr_data : std_logic_vector(w_data_width-1 downto 0);
     variable chunk : integer range 0 to 3 := 0;                                 --4 chunk for each read address
  --   variable index : integer range 0 to 31:= 0;
@@ -172,7 +172,7 @@ begin
 
                     when initial_logic =>
 
-                        if init_wr_addr < 1020 then                                             --initial logic address to 0xFC, FF is reserved
+                        if init_wr_addr < 1019 then                                             --initial logic address to 0xFC, FF is reserved    1120-1
        --                     init_wr_addr := init_wr_addr + 1;
                                 if index < c_num_ports then                                       --shift to next element and not exceed c_num_ports
                                 element := (others => '0');
@@ -197,18 +197,19 @@ begin
                                     index <= 1;
                                     init_wr_en := '0';
                                 end if;
-                            elsif init_wr_addr < 1024 then                                        -- initialize logic address 0xFF
+                            elsif init_wr_addr < 1023 then                                        -- initialize logic address 0xFF
                                 init_wr_addr := init_wr_addr + 1;
                                 init_wr_data := "00000000";
                                 init_wr_en := '1';
-                            else
+                            elsif init_wr_addr = 1023 then
                                 rt_state <= init_done;
+                                init_wr_data := "00000000";
+                                init_wr_en := '0';
                             end if;
 
                     when init_done =>
                         init_wr_en := '0';
-    --                    wr_addr_reg <= wr_addr;
-    --                    wr_data_reg <= wr_data;
+
                     when others =>
                         rt_state <= idle;
 
