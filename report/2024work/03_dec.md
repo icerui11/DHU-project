@@ -28,7 +28,7 @@
      5. 具体的RAM读写数据在routing_table_ram中执行，因此top 中并不需要相应的逻辑
   2. 目的只是创建一个组合逻辑计算出相应的值，将这个值赋给RAM就行，不需要额外创建一个小RAM来给它赋值了, 因为每次只能给ram写一个数据，因此用 for loop 并不合适，因为这会生成一个并行的结构
   3. 注意for loop, even in sequential logic, the behavior of for loops depends on how they're written and synthesis tool optimization, if without state machine control, the loop will be unrolled into combinational logic, completing in one clock cycle. Only the final loop result will be registered.
-     4
+  4. when initial_logic state, 因为logic address 是reserved，赋值为00，并且init_wr_addr 是variable，所以在执行最后一个logic_address 0xfe, chunk 3, 1019 地址 进入时 执行结束时会变成1020，所以最后一个是
 
 routing_table_top code debug
 
@@ -47,7 +47,6 @@ routing_table_top code debug
    3. in loops: static loops (fixed iteration count) are usually unrolled into combinational logic,
       1. dynamic loops might be synthesized into state machines
 
-
 06.12
 
 for mixed_width_ram structure, 和routing table一样也需要重新将ram初始化，因为routing table只是一个shadow_routing table, 因此使用和一样的FSM 对ram 进行赋初值，
@@ -59,7 +58,6 @@ for mixed_width_ram structure, 和routing table一样也需要重新将ram初始
 3. 不需要rd_addr_reg, 因为模块采用直接映射，直接从input 到component
 4. 相应的在rt_arbiter模块对于mixed_width_ram_top 模块的rst_in 也应该添加上
 
-
 07.12
 
 1. Router 4 physic port loop without priority 上传到了GIT project (priotrity fifo)
@@ -70,7 +68,10 @@ for mixed_width_ram structure, 和routing table一样也需要重新将ram初始
 08.12
 
 1. 8.5.3.9  a.  Character sequence error  The character sequence error shall be detected by the state machine in the  link interface.  b.  c.  d.  Any characters received before a NULL is received shall be ignored.   Once a NULL is received, an FCT received before a NULL is sent shall  indicate an error (i.e. FCT received in ErrorWait, Ready or Started state).   An N‐Char should only be expected after both a NULL and an FCT are  received otherwise an error occurs (i.e. N‐Char can only be received in  the Run state).  NOTE  In the state diagram of Figure 8‐2, the invalid  gotFCT or gotN‐Char events are shown explicitly,  rather than as a general character sequence error  event.          ==from ECSS-E-ST-50-12C
-2. 很奇怪的一点时后面发现所有port 都可以连接了，但是不排除是我修改了spw_rx_to_data 中将RxT 置0置于reset当中（不确定，因为当时的时候还是有情况不能连接，但是后面所有都能连接了）
+2. 很奇怪的一点时后面发现所有port 都可以连接了，但是不排除是我修改了spw_rx_to_data 中将RxT 置0置于reset当中（不确定，因为当时的时候还是有情况不能连接，但是后面所有都能连接了），但是应该和这个无关，因为代码已经prevent了lock-up的情况
+
+   -- mask off ports which are disconnected, prevents lock-ups
+   tc_tx_valid_bits(31 downto 1) <= (not_master_mask(31 downto 1) and connected_reg(31 downto 1)); 	-- set transmission valid bits for Tx TimeCode Handshake, do not sent to master port
 3. 对SpW 做过的改动
 
    1. spw_rx_to_2b_RTG4
