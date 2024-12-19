@@ -53,8 +53,8 @@ port (
     AHBSlave121_Out  : out AHB_Slv_Out_Type;    --! AHB slave output signals.
     
     -- AHB 123 Slave interface, from 123
-    AHBSlave123_In  : in  AHB_Slv_In_Type;   --! AHB slave input signals
-    AHBSlave123_Out : out AHB_Slv_Out_Type;  --! AHB slave input signals
+    AHBSlave123_In   : in  AHB_Slv_In_Type;   --! AHB slave input signals
+    AHBSlave123_Out  : out AHB_Slv_Out_Type;  --! AHB slave input signals
 
     -- AHB 123 Master interface
     AHBMaster123_In  : in  AHB_Mst_In_Type;   --! AHB slave input signals
@@ -70,16 +70,16 @@ port (
     DataOut           : out std_logic_vector (shyloc_121.ccsds121_parameters.W_BUFFER_GEN-1 downto 0);
     DataOut_NewValid  : out std_logic;                  --! Flag to validate output bit stream.
     -- for CCSDS121 
-    Ready_Ext    : in std_logic;             --! External receiver not ready.
+    Ready_Ext         : in std_logic;             --! External receiver not ready.
 
     -- CCSDS123 IP Core Interface
-    ForceStop    : in std_logic;             --! Force the stop of the compression.
-    AwaitingConfig  : out std_logic;             --! The IP core is waiting to receive the configuration.
-    Ready      : out std_logic;             --! Configuration has been received and the IP is ready to receive new samples.
-    FIFO_Full    : out std_logic;             --! The input FIFO is full.
-    EOP        : out std_logic;             --! Compression of last sample has started.
-    Finished    : out std_logic;             --! The IP has finished compressing all samples.
-    Error      : out std_logic             --! There has been an error during the compression. ccsds123
+    ForceStop         : in std_logic;             --! Force the stop of the compression.
+    AwaitingConfig    : out std_logic;             --! The IP core is waiting to receive the configuration.
+    Ready             : out std_logic;             --! Configuration has been received and the IP is ready to receive new samples.
+    FIFO_Full         : out std_logic;             --! The input FIFO is full.
+    EOP               : out std_logic;             --! Compression of last sample has started.
+    Finished          : out std_logic;             --! The IP has finished compressing all samples.
+    Error             : out std_logic             --! There has been an error during the compression. ccsds123
     );
 
 end ShyLoc_top_Wrapper;
@@ -87,15 +87,6 @@ end ShyLoc_top_Wrapper;
 architecture arch of ShyLoc_top_Wrapper is
 
     --signal declarations
-    
---    signal AwaitingConfig: std_logic;   
---    signal Ready: std_logic;     
---    signal FIFO_Full: std_logic;    
---    signal EOP: std_logic;      
---    signal Finished: std_logic;    
-
---    signal DataOut: std_logic_vector (shyloc_121.ccsds121_parameters.W_BUFFER_GEN-1 downto 0);  
- --   signal DataOut_Valid: std_logic;  
     
     --interconnection signals   
     signal AwaitingConfig_Ext: std_logic;                                                                -- the signal from CCSDS-121 IP core to CCSDS-123 IP core
