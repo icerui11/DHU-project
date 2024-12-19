@@ -105,6 +105,10 @@ architecture rtl of mixed_width_ram is
 	----------------------------------------------------------------------------------------------------------------------------
 	constant c_ratio : integer := ret_ratio(r_data'length, w_data'length);	-- r_data must be larger than w_data. Ratio best if power of 2
 	
+	constant s_ram_reg_0 : std_logic_vector(data_width-1 downto 0) := "00000001";                    --initialize the port 0 value
+	constant s_ram_reg_1 : std_logic_vector(data_width-1 downto 0) := "00000000";
+	constant s_ram_reg_2 : std_logic_vector(data_width-1 downto 0) := "00000000";
+	constant s_ram_reg_3 : std_logic_vector(data_width-1 downto 0) := "00000000";
 	----------------------------------------------------------------------------------------------------------------------------
 	-- Type Declarations --
 	----------------------------------------------------------------------------------------------------------------------------

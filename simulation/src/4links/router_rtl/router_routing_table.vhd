@@ -126,7 +126,7 @@ architecture rtl of router_routing_table is
 	----------------------------------------------------------------------------------------------------------------------------
 	-- Signal Declarations --
 	----------------------------------------------------------------------------------------------------------------------------
-	signal s_ram : t_ram(0 to (2**addr_width)-1) := init_router_mem(256);	-- declare ram and initialize using above function
+	signal s_ram : t_ram(0 to (2**addr_width)-1);             -- := init_router_mem(256);	-- declare ram and initialize using above function
 	----------------------------------------------------------------------------------------------------------------------------
 	-- Variable Declarations --
 	----------------------------------------------------------------------------------------------------------------------------
@@ -159,22 +159,33 @@ begin
 	----------------------------------------------------------------------------------------------------------------------------
 	-- Synchronous Processes --
 	----------------------------------------------------------------------------------------------------------------------------
+	
+	--init_proc: process(clk_in)
+	--begin 
+		--if rising_edge(clk_in) then
+			--if rst_in = '1' then
+				--s_ram (0) <= s_ram_reg_0;
+				--s_ram (1) <= s_ram_reg_1;
+				--s_ram (2) <= s_ram_reg_2;
+				--s_ram (3) <= s_ram_reg_3;
+			--end if;
+		--end if;
+	--end process;
+    
 	ram_proc:process(clk_in)
 	begin
 		if(rising_edge(clk_in)) then
-          if rst_in = '1' then                    
-              s_ram (0) <= s_ram_reg_0;
-			  s_ram (1) <= s_ram_reg_1;
-			  s_ram (2) <= s_ram_reg_2;
-			  s_ram (3) <= s_ram_reg_3;
-          else
+                s_ram (0) <= s_ram_reg_0;
+				s_ram (1) <= s_ram_reg_1;
+				s_ram (2) <= s_ram_reg_2;
+				s_ram (3) <= s_ram_reg_3;
 			if(enable_in = '1') then
 				if(wr_en = '1') then
 					s_ram(to_integer(unsigned(wr_addr))) <= wr_data;
 				end if;
 				rd_data <= s_ram(to_integer(unsigned(rd_addr)));
 			end if;
-          end if;
+
 		end if;
 	end process;
 
