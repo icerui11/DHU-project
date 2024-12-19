@@ -1,7 +1,9 @@
 # 09.12
 
 ### ### *  编写routing_table version 2, 考虑初始化前几个logicAddress
-*  router_routing_table_top_v2
+
+* router_routing_table_top_v2
+
 ~~~~
 
 code detail:
@@ -22,3 +24,26 @@ code detail:
 
 1. 在原routing_table中之所以 如果直接用初始function对ram 赋值会使用过多的FPGA resource 是因为init_router_mem return v_ram, v_ram 是t_ram 类型，t_ram 又是 type t_ram is array (natural range <>) of mem_element。 the function returns the entire memory array at once
 2. 还是使用FSM去初始化
+~~~~
+
+* how to handle register data during state transitions
+  * in FSM, we need to consider the timing of register updates. Since register values only update on the clock edge, we need to prepare data for the next state while still in the current state
+  * recommended design:
+
+    * dual process design pattern:
+    * sequential process: handles state register and data register updates
+    * combinational process: handles next state logic and data preparation
+    * use intermediate signal: like next_state and next_data, avoid modifying register values directly in combinational logic
+    * calculate data values needed for next state while in current state
+    * 在case语句前给所有信号提供默认值
+
+      * Provide default values for all signals before case statement
+      * prevent unwanted latches
+      * 如果没有就会create a latch to maintain this value. this is not we want. Ensures signals have defined value in all cases
+* why avoiding latch circuits is so crucial in FPGA design. Filp-flops are like elevator with precise schedules- they only move at specific times(clock edges), while latches are like elevators that might move at any time
+  * in synchronous design, we need to accurately predict how long signals take to propagate from one flip-flop to another. But latches are level-sensitive and can change state at any time.
+    * so latch will makes timing analysis extremly complex, meeting timing requirements difficult
+    * latch are harder to predict, especially under varying conditions: temperature changes may affect behavior
+  * so how to avoid:
+    * ensure complete assignments in combinational logic
+    * use default values to prevent latch inference
