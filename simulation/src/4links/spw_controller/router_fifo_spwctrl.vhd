@@ -17,8 +17,6 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-library src;
-use src.all;
 ----------------------------------------------------------------------------------------------------------------------------------
 -- Package Declarations --
 ----------------------------------------------------------------------------------------------------------------------------------
@@ -49,6 +47,7 @@ entity router_fifo_spwctrl is
         
 		-- RAM signals
 		ram_data_in		: in 	std_logic_vector(7 downto 0) ;	-- data read from RAM
+
 		
 		-- SpW Data Signals
 		spw_Tx_data		: out   std_logic_vector(7 downto 0);		-- SpW Tx_data
@@ -77,7 +76,7 @@ entity router_fifo_spwctrl is
 		spw_Parity_error: in	std_logic 	:= '0';
 		
 		ccsds_datanewValid : out std_logic;	                                            -- enable ccsds data input
-		error_out		: out 	std_logic 	:= '0'									      -- assert when error
+		error_out		   : out std_logic 	:= '0'									    -- assert when error
     );
 end router_fifo_spwctrl;
 
@@ -110,15 +109,13 @@ architecture rtl of router_fifo_spwctrl is
 	----------------------------------------------------------------------------------------------------------------------------
 	-- Signal Declarations --
 	----------------------------------------------------------------------------------------------------------------------------
-	signal s_state : t_states := ready;	-- declare state machines, init safe. 
-	
+	signal s_state : t_states := ready;	                                    -- declare state machines, init safe. 
 	signal s_addr_counter	: natural range 0 to (2**g_addr_width)-1 := 0;	-- counts RAM read address
 	signal s_time_counter	: natural range 0 to g_count_max-1 := 0;		-- counts time between memory reads...
     signal r_update         : std_logic := '0';
 	signal s_ram_reg		: std_logic_vector(7 downto 0) := (others => '0');	-- register for storing SpW Characters from RAM, or port address data
 	signal rx_ready			: std_logic := '0';
     signal write_done_r     : std_logic := '0';
-
 	signal convert_valid    : std_logic := '0';                --indicate convert logic data start convert
 
 
@@ -130,7 +127,7 @@ begin
 	fifo_r_update   <= r_update;
     write_done      <= write_done_r;
     --ccsds ready_ext , when fifo full stop compression
-    ccsds_ready_ext <= '0' when fifo_full = '1' else '1';                         --fifo full, stop compression	
+    ccsds_ready_ext <= '0' when fifo_full = '1' else '1';    --fifo full, stop compression	
 
 	----------------------------------------------------------------------------------------------------------------------------
 	-- Synchronous Processes --
@@ -146,7 +143,6 @@ begin
 				spw_Tx_OR		<= '0';
 				s_state 		<= ready;
 			else
-	--		     spw_Tx_data <= ram_data_in;
 				case s_state is 
 
 					when ready =>															-- ready state
@@ -156,12 +152,12 @@ begin
                             r_update        <= '1';
                         else 
                             r_update        <= '0';
-						end if;	
-					
-                    when addr_send =>														-- send port address to router
-                            s_ram_reg <= c_port_addr;                                        -- first fetch port address
-                            s_state <= spw_tx;												-- go to spw transmit state
+						end if;	                                                                                                                           
 
+                    when addr_send =>														-- send port address to router
+                            s_ram_reg <= c_port_addr;                                       -- first fetch port address
+                            s_state <= spw_tx;												-- go to spw transmit state
+                            
 					when read_mem =>														-- read memory state					                                           
 					    if fifo_ack = '1' then
                            r_update <= '0'; 
@@ -171,8 +167,8 @@ begin
                         else
 						   write_done_r <= '0';	
                            r_update <= '1';  
-                        end if;
-
+                        end if;                                                                                                                                                                                                                                                                 
+                                                                                                                                                                             
 					when spw_tx =>															-- spacewire transmit state						
 					    write_done_r <= '0';
 					    spw_Tx_data <= s_ram_reg;											-- output stored data
@@ -183,12 +179,12 @@ begin
 							spw_Tx_OR 		<= '0';											-- de-assert Tx data output ready
 							s_state			<= ramaddr_delay;									-- go to ramaddr delay state
 						end if;	
-						
+	                                                                                		                                                                                                                                                                     
 					when ramaddr_delay =>														-- ramaddr delay state						
-						s_time_counter <= (s_time_counter + 1) mod g_count_max;				-- increment time counter...
+						s_time_counter <= (s_time_counter + 1) mod g_count_max;				-- increment time counter... transmit 8 bit data
 						if(s_time_counter = g_count_max-1) then								-- time counter max ?
        --                   write_done_r <= '1';	
-                          s_state <= ready;											-- go to read_mem state.                       
+                          s_state <= read_mem;											-- go to read_mem state.                       
                         end if;					
 						if fifo_empty = '1' then	                               -- address counter rolled over and max count reached ?	
 							s_ram_reg 	<= c_spw_eop;                                       -- load EOP character x02 into buffer
