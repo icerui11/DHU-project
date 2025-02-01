@@ -1,0 +1,30 @@
+vcd2wlf C:/Users/yinrui/Desktop/03Test/IP123liberotest/dokupicture/paperpicture/identify/success/ccsdswithspw_280ff.vcd output.wlf
+vsim output.wlf
+add wave -position end  output:/DUT/rtl/ccsds123_top_wrapper_0/rst_n
+add wave -position end  output:/DUT/rtl/ccsds123_top_wrapper_0/ready
+add wave -position end  output:/DUT/rtl/ccsds123_top_wrapper_0/nbitsout
+add wave -position end  output:/DUT/rtl/ccsds123_top_wrapper_0/datain
+add wave -position end  output:/DUT/rtl/ccsds123_top_wrapper_0/datain_newvalid
+add wave -position end  output:/DUT/rtl/ccsds123_top_wrapper_0/awaitingconfig
+add wave -position end  output:/DUT/rtl/ccsds123_top_wrapper_0/eop
+add wave -position end  output:/DUT/rtl/ccsds123_top_wrapper_0/error
+add wave -position end  output:/DUT/rtl/ccsds123_top_wrapper_0/isheaderout
+add wave -position end  output:/DUT/rtl/ccsds123_top_wrapper_0/fifo_full
+add wave -position end  output:/DUT/rtl/ccsds121_top_wrapper_0/ready
+add wave -position end  output:/DUT/rtl/ccsds121_top_wrapper_0/dataout
+add wave -position end  output:/DUT/rtl/ccsds121_top_wrapper_0/isheaderin
+add wave -position end  output:/DUT/rtl/ccsds121_top_wrapper_0/dataout_newvalid
+add wave -position end  output:/DUT/rtl/ccsds121_top_wrapper_0/eop
+add wave -position end  output:/DUT/rtl/ccsds121_top_wrapper_0/finished
+add wave -position end  output:/DUT/rtl/ccsds121_top_wrapper_0/fifo_full
+add wave -position end  output:/DUT/rtl/spw_rxlogic_top_0/rtl/spw_wrap_top_rtg4/tx_or
+add wave -position end  output:/DUT/rtl/spw_rxlogic_top_0/rtl/spw_wrap_top_rtg4/rx_rate
+add wave -position end  output:/DUT/rtl/spw_rxlogic_top_0/rtl/spw_wrap_top_rtg4/tx_data
+add wave -position end  output:/DUT/rtl/spw_rxlogic_top_0/rtl/spw_wrap_top_rtg4/disable
+add wave -position end  output:/DUT/rtl/spw_rxlogic_top_0/rtl/spw_wrap_top_rtg4/rx_ir
+add wave -position end  output:/DUT/rtl/spw_rxlogic_top_0/rtl/spw_wrap_top_rtg4/tx_ir
+add wave -position end  output:/DUT/rtl/spw_rxlogic_top_0/rtl/spw_wrap_top_rtg4/rx_or
+add wave -position end  output:/DUT/rtl/spw_rxlogic_top_0/rtl/spw_wrap_top_rtg4/rx_data
+add wave -position 0  output:/DUT/rtl/spw_rxlogic_top_0/rtl/spw_datactrl_fifo/rtl/s_state
+add wave -position 0  output:/DUT/rtl/spw_rxlogic_top_0/rtl/spw_wrap_top_rtg4/rtl/u_spw/rtl/u_spw_rx_to_data/rxd
+add wave -position 1  output:/DUT/rtl/spw_rxlogic_top_0/rtl/spw_wrap_top_rtg4/rtl/u_spw/rtl/u_spw_rx_to_data/fct_received

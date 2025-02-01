@@ -1,0 +1,180 @@
+[*]
+[*] GTKWave Analyzer v3.3.66 (w)1999-2015 BSI
+[*] Tue Jul 09 19:00:37 2024
+[*]
+[dumpfile] "C:\Users\yinrui\Desktop\03Test\IP123liberotest\dokupicture\paperpicture\identify\success\IICE.vcd"
+[savefile] "C:\Users\yinrui\Desktop\03Test\IP123liberotest\dokupicture\paperpicture\identify\success\ccsdswithspw_280ff_sec_f0.sav"
+[timestart] 5540
+[size] 1920 1137
+[pos] -243 -243
+*-13.407045 15460 7960 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] DUT.
+[treeopen] DUT.rtl.
+[treeopen] DUT.rtl.ccsds123_top_wrapper_0.
+[sst_width] 197
+[signals_width] 304
+[sst_expanded] 1
+[sst_vpaned_height] 342
+@420
+DUT.identify_cycle
+@28
+DUT.identify_sampleclock
+DUT.rtl.ccsds121_top_wrapper_0.arch.dataout_cnt[31:0]
+@820
+DUT.rtl.ccsds121_top_wrapper_0.error
+@28
+DUT.rtl.ccsds121_top_wrapper_0.dataout[31:0]
+DUT.rtl.ccsds121_top_wrapper_0.datain[31:0]
+@820
+DUT.rtl.ccsds121_top_wrapper_0.finished
+DUT.rtl.ccsds121_top_wrapper_0.awaitingconfig
+DUT.rtl.ccsds121_top_wrapper_0.fifo_full
+DUT.rtl.ccsds121_top_wrapper_0.ready_ext
+DUT.rtl.ccsds121_top_wrapper_0.dataout_newvalid
+DUT.rtl.ccsds121_top_wrapper_0.datain_newvalid
+DUT.rtl.spw_rxlogic_top_0.rtl.spw_wrap_top_rtg4.rtl.u_spw.rtl.u_spw_tx_flowcontrol.rtl.excess_fcts[39:0]
+DUT.rtl.spw_rxlogic_top_0.rtl.spw_wrap_top_rtg4.rtl.u_spw.rtl.u_spw_tx_flowcontrol.rtl.waiting[39:0]
+@28
+DUT.rtl.spw_rxlogic_top_0.rtl.spw_wrap_top_rtg4.rtl.u_spw.rtl.u_spw_tx_flowcontrol.rtl.fcts[6:0]
+@820
+DUT.rtl.spw_rxlogic_top_0.rtl.spw_wrap_top_rtg4.rtl.u_spw.rtl.u_spw_tx_flowcontrol.fct_received[39:0]
+DUT.rtl.spw_rxlogic_top_0.rtl.spw_wrap_top_rtg4.rtl.u_spw.rtl.u_spw_tx_flowcontrol.rx_enable[39:0]
+DUT.rtl.spw_rxlogic_top_0.rtl.spw_wrap_top_rtg4.rtl.u_spw.rtl.u_spw_tx_flowcontrol.too_many_fcts[39:0]
+DUT.rtl.spw_rxlogic_top_0.rtl.spw_wrap_top_rtg4.rtl.u_spw.rtl.u_spw_ctrl.rtl.state[79:0]
+DUT.rtl.spw_rxlogic_top_0.rtl.spw_wrap_top_rtg4.rtl.u_spw.rtl.u_spw_ctrl.rx_enable[39:0]
+DUT.rtl.spw_rxlogic_top_0.rtl.spw_wrap_top_rtg4.rtl.u_spw.rtl.u_spw_ctrl.link_start[39:0]
+DUT.rtl.spw_rxlogic_top_0.rtl.spw_wrap_top_rtg4.rtl.u_spw.rtl.u_spw_ctrl.link_autostart[39:0]
+DUT.rtl.spw_rxlogic_top_0.rtl.spw_wrap_top_rtg4.rtl.u_spw.rtl.u_spw_ctrl.rx_init[39:0]
+DUT.rtl.spw_rxlogic_top_0.rtl.spw_wrap_top_rtg4.rtl.u_spw.rtl.u_spw_rx_flowcredit_x.rtl.down[39:0]
+DUT.rtl.spw_rxlogic_top_0.rtl.spw_wrap_top_rtg4.rtl.u_spw.rtl.u_spw_rx_flowcredit_x.rtl.up[39:0]
+@28
+DUT.rtl.spw_rxlogic_top_0.rtl.spw_wrap_top_rtg4.rtl.u_spw.rtl.u_spw_rx_flowcredit_x.rtl.fct_to_send[7:1]
+@820
+DUT.rtl.spw_rxlogic_top_0.rtl.spw_wrap_top_rtg4.rtl.u_spw.rtl.u_spw_rx_flowcredit_x.fct_sent[39:0]
+@28
+DUT.rtl.spw_rxlogic_top_0.rtl.spw_wrap_top_rtg4.rtl.u_spw.rtl.u_spw_rx_flowcredit_x.rx_fifo_out_data[8:0]
+@820
+DUT.rtl.spw_rxlogic_top_0.rtl.spw_wrap_top_rtg4.rtl.u_spw.rtl.u_spw_rx_flowcredit_x.tx_can_send_fct[39:0]
+DUT.rtl.spw_rxlogic_top_0.rtl.spw_wrap_top_rtg4.rtl.u_spw.rtl.u_spw_rx_flowcredit_x.send_fct[39:0]
+DUT.rtl.spw_rxlogic_top_0.rtl.spw_wrap_top_rtg4.rtl.u_spw.rtl.u_spw_rx_to_data.rtl.state[63:0]
+DUT.rtl.spw_rxlogic_top_0.rtl.spw_wrap_top_rtg4.rtl.u_spw.rtl.u_spw_rx_to_data.rtl.rx_fct[39:0]
+DUT.rtl.spw_rxlogic_top_0.rtl.spw_wrap_top_rtg4.rtl.u_spw.rtl.u_spw_rx_to_data.rtl.rx_esc_fct[39:0]
+DUT.rtl.spw_rxlogic_top_0.rtl.spw_wrap_top_rtg4.rtl.u_spw.rtl.u_spw_rx_to_data.rtl.rx_nchar[39:0]
+DUT.rtl.spw_rxlogic_top_0.rtl.spw_wrap_top_rtg4.rtl.u_spw.rtl.u_spw_rx_to_data.fct_received[39:0]
+DUT.rtl.spw_rxlogic_top_0.rtl.spw_wrap_top_rtg4.rtl.u_spw.rtl.u_spw_rx_to_data.see_fct[39:0]
+@28
+DUT.rtl.spw_rxlogic_top_0.rtl.spw_wrap_top_rtg4.rtl.u_spw.rtl.u_spw_rx_to_data.rxd[8:0]
+@820
+DUT.rtl.spw_rxlogic_top_0.rtl.spw_wrap_top_rtg4.rtl.u_spw.rtl.u_spw_rx_to_data.error[39:0]
+DUT.rtl.spw_rxlogic_top_0.rtl.spw_wrap_top_rtg4.rtl.u_spw.rtl.u_spw_rx_to_data.see_null[39:0]
+DUT.rtl.spw_rxlogic_top_0.rtl.spw_wrap_top_rtg4.rtl.u_spw.rxs_r
+DUT.rtl.spw_rxlogic_top_0.rtl.spw_wrap_top_rtg4.rtl.u_spw.rxd_r
+DUT.rtl.spw_rxlogic_top_0.rtl.spw_wrap_top_rtg4.rtl.u_spw.txs
+DUT.rtl.spw_rxlogic_top_0.rtl.spw_wrap_top_rtg4.rtl.u_spw.txd
+@22
+DUT.rtl.spw_rxlogic_top_0.rtl.spw_wrap_top_rtg4.rx_rate[15:0]
+@820
+DUT.rtl.spw_rxlogic_top_0.rtl.spw_wrap_top_rtg4.disable
+DUT.rtl.spw_rxlogic_top_0.rtl.spw_wrap_top_rtg4.rx_or
+@28
+DUT.rtl.spw_rxlogic_top_0.rtl.spw_wrap_top_rtg4.rx_time[7:0]
+@820
+DUT.rtl.spw_rxlogic_top_0.rtl.spw_wrap_top_rtg4.rx_ir
+DUT.rtl.spw_rxlogic_top_0.rtl.spw_wrap_top_rtg4.tx_ir
+@22
+DUT.rtl.spw_rxlogic_top_0.rtl.spw_wrap_top_rtg4.tx_data[8:0]
+@28
+DUT.rtl.spw_rxlogic_top_0.rtl.spw_wrap_top_rtg4.tx_time[7:0]
+DUT.rtl.spw_rxlogic_top_0.rtl.spw_wrap_top_rtg4.rx_data[8:0]
+@820
+DUT.rtl.spw_rxlogic_top_0.rtl.spw_wrap_top_rtg4.tx_or
+@28
+DUT.rtl.spw_rxlogic_top_0.rtl.spw_datactrl_fifo.rtl.rx_cnt[31:0]
+@820
+DUT.rtl.spw_rxlogic_top_0.rtl.spw_datactrl_fifo.rtl.s_state[103:0]
+DUT.rtl.spw_rxlogic_top_0.rtl.spw_datactrl_fifo.spw_tx_ir
+DUT.rtl.spw_rxlogic_top_0.rtl.spw_datactrl_fifo.spw_connected
+DUT.rtl.spw_rxlogic_top_0.rtl.spw_datactrl_fifo.spw_rx_ir
+DUT.rtl.spw_rxlogic_top_0.rtl.spw_datactrl_fifo.error_out
+@28
+DUT.rtl.spw_rxlogic_top_0.rtl.spw_datactrl_fifo.rx_data_out[7:0]
+@820
+DUT.rtl.spw_rxlogic_top_0.rtl.spw_datactrl_fifo.ccsds_ready_ext
+@28
+DUT.rtl.spw_rxlogic_top_0.rtl.spw_datactrl_fifo.spw_rx_data[7:0]
+@820
+DUT.rtl.spw_rxlogic_top_0.rtl.spw_datactrl_fifo.write_done
+@22
+DUT.rtl.spw_rxlogic_top_0.rtl.spw_datactrl_fifo.ram_data_in[7:0]
+@820
+DUT.rtl.spw_rxlogic_top_0.rtl.spw_datactrl_fifo.spw_rx_or
+DUT.rtl.spw_rxlogic_top_0.rtl.spw_datactrl_fifo.spw_tx_con
+DUT.rtl.spw_rxlogic_top_0.rtl.spw_datactrl_fifo.rx_data_valid
+DUT.rtl.spw_rxlogic_top_0.rtl.spw_datactrl_fifo.spw_tx_or
+@28
+DUT.rtl.spw_rxlogic_top_0.rtl.spw_datactrl_fifo.spw_tx_data[7:0]
+@820
+DUT.rtl.spw_rxlogic_top_0.rtl.spw_datactrl_fifo.spw_rx_con
+DUT.rtl.spw_rxlogic_top_0.rtl.spw_datactrl_fifo.fifo_ack
+DUT.rtl.spw_rxlogic_top_0.rtl.asym_FIFO_inst_0.arch.en_r_update
+DUT.rtl.spw_rxlogic_top_0.rtl.asym_FIFO_inst_0.arch.rd_chunk_fin
+DUT.rtl.spw_rxlogic_top_0.rtl.asym_FIFO_inst_0.arch.chunk_state[55:0]
+@28
+DUT.rtl.spw_rxlogic_top_0.rtl.asym_FIFO_inst_0.arch.w_pointer[5:0]
+DUT.rtl.spw_rxlogic_top_0.rtl.asym_FIFO_inst_0.arch.r_pointer[5:0]
+@820
+DUT.rtl.spw_rxlogic_top_0.rtl.asym_FIFO_inst_0.ack
+DUT.rtl.spw_rxlogic_top_0.rtl.asym_FIFO_inst_0.empty
+@28
+DUT.rtl.spw_rxlogic_top_0.rtl.asym_FIFO_inst_0.data_in[31:0]
+@820
+DUT.rtl.spw_rxlogic_top_0.rtl.asym_FIFO_inst_0.done
+@28
+DUT.rtl.spw_rxlogic_top_0.rtl.asym_FIFO_inst_0.data_out_chunk[7:0]
+@820
+DUT.rtl.spw_rxlogic_top_0.rtl.asym_FIFO_inst_0.r_update
+DUT.rtl.spw_rxlogic_top_0.rtl.asym_FIFO_inst_0.w_update
+DUT.rtl.spw_rxlogic_top_0.rtl.asym_FIFO_inst_0.full
+DUT.rtl.spw_rxlogic_top_0.rtl.spw_rx_esc_eop
+DUT.rtl.spw_rxlogic_top_0.rtl.spw_rx_esc_esc
+DUT.rtl.spw_rxlogic_top_0.rtl.spw_rx_parity_error
+DUT.rtl.spw_rxlogic_top_0.rtl.spw_rx_esc_eep
+@28
+DUT.rtl.spw_rxlogic_top_0.fifo_datain[31:0]
+@820
+DUT.rtl.spw_rxlogic_top_0.rst_n
+DUT.rtl.spw_rxlogic_top_0.rx_data_valid
+DUT.rtl.spw_rxlogic_top_0.ccsds_ready_ext
+@23
+DUT.rtl.spw_rxlogic_top_0.rx_data_out[7:0]
+@820
+DUT.rtl.spw_rxlogic_top_0.rx_data_ready
+@28
+DUT.rtl.ccsds123_top_wrapper_0.beh.datain_cnt[31:0]
+@820
+DUT.rtl.ccsds123_top_wrapper_0.fifo_full
+@28
+DUT.rtl.ccsds123_top_wrapper_0.nbitsout[5:0]
+@820
+DUT.rtl.ccsds123_top_wrapper_0.finished
+DUT.rtl.ccsds123_top_wrapper_0.eop
+DUT.rtl.ccsds123_top_wrapper_0.error
+@28
+DUT.rtl.ccsds123_top_wrapper_0.dataout[31:0]
+@820
+DUT.rtl.ccsds123_top_wrapper_0.ready
+DUT.rtl.ccsds123_top_wrapper_0.rst_n
+@28
+DUT.rtl.ccsds123_top_wrapper_0.datain[7:0]
+@820
+DUT.rtl.ccsds123_top_wrapper_0.forcestop
+DUT.rtl.ccsds123_top_wrapper_0.awaitingconfig
+DUT.rtl.ccsds123_top_wrapper_0.isheaderout
+DUT.rtl.ccsds123_top_wrapper_0.datain_newvalid
+DUT.rtl.Debounce_Single_Input_0.reset_n_spw
+DUT.rtl.Debounce_Single_Input_0.rst_n_spw
+DUT.rtl.Debounce_Single_Input_0.rst_n
+DUT.rtl.Debounce_Single_Input_0.spw_fmc_en
+DUT.rtl.Debounce_Single_Input_0.reset_n
+[pattern_trace] 1
+[pattern_trace] 0
