@@ -1,0 +1,25 @@
+vsim -t 1ns work.dut_spwfifo_tb
+add wave -position end  sim:/dut_spwfifo_tb/uut/ccsds123_top_wrapper_0/Ready
+add wave -position end  sim:/dut_spwfifo_tb/uut/ccsds123_top_wrapper_0/FIFO_Full
+add wave -position end  sim:/dut_spwfifo_tb/uut/ccsds123_top_wrapper_0/EOP
+add wave -position end  sim:/dut_spwfifo_tb/uut/ccsds123_top_wrapper_0/Finished
+add wave -position 1  sim:/dut_spwfifo_tb/uut/ccsds123_top_wrapper_0/DataIn
+add wave -position 2  sim:/dut_spwfifo_tb/uut/ccsds123_top_wrapper_0/DataIn_NewValid
+add wave -position end  sim:/dut_spwfifo_tb/uut/ccsds121_top_wrapper_0/IsHeaderIn
+add wave -position end  sim:/dut_spwfifo_tb/uut/ccsds121_top_wrapper_0/DataOut
+add wave -position end  sim:/dut_spwfifo_tb/uut/ccsds121_top_wrapper_0/DataOut_NewValid
+add wave -position end  sim:/dut_spwfifo_tb/uut/ccsds121_top_wrapper_0/FIFO_Full
+add wave -position end  sim:/dut_spwfifo_tb/uut/ccsds121_top_wrapper_0/Finished
+add wave -position end  sim:/dut_spwfifo_tb/uut/ccsds121_top_wrapper_0/Error
+add wave -position end  sim:/dut_spwfifo_tb/uut/spw_rxlogic_top_0/spw_wrap_top_rtg4/Tx_data
+add wave -position end  sim:/dut_spwfifo_tb/uut/spw_rxlogic_top_0/spw_wrap_top_rtg4/Tx_OR
+add wave -position end  sim:/dut_spwfifo_tb/uut/spw_rxlogic_top_0/spw_wrap_top_rtg4/Tx_IR
+add wave -position end  sim:/dut_spwfifo_tb/uut/spw_rxlogic_top_0/spw_wrap_top_rtg4/Rx_data
+add wave -position end  sim:/dut_spwfifo_tb/uut/spw_rxlogic_top_0/spw_wrap_top_rtg4/Rx_OR
+add wave -position end  sim:/dut_spwfifo_tb/uut/spw_rxlogic_top_0/spw_wrap_top_rtg4/Rx_IR
+add wave -position end  sim:/dut_spwfifo_tb/uut/spw_rxlogic_top_0/spw_wrap_top_rtg4/Connected
+add wave -position end  sim:/dut_spwfifo_tb/uut/spw_rxlogic_top_0/spw_datactrl_fifo/s_state
+add wave -position end  sim:/dut_spwfifo_tb/uut/spw_rxlogic_top_0/spw_datactrl_fifo/spw_Tx_data
+add wave -position end  sim:/dut_spwfifo_tb/uut/spw_rxlogic_top_0/spw_datactrl_fifo/spw_Rx_data
+add wave -position end  sim:/dut_spwfifo_tb/uut/spw_rxlogic_top_0/spw_datactrl_fifo/fifo_full
+add wave -position end  sim:/dut_spwfifo_tb/uut/spw_rxlogic_top_0/spw_datactrl_fifo/fifo_empty
