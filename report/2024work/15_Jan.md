@@ -21,3 +21,26 @@ router_fifo_ctrl_top continue
 # 21.01
 
 1. 测试方案：先编写testbench 测试router_fifo_ctrl_top 功能是否正常
+
+# 23.01
+
+1. 在router_fifo_spwctrl 中 添加 spw
+2. vsim work.router_fifo_ctrl_top_tb -vopt -t 1ns -voptargs="+acc"
+
+# 25.01
+
+1. 在router_fifo_ controller 中 有spw_connected input, 在router 中有port_connected 信号， 将fifo port 相关port 的connected信号与之 相连
+
+# 30.01
+
+1. router_fifo_controller 先会在reset 后进入ready state，然后当fifo_empty =0 and spw_connected = 1  进入addr_send state
+   1. 观察到状态机没进入下一个状态的原因是spw_Connected 一直为低，
+   2. 但逻辑有一个硬伤，这个controller是根据spw_controller 修改的，如果是physical port, connected信号是output, 可是fifo_connected 信号是input signal
+   3. fifo数据需要先从 fifo port receive, then data enter RX controller, processes the received packets, extracts destination address, requests routing table arbitration, then transfer via Crossbar Switch, establishes connection based on the routing table, transfer data from source port to destination port, then sends data through SpaceWire codec
+   4. 所有需要在controller中，即使fifo port 传输的数据，第一个也需要是地址。
+   5. 但根据项目方案应该是spw port 先传输数据，然后才使用FIFO port 传输数据
+   6. according to Venspec design, 通过FIFO port transmit 的数据实际上是传输给port1
+
+# 01.02
+
+1. router_fifo_ctrl_top_tb 首先是注意router 中的connect 信号， 然后是VHDL在使用external signal时， each name in the path should be the instance label
