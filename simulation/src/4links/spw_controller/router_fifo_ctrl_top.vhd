@@ -122,6 +122,7 @@ begin
     ram_enable_tx <= ram_enable;
 
     router_connected <= router_connect;
+    spw_Connected    <= router_connect(1);                                  -- router controller connected signal from fifo-spw port
 
     router_inst: entity work.router_top_level_RTG4(rtl)                 	-- instantiate SpaceWire Router 
 	generic map(
