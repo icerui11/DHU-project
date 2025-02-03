@@ -62,9 +62,7 @@ port (
 
     -- Data Input Interface
     DataIn_shyloc    :   in std_logic_vector (shyloc_123.ccsds123_parameters.D_GEN-1 downto 0);                 --from the input interface 
-    DataIn_NewValid  :   in std_logic;                          --! Flag to validate input signals.
-    IsHeaderIn       :   in std_logic;                          --! The data in DataIn corresponds to the header of a pre-processor block.
-    NbitsIn          :   in Std_Logic_Vector (5 downto 0);      --! Number of valid bits in the input header.      
+    DataIn_NewValid  :   in std_logic;                          --! Flag to validate input signals.    
     
     -- Data Output Interface CCSDS121
     DataOut           : out std_logic_vector (shyloc_121.ccsds121_parameters.W_BUFFER_GEN-1 downto 0);
@@ -74,7 +72,7 @@ port (
 
     -- CCSDS123 IP Core Interface
     ForceStop         : in std_logic;             --! Force the stop of the compression.
-    AwaitingConfig    : out std_logic;             --! The IP core is waiting to receive the configuration.
+    AwaitingConfig    : out std_logic;             --! The IP core is waiting to receive the configuration.from 123
     Ready             : out std_logic;             --! Configuration has been received and the IP is ready to receive new samples.
     FIFO_Full         : out std_logic;             --! The input FIFO is full.
     EOP               : out std_logic;             --! Compression of last sample has started.
@@ -118,7 +116,7 @@ architecture arch of ShyLoc_top_Wrapper is
 
       DataIn           => DataIn_shyloc,                            --from the input interface 
       DataIn_NewValid  => DataIn_NewValid,                          --from the entity interface 
-      AwaitingConfig   => open, 
+      AwaitingConfig   => AwaitingConfig, 
 
       Ready            => Ready,                                    -- from the entity interface 
       FIFO_Full        => FIFO_Full, 
