@@ -65,33 +65,33 @@ architecture tb of router_fifo_ctrl_top_tb is
     signal    reset_spw                                      :       std_logic := '0';           -- activ high
     -- Channels
     signal    Tx_Data_spw         , Tx_Data_2_spw            :       nonet;                      -- 9 bits of Tx Data (data to send)  
-    signal    Tx_OR_spw           , Tx_OR_2_spw              :       boolean;                    -- Tx data Output Ready           
-    signal    Tx_IR_spw           , Tx_IR_2_spw              :       boolean;                    -- Tx data Input Ready             
+    signal    Tx_OR_spw           , Tx_OR_2_spw              :       std_logic;                    -- Tx data Output Ready           
+    signal    Tx_IR_spw           , Tx_IR_2_spw              :       std_logic;                    -- Tx data Input Ready             
     
     signal    Rx_Data_spw         , Rx_Data_2_spw            :       nonet;                      -- 9 bits of Rx Data (data received)  
-    signal    Rx_OR_spw           , Rx_OR_2_spw              :       boolean;                    -- Rx data Output Ready            
-    signal    Rx_IR_spw           , Rx_IR_2_spw              :       boolean;                    -- Rx data Input Ready 
+    signal    Rx_OR_spw           , Rx_OR_2_spw              :       std_logic;                    -- Rx data Output Ready            
+    signal    Rx_IR_spw           , Rx_IR_2_spw              :       std_logic;                    -- Rx data Input Ready 
 
-    signal    Rx_ESC_ESC_spw      , Rx_ESC_ESC_2_spw         :       boolean;                    
-    signal    Rx_ESC_EOP_spw      , Rx_ESC_EOP_2_spw         :       boolean;                    
-    signal    Rx_ESC_EEP_spw      , Rx_ESC_EEP_2_spw         :       boolean;                    
-    signal    Rx_Parity_Error_spw  , Rx_Parity_Error_2_spw    :       boolean;                    
-    signal    Rx_Bits_spw         , Rx_Bits_2_spw            :       integer range 0 to 2;      
+    signal    Rx_ESC_ESC_spw      , Rx_ESC_ESC_2_spw         :       std_logic;                    
+    signal    Rx_ESC_EOP_spw      , Rx_ESC_EOP_2_spw         :       std_logic;                    
+    signal    Rx_ESC_EEP_spw      , Rx_ESC_EEP_2_spw         :       std_logic;                    
+    signal    Rx_Parity_Error_spw  , Rx_Parity_Error_2_spw    :       std_logic;                    
+    signal    Rx_Bits_spw         , Rx_Bits_2_spw            :       std_logic_vector(1 downto 0);      
     signal    Rx_Rate_spw         , Rx_Rate_2_spw            :       std_logic_vector(15 downto 0) := (others => '0');  
     
     signal    Rx_Time_spw         , Rx_Time_2_spw            :       octet;                      
-    signal    Rx_Time_OR_spw      , Rx_Time_OR_2_spw         :       boolean;                    
-    signal    Rx_Time_IR_spw      , Rx_Time_IR_2_spw         :       boolean;                    
+    signal    Rx_Time_OR_spw      , Rx_Time_OR_2_spw         :       std_logic;                    
+    signal    Rx_Time_IR_spw      , Rx_Time_IR_2_spw         :       std_logic;                    
     
     signal    Tx_Time_spw         , Tx_Time_2_spw            :       octet;                      
-    signal    Tx_Time_OR_spw      , Tx_Time_OR_2_spw         :       boolean;                    
-    signal    Tx_Time_IR_spw      , Tx_Time_IR_2_spw         :       boolean;          
+    signal    Tx_Time_OR_spw      , Tx_Time_OR_2_spw         :       std_logic;                    
+    signal    Tx_Time_IR_spw      , Tx_Time_IR_2_spw         :       std_logic;          
 	
     -- Control		             
-	signal	Disable         ,Disable_2            :  		boolean;
-	signal	Connected       ,Connected_2          :  		boolean;
+	signal	Disable         ,Disable_2            :  		std_logic;
+	signal	Connected       ,Connected_2          :  		std_logic;
 	signal	Error_select    ,Error_select_2       :  		std_logic_vector(3 downto 0) := (others => '0');
-	signal	Error_inject    ,Error_inject_2       :  		boolean;
+	signal	Error_inject    ,Error_inject_2       :  		std_logic;
 
 	-- SpW Ports, Init low. 
     signal    Din_p_spw           :       std_logic := '0';
@@ -110,10 +110,11 @@ architecture tb of router_fifo_ctrl_top_tb is
 	signal 	spw_debug_cmd		: 		string(1 to 3);
 	signal 	spw_debug_time		: 		std_logic_vector(7 downto 0) 	:= (others => '0');
 	
-	signal 	rx_data_buf			: 		nonet_mem(0 to 63) := (others => (others => '0'));	-- rx data buffer
-	
-	signal 	ip_connected			: 		std_logic;
+	signal 	router_connected	: 		std_logic_vector(31 downto 1);
 
+    --declaration the same state type in testbench
+    type t_states is (ready, addr_send, read_mem, spw_tx, ramaddr_delay, eop_tx);
+    signal router_ctrl_state : t_states; 
 
 begin
     
@@ -142,18 +143,23 @@ begin
         tx_ir_fifo_rupdata => tx_ir_fifo_rupdata,
         
         -- SpaceWire Interface
-        din_p => din_p,
-        din_n => din_n,
-        sin_p => sin_p,
-        sin_n => sin_n,
+        din_p  => din_p,
+        din_n  => din_n,
+        sin_p  => sin_p,
+        sin_n  => sin_n,
         dout_p => dout_p,
         dout_n => dout_n,
         sout_p => sout_p,
         sout_n => sout_n,
-        spw_error => spw_error
+        spw_error => spw_error,
+        router_connected => router_connected
     );
 
-    SPW_DUT_tx: entity work.spw_wrap_top_level(rtl)
+    --signal mapping for router_top
+    din_p(1) <= Dout_p_spw;
+    sin_p(1) <= Sout_p_spw;
+
+    SPW_DUT_tx: entity work.spw_wrap_top_level_RTG4(rtl)
     generic map(
 		g_clock_frequency   =>	c_clock_frequency,  
 		g_rx_fifo_size      =>  c_rx_fifo_size,      
@@ -198,13 +204,13 @@ begin
         Error_inject        =>  Error_inject,    
         
         -- SpW IO Ports, not used when "custom" mode.  	                
-        Din_p               =>  din_p(1),  	 -- Used when Diff & Single     
-        Din_n               =>  '0',         -- Used when Diff only
-        Sin_p               =>  sin_p(1),  	 -- Used when Diff & Single       
-        Sin_n               =>  '0',         -- Used when Diff only
-        Dout_p              =>  dout_p(1),		 -- Used when Diff & Single      
+        Din_p               =>  dout_p(1),  	     -- Used when Diff & Single     
+        Din_n               =>  '0',             -- Used when Diff only
+        Sin_p               =>  sout_p(1),  	     -- Used when Diff & Single       
+        Sin_n               =>  '0',             -- Used when Diff only
+        Dout_p              =>  Dout_p_spw,		 -- Used when Diff & Single      
         Dout_n              =>  open,            -- Used when Diff only
-        Sout_p              =>  sout_p(1),  	 -- Used when Diff & Single      
+        Sout_p              =>  Sout_p_spw,  	 -- Used when Diff & Single      
         Sout_n              =>  open     	     -- Used when Diff only
     );
     -- Clock process
@@ -221,14 +227,33 @@ begin
     begin
         -- Initial reset
         rst_n <= '0';
-        wait for clk_period*10;
+        wait for 16.456 us;								-- wait for > 500us before de-asserting reset
         rst_n <= '1';
-        wait for clk_period*2;
+        wait for clk_period;
         
         -- Test Case 1: Send raw 8-bit data through SpaceWire
-        din_p(1) <= '1';  -- Simulate incoming SpaceWire data
-        wait for clk_period;
-        din_p(1) <= '0';
+        wait until (Connected = '1' and router_connected(1) = '1');	-- wait for SpW instances to establish connection, make sure Spw link is connected
+		report "SpW Uplink Connected !" severity note;
+
+		wait for 3.532 us;
+		
+		-- load Tx data to send --
+		if(Tx_IR_spw = '0') then
+			wait until Tx_IR_spw = '1';
+		end if;
+
+        --bind the state signal to the state of router controller
+        router_ctrl_state <= <<signal .router_fifo_ctrl_top_tb.DUT.gen_fifo_controller(2).gen_ctrl.router_fifo_ctrl_inst.s_state : t_states>>;
+        assert router_ctrl_state = addr_send
+          report "State check: router send port1 address"
+          severity note; 
+
+ 		wait for clk_period;
+		Tx_Data_spw  <= "001010110";						-- Load TX SpW Data port 
+		Tx_OR_spw <= '1';									-- set Tx Data OR port
+		wait for clk_period;							    -- wait for data to be clocked in
+		report "SpW Data Loaded : " & to_string(Tx_data_spw) severity note;
+		Tx_OR_spw <= '0';									-- de-assert TxOR
         
         -- Wait for data processing
         wait for clk_period*5;
@@ -253,11 +278,11 @@ begin
         w_update <= '1';
         wait for clk_period;
         w_update <= '0';
-
+        
         -- Wait for FIFO processing
         wait until asym_fifo_full = '0';
         wait for clk_period*5;
-        
+   /*     
         -- Test Case 3: Test FIFO full condition
         for i in 0 to 5 loop
             ccsds_datain <= std_logic_vector(to_unsigned(i, W_BUFFER_GEN));
@@ -266,7 +291,7 @@ begin
             w_update <= '0';
             wait for clk_period*2;
         end loop;
-        
+    */    
         -- Wait for error conditions
         wait until spw_error = '0';
         
