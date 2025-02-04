@@ -27,16 +27,16 @@ entity asym_FIFO is
     rst_n : in std_logic;     --! Reset signal. Active low.
     
     -- Control Interface
-    clr     : in std_logic;   --! Clear signal.
+    clr       : in std_logic;   --! Clear signal.
     w_update  : in std_logic;   --! Write request.
     r_update  : in std_logic;   --! Read request.
-    hfull   : out std_logic;  --! Flag to indicate half full FIFO.
-    empty   : out std_logic;  --! Flag to indicate empty FIFO.
-    full    : out std_logic;  --! Flag to indicate full FIFO.
-    afull   : out std_logic;  --! Flag to indicate almost full FIFO.
+    hfull     : out std_logic;  --! Flag to indicate half full FIFO.
+    empty     : out std_logic;  --! Flag to indicate empty FIFO.
+    full      : out std_logic;  --! Flag to indicate full FIFO.
+    afull     : out std_logic;  --! Flag to indicate almost full FIFO.
     aempty    : out std_logic;  --! Flag to indicate almost empty FIFO.
-    ack     : out std_logic;  --! Acknowledge signal.
-    done    : in std_logic;   --! Done signal.
+    ack       : out std_logic;  --! Acknowledge signal.
+    done      : in std_logic;   --! Done signal.
     -- Data Interface
     data_in   : in std_logic_vector(W_Size-1 downto 0);  --! Data to store in the FIFO.
     data_out_chunk  : out std_logic_vector(R_Size-1 downto 0)  --! Read data from the FIFO.
@@ -59,8 +59,8 @@ architecture arch of asym_FIFO is
   -- signals to perform read and write operations 
   signal r_pointer  : unsigned(W_ADDR downto 0);
   signal w_pointer  : unsigned(W_ADDR downto 0);
-  signal we_ram   : std_logic;
-  signal re_ram   : std_logic;
+  signal we_ram     : std_logic;
+  signal re_ram     : std_logic;
   signal en_rami    : std_logic;
   signal rd_chunk_fin : std_logic;
   signal dataout_fifo : std_logic_vector(W_Size-1 downto 0);
