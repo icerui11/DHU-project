@@ -41,6 +41,12 @@ router_fifo_ctrl_top continue
    5. 但根据项目方案应该是spw port 先传输数据，然后才使用FIFO port 传输数据
    6. according to Venspec design, 通过FIFO port transmit 的数据实际上是传输给port1
 
-# 01.02
+# 01.02-03.02
 
 1. router_fifo_ctrl_top_tb 首先是注意router 中的connect 信号， 然后是VHDL在使用external signal时， each name in the path should be the instance label
+2. 因为router_fifo_ctrl_top 中直接将router中的port_Connected 与 controller所需要的 spw_connected input 相连，所以在router_fifo_ctrl_top 的port_Connected signal can be marked as unused
+
+   1. 32bit的ccsds_datain 只连接到router 的FIFO port
+   2. w_update connect with ccsds dataout newvalid
+
+   w_update         : in std_logic;                                                                    --connect with ccsds dataout newvalid
