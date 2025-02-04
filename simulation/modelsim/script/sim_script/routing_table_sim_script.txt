@@ -1,0 +1,68 @@
+vsim work.router_tb_ip_test_new {-voptargs=work.router_top_level_tb +acc} -t 1ns
+
+add wave -position end  sim:/router_tb_ip_test_new/router_inst/priority_gen/rt_arbiter_inst/shadow_rout_table_mem/data_width
+add wave -position end  sim:/router_tb_ip_test_new/router_inst/priority_gen/rt_arbiter_inst/shadow_rout_table_mem/addr_width
+add wave -position end  sim:/router_tb_ip_test_new/router_inst/priority_gen/rt_arbiter_inst/shadow_rout_table_mem/clk_in
+add wave -position end  sim:/router_tb_ip_test_new/router_inst/priority_gen/rt_arbiter_inst/shadow_rout_table_mem/rst_in
+add wave -position end  sim:/router_tb_ip_test_new/router_inst/priority_gen/rt_arbiter_inst/shadow_rout_table_mem/enable_in
+add wave -position end  sim:/router_tb_ip_test_new/router_inst/priority_gen/rt_arbiter_inst/shadow_rout_table_mem/wr_en
+add wave -position end  sim:/router_tb_ip_test_new/router_inst/priority_gen/rt_arbiter_inst/shadow_rout_table_mem/wr_addr
+add wave -position end  sim:/router_tb_ip_test_new/router_inst/priority_gen/rt_arbiter_inst/shadow_rout_table_mem/wr_data
+add wave -position end  sim:/router_tb_ip_test_new/router_inst/priority_gen/rt_arbiter_inst/shadow_rout_table_mem/rd_addr
+add wave -position end  sim:/router_tb_ip_test_new/router_inst/priority_gen/rt_arbiter_inst/shadow_rout_table_mem/rd_data
+add wave -position end  sim:/router_tb_ip_test_new/router_inst/priority_gen/rt_arbiter_inst/shadow_rout_table_mem/rt_state
+add wave -position end  sim:/router_tb_ip_test_new/router_inst/priority_gen/rt_arbiter_inst/shadow_rout_table_mem/s_ram
+add wave -position end  sim:/router_tb_ip_test_new/router_inst/priority_gen/rt_arbiter_inst/shadow_rout_table_mem/data_reg
+add wave -position end  sim:/router_tb_ip_test_new/router_inst/priority_gen/rt_arbiter_inst/shadow_rout_table_mem/wr_en_reg
+add wave -position end  sim:/router_tb_ip_test_new/router_inst/priority_gen/rt_arbiter_inst/shadow_rout_table_mem/wr_addr_reg
+add wave -position end  sim:/router_tb_ip_test_new/router_inst/priority_gen/rt_arbiter_inst/shadow_rout_table_mem/wr_data_reg
+add wave -position end  sim:/router_tb_ip_test_new/router_inst/priority_gen/rt_arbiter_inst/shadow_rout_table_mem/rd_data_reg
+add wave -position end  sim:/router_tb_ip_test_new/router_inst/priority_gen/rt_arbiter_inst/shadow_rout_table_mem/shift
+add wave -position end  sim:/router_tb_ip_test_new/router_inst/priority_gen/rt_arbiter_inst/shadow_rout_table_mem/init_done_r
+add wave -position end  sim:/router_tb_ip_test_new/router_inst/priority_gen/rt_arbiter_inst/shadow_rout_table_mem/init_fsm/element
+add wave -position end  sim:/router_tb_ip_test_new/router_inst/priority_gen/rt_arbiter_inst/shadow_rout_table_mem/init_fsm/init_wr_en
+add wave -position end  sim:/router_tb_ip_test_new/router_inst/priority_gen/rt_arbiter_inst/shadow_rout_table_mem/init_fsm/init_wr_addr
+add wave -position end  sim:/router_tb_ip_test_new/router_inst/priority_gen/rt_arbiter_inst/shadow_rout_table_mem/init_fsm/init_wr_data
+add wave -position end  sim:/router_tb_ip_test_new/router_inst/priority_gen/rt_arbiter_inst/shadow_rout_table_mem/init_fsm/chunk
+add wave -position end  sim:/router_tb_ip_test_new/router_inst/priority_gen/rt_arbiter_inst/shadow_rout_table_mem/index
+
+add wave -position end  sim:/router_tb_ip_test_new/router_inst/priority_gen/rt_arbiter_inst/rout_table_mem/mixed_width_ram/clk_in
+add wave -position end  sim:/router_tb_ip_test_new/router_inst/priority_gen/rt_arbiter_inst/rout_table_mem/mixed_width_ram/wr_en
+add wave -position end  sim:/router_tb_ip_test_new/router_inst/priority_gen/rt_arbiter_inst/rout_table_mem/mixed_width_ram/r_addr
+add wave -position end  sim:/router_tb_ip_test_new/router_inst/priority_gen/rt_arbiter_inst/rout_table_mem/mixed_width_ram/w_addr
+add wave -position end  sim:/router_tb_ip_test_new/router_inst/priority_gen/rt_arbiter_inst/rout_table_mem/mixed_width_ram/w_data
+add wave -position end  sim:/router_tb_ip_test_new/router_inst/priority_gen/rt_arbiter_inst/rout_table_mem/mixed_width_ram/r_data
+add wave -position end  sim:/router_tb_ip_test_new/router_inst/priority_gen/rt_arbiter_inst/rout_table_mem/mixed_width_ram/r_addr_int
+add wave -position end  sim:/router_tb_ip_test_new/router_inst/priority_gen/rt_arbiter_inst/rout_table_mem/mixed_width_ram/w_addr_int
+add wave -position end  sim:/router_tb_ip_test_new/router_inst/priority_gen/rt_arbiter_inst/rout_table_mem/w_addr
+add wave -position end  sim:/router_tb_ip_test_new/router_inst/priority_gen/rt_arbiter_inst/rout_table_mem/w_data
+add wave -position end  sim:/router_tb_ip_test_new/router_inst/priority_gen/rt_arbiter_inst/rout_table_mem/r_addr
+add wave -position end  sim:/router_tb_ip_test_new/router_inst/priority_gen/rt_arbiter_inst/rout_table_mem/r_data
+add wave -position end  sim:/router_tb_ip_test_new/router_inst/priority_gen/rt_arbiter_inst/rout_table_mem/rt_state
+add wave -position end  sim:/router_tb_ip_test_new/router_inst/priority_gen/rt_arbiter_inst/rout_table_mem/s_ram
+add wave -position end  sim:/router_tb_ip_test_new/router_inst/priority_gen/rt_arbiter_inst/rout_table_mem/data_reg
+add wave -position end  sim:/router_tb_ip_test_new/router_inst/priority_gen/rt_arbiter_inst/rout_table_mem/wr_en_reg
+add wave -position end  sim:/router_tb_ip_test_new/router_inst/priority_gen/rt_arbiter_inst/rout_table_mem/wr_addr_reg
+add wave -position end  sim:/router_tb_ip_test_new/router_inst/priority_gen/rt_arbiter_inst/rout_table_mem/wr_data_reg
+add wave -position end  sim:/router_tb_ip_test_new/router_inst/priority_gen/rt_arbiter_inst/rout_table_mem/rd_data_reg
+add wave -position end  sim:/router_tb_ip_test_new/router_inst/priority_gen/rt_arbiter_inst/rout_table_mem/index
+add wave -position end  sim:/router_tb_ip_test_new/router_inst/priority_gen/rt_arbiter_inst/rout_table_mem/init_done_r
+add wave -position end  sim:/router_tb_ip_test_new/router_inst/priority_gen/rt_arbiter_inst/rout_table_mem/w_addr_width
+add wave -position end  sim:/router_tb_ip_test_new/router_inst/priority_gen/rt_arbiter_inst/rout_table_mem/w_data_width
+add wave -position end  sim:/router_tb_ip_test_new/router_inst/priority_gen/rt_arbiter_inst/rout_table_mem/r_addr_width
+add wave -position end  sim:/router_tb_ip_test_new/router_inst/priority_gen/rt_arbiter_inst/rout_table_mem/r_data_width
+
+
+
+===
+vsim work.router_tb_ip_test_new {-voptargs=work.router_top_level_tb +acc} -t 1ns
+add wave -position end  sim:/router_tb_ip_test_new/router_inst/priority_gen/rt_arbiter_inst/shadow_rout_table_mem/clk_in
+add wave -position end  sim:/router_tb_ip_test_new/router_inst/priority_gen/rt_arbiter_inst/shadow_rout_table_mem/enable_in
+add wave -position end  sim:/router_tb_ip_test_new/router_inst/priority_gen/rt_arbiter_inst/shadow_rout_table_mem/rst_in
+add wave -position end  sim:/router_tb_ip_test_new/router_inst/priority_gen/rt_arbiter_inst/shadow_rout_table_mem/wr_en
+add wave -position end  sim:/router_tb_ip_test_new/router_inst/priority_gen/rt_arbiter_inst/shadow_rout_table_mem/wr_addr
+add wave -position end  sim:/router_tb_ip_test_new/router_inst/priority_gen/rt_arbiter_inst/shadow_rout_table_mem/wr_data
+add wave -position end  sim:/router_tb_ip_test_new/router_inst/priority_gen/rt_arbiter_inst/shadow_rout_table_mem/rd_addr
+add wave -position end  sim:/router_tb_ip_test_new/router_inst/priority_gen/rt_arbiter_inst/shadow_rout_table_mem/rd_data
+add wave -position end  sim:/router_tb_ip_test_new/router_inst/priority_gen/rt_arbiter_inst/shadow_rout_table_mem/s_ram
+add wave -position end  sim:/router_tb_ip_test_new/router_inst/priority_gen/rt_arbiter_inst/shadow_rout_table_mem/#CONSTANT#:element

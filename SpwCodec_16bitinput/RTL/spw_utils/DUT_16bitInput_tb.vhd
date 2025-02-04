@@ -177,7 +177,7 @@ begin
         Rst_N <= '0';
        wait for 6.4 us;      --from ErrorReset to ErrorWait
        enable <= '1';
-       wait for 12.9 us;     -- Hold SPW reset state for 12.8 us   from ErrorWait to Ready 
+ --      wait for 12.9 us;     -- Hold SPW reset state for 12.8 us   from ErrorWait to Ready 
         rst_n_spw <= '1';
         rx_cmd_ready <= '1';
         rx_data_ready <= '1';

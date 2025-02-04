@@ -1,0 +1,14 @@
+add wave -position 0  sim:/router_top_level_tb/clk_in
+add wave -position 1  sim:/router_top_level_tb/router_clk
+add wave -position 2  sim:/router_top_level_tb/rst_in
+add wave -position end  sim:/router_top_level_tb/Sin_p(1)
+add wave -position end  sim:/router_top_level_tb/Dout_p(1)
+add wave -position end  sim:/router_top_level_tb/Dout_n(1)
+add wave -position end  sim:/router_top_level_tb/Sout_p(1)
+add wave -position end  sim:/router_top_level_tb/check_okay(0)
+add wave -position end  sim:/router_top_level_tb/check_okay(1)
+add wave -position end  sim:/router_top_level_tb/codecs(1)
+add wave -position end  sim:/router_top_level_tb/spw_debugs(1)
+add wave -position end  sim:/router_top_level_tb/spw_debugs_in(1)
+add wave -position end  sim:/router_top_level_tb/router_clk_p
+add wave -position end  sim:/router_top_level_tb/clk_period
