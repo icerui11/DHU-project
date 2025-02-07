@@ -17,7 +17,7 @@ architecture tb of router_fifo_ctrl_top_tb is
 
     -- Constants
     constant clk_period   : time := 10 ns;
-    constant g_num_ports  : natural := 3;
+    constant g_num_ports  : natural range 1 to 32 := c_num_ports ;      --  defined in package    
     constant g_data_width : integer := 8;
     constant g_addr_width : integer := 9;
     
@@ -61,8 +61,12 @@ architecture tb of router_fifo_ctrl_top_tb is
     
     signal spw_error : std_logic;
 
+    -- create signal arrary for spw tx
+    signal codecs                 : r_codec_interface_array(1 to c_num_ports-1) := (others => c_codec_interface);
+    signal reset_spw                                      :       std_logic := '0';           -- activ high
+/*
     --spw signals
-    signal    reset_spw                                      :       std_logic := '0';           -- activ high
+
     -- Channels
     signal    Tx_Data_spw         , Tx_Data_2_spw            :       nonet;                      -- 9 bits of Tx Data (data to send)  
     signal    Tx_OR_spw           , Tx_OR_2_spw              :       std_logic;                    -- Tx data Output Ready           
@@ -102,7 +106,7 @@ architecture tb of router_fifo_ctrl_top_tb is
     signal    Dout_n_spw          :       std_logic := '0';
     signal    Sout_p_spw          :       std_logic := '0';
     signal    Sout_n_spw          :       std_logic := '0';
-    
+ */   
 	
 	signal 	spw_debug_tx		: 		std_logic_vector(8 downto 0)	:= (others => '0');
 	signal 	spw_debug_raw		: 		std_logic_vector(13 downto 0)	:= (others => '0');
@@ -154,65 +158,67 @@ begin
         spw_error => spw_error,
         router_connected => router_connected
     );
+    
 
     --signal mapping for router_top
-    din_p(1) <= Dout_p_spw;
-    sin_p(1) <= Sout_p_spw;
+ --   din_p(1) <= Dout_p_spw;
+ --   sin_p(1) <= Sout_p_spw;
 
-    SPW_DUT_tx: entity work.spw_wrap_top_level_RTG4(rtl)
-    generic map(
-		g_clock_frequency   =>	c_clock_frequency,  
-		g_rx_fifo_size      =>  c_rx_fifo_size,      
-		g_tx_fifo_size      =>  c_tx_fifo_size,      
-		g_mode				=>  c_mode				
-	)
-	port map( 
-		-- clock & reset signals
-		clock               =>	clk,					                 
-		reset               =>  reset_spw, 
-		
-        -- Data Channels          
-        Tx_data             =>  Tx_Data_spw,                                                -- transmit raw data
-        Tx_OR               =>  Tx_OR_spw,           
-        Tx_IR               =>  Tx_IR_spw,           
-      
-        Rx_data             =>  Rx_Data_spw,         
-        Rx_OR               =>  Rx_OR_spw,           
-        Rx_IR               =>  Rx_IR_spw,           
-        
-        -- Error Channels 
-        Rx_ESC_ESC          =>  Rx_ESC_ESC_spw,      
-        Rx_ESC_EOP          =>  Rx_ESC_EOP_spw,      
-        Rx_ESC_EEP          =>  Rx_ESC_EEP_spw,      
-        Rx_Parity_error     =>  Rx_Parity_Error_spw, 
-        Rx_bits             =>  Rx_Bits_spw,         
-        Rx_rate             =>  Rx_Rate_spw,         
-   
-        -- Time Code Channels
-        Rx_Time             =>  Rx_Time_spw,         
-        Rx_Time_OR          =>  Rx_Time_OR_spw,      
-        Rx_Time_IR          =>  Rx_Time_IR_spw,      
- 
-        Tx_Time             =>  Tx_Time_spw,         
-        Tx_Time_OR          =>  Tx_Time_OR_spw,      
-        Tx_Time_IR          =>  Tx_Time_IR_spw,      
+    gen_dut_tx: for i in 1 to g_num_ports-1 generate
+      gen_spw_tx: if c_fifo_ports(i) = '0' generate
+       SPW_inst: entity work.spw_wrap_top_level_RTG4(rtl)
+        generic map(
+            g_clock_frequency   =>	c_clock_frequency,  
+            g_rx_fifo_size      =>  c_rx_fifo_size,      
+            g_tx_fifo_size      =>  c_tx_fifo_size,      
+            g_mode				=>  c_mode				
+        )
+        port map( 
+            clock                => clk 						,
+            reset                =>	reset_spw    				,
+
+            -- Channels
+            Tx_data              => codecs(i).Tx_data			,
+            Tx_OR                =>	codecs(i).Tx_OR             ,
+            Tx_IR                => codecs(i).Tx_IR             ,
+            
+            Rx_data              =>	codecs(i).Rx_data           ,
+            Rx_OR                => codecs(i).Rx_OR             ,
+            Rx_IR                => codecs(i).Rx_IR             ,
+            
+            Rx_ESC_ESC           => codecs(i).Rx_ESC_ESC        ,
+            Rx_ESC_EOP           => codecs(i).Rx_ESC_EOP        ,
+            Rx_ESC_EEP           => codecs(i).Rx_ESC_EEP        ,
+            Rx_Parity_error      => codecs(i).Rx_Parity_error   ,
+            Rx_bits              => codecs(i).Rx_bits           ,
+            Rx_rate              => codecs(i).Rx_rate           ,
+            
+            Rx_Time              => codecs(i).Rx_Time           ,
+            Rx_Time_OR           => codecs(i).Rx_Time_OR        ,
+            Rx_Time_IR           => codecs(i).Rx_Time_IR        ,
     
-        -- Control Channels           	
-        Disable             =>  Disable,         
-        Connected           =>  Connected,       
-        Error_select        =>  Error_select,    
-        Error_inject        =>  Error_inject,    
+            Tx_Time              => codecs(i).Tx_Time           ,
+            Tx_Time_OR           => codecs(i).Tx_Time_OR        ,
+            Tx_Time_IR           => codecs(i).Tx_Time_IR        ,
         
-        -- SpW IO Ports, not used when "custom" mode.  	                
-        Din_p               =>  dout_p(1),  	     -- Used when Diff & Single     
-        Din_n               =>  '0',             -- Used when Diff only
-        Sin_p               =>  sout_p(1),  	     -- Used when Diff & Single       
-        Sin_n               =>  '0',             -- Used when Diff only
-        Dout_p              =>  Dout_p_spw,		 -- Used when Diff & Single      
-        Dout_n              =>  open,            -- Used when Diff only
-        Sout_p              =>  Sout_p_spw,  	 -- Used when Diff & Single      
-        Sout_n              =>  open     	     -- Used when Diff only
-    );
+            -- Control	                                        
+            Disable              => codecs(i).Disable           ,
+            Connected            => codecs(i).Connected         ,
+            Error_select         => codecs(i).Error_select      ,
+            Error_inject         => codecs(i).Error_inject      ,
+            
+            -- SpW	                                           
+            Din_p                => dout_p(i)             		,
+            Sin_p                => sout_p(i)          			,
+            Dout_p               => din_p(i)          			,
+            Sout_p               => sin_p(i)          					         
+        );
+        codecs(i).Rx_IR <= '1';
+        codecs(i).Rx_Time_IR <= '1';
+
+        end generate gen_spw_tx;
+    end generate gen_dut_tx;
+
     -- Clock process
     clk_proc: process
     begin
@@ -231,32 +237,31 @@ begin
         rst_n <= '1';
         wait for clk_period;
         
-        -- Test Case 1: Send raw 8-bit data through SpaceWire
-        wait until (Connected = '1' and router_connected(1) = '1');	-- wait for SpW instances to establish connection, make sure Spw link is connected
-		report "SpW Uplink Connected !" severity note;
+        -- Test Case 1: Send raw 8-bit data through gen_spw_tx port 1
+        wait until (codecs(1).Connected = '1' and router_connected(1) = '1');	-- wait for SpW instances to establish connection, make sure Spw link is connected
+		report "SpW port_1 Uplink Connected !" severity note;
 
 		wait for 3.532 us;
 		
 		-- load Tx data to send --
-		if(Tx_IR_spw = '0') then
-			wait until Tx_IR_spw = '1';
+		if(codecs(1).Tx_IR = '0') then
+			wait until codecs(1).Tx_IR = '1';
 		end if;
 
-        --bind the state signal to the state of router controller
-        router_ctrl_state <= <<signal .router_fifo_ctrl_top_tb.DUT.gen_fifo_controller(2).gen_ctrl.router_fifo_ctrl_inst.s_state : t_states>>;
-        assert router_ctrl_state = addr_send
-          report "State check: router send port1 address"
-          severity note; 
-
  		wait for clk_period;
-		Tx_Data_spw  <= "001010110";						-- Load TX SpW Data port 
-		Tx_OR_spw <= '1';									-- set Tx Data OR port
+		codecs(1).Tx_data  <= "001010110";						-- Load TX SpW Data port 1
+		codecs(1).Tx_OR <= '1';									-- set Tx Data OR port
 		wait for clk_period;							    -- wait for data to be clocked in
-		report "SpW Data Loaded : " & to_string(Tx_data_spw) severity note;
-		Tx_OR_spw <= '0';									-- de-assert TxOR
+		report "SpW Data Loaded : " & to_string(codecs(1).Tx_data) severity note;
+		codecs(1).Tx_OR <= '0';									-- de-assert TxOR
         
         -- Wait for data processing
         wait for clk_period*5;
+        --bind the state signal to the state of router controller
+        router_ctrl_state <= <<signal .router_fifo_ctrl_top_tb.DUT.gen_fifo_controller(2).gen_ctrl.router_fifo_ctrl_inst.s_state : t_states>>;
+        assert router_ctrl_state = addr_send
+            report "State check: router send port1 address"
+            severity note; 
         
         -- Test Case 2: Send 32-bit compressed data
         ccsds_datain <= x"00000700";  -- Example 32-bit compressed data
