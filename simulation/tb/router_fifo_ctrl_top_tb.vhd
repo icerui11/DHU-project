@@ -249,16 +249,27 @@ begin
 		end if;
 
  		wait for clk_period;
-		codecs(1).Tx_data  <= "001010110";						-- Load TX SpW Data port 1
+		codecs(1).Tx_data  <= "000000010";						-- Load TX SpW Data port 1, first data as path address
 		codecs(1).Tx_OR <= '1';									-- set Tx Data OR port
 		wait for clk_period;							    -- wait for data to be clocked in
 		report "SpW Data Loaded : " & to_string(codecs(1).Tx_data) severity note;
 		codecs(1).Tx_OR <= '0';									-- de-assert TxOR
         
+        wait for clk_period;
+		codecs(1).Tx_data  <= "011110100";						-- Load TX SpW Data port 1, first data as path address
+		codecs(1).Tx_OR <= '1';									-- set Tx Data OR port
+		wait for clk_period;							    -- wait for data to be clocked in
+		report "SpW Data Loaded : " & to_string(codecs(1).Tx_data) severity note;
+		codecs(1).Tx_OR <= '0';	
+
+        assert codecs(2).Rx_data /= "011110100" 
+            report "Received data: " & to_string(codecs(2).Rx_data)
+            severity note;
+
         -- Wait for data processing
         wait for clk_period*5;
         --bind the state signal to the state of router controller
-        router_ctrl_state <= <<signal .router_fifo_ctrl_top_tb.DUT.gen_fifo_controller(2).gen_ctrl.router_fifo_ctrl_inst.s_state : t_states>>;
+        router_ctrl_state <= <<signal .router_fifo_ctrl_top_tb.DUT.gen_fifo_controller(5).gen_ctrl.router_fifo_ctrl_inst.s_state : t_states>>;
         assert router_ctrl_state = addr_send
             report "State check: router send port1 address"
             severity note; 
