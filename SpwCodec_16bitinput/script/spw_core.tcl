@@ -1,17 +1,4 @@
-# compile the common package
-#spw library
-vcom -2008 -quiet  -work spw $DUT/simulation/src/4links/spw/spw_data_types.vhd
-vcom -2008 -quiet  -work spw $DUT/simulation/src/4links/spw/spw_codes.vhd
-vcom -2008 -quiet  -work spw $DUT/simulation/src/4links/spw/SpaceWire_Sim_lib.vhd
-
-#rmap library
-vcom -2008 -quiet  -work rmap $DUT/simulation/src/4links/rmap/rmap_initiator_lib.vhd
-#vcom -2008 -quiet  -work rmap $DUT/simulation/src/4links/rmap/rmap_periph_pckg.vhd
-
-#router library
-vcom -2008 -quiet  -work router $DUT/simulation/src/4links/router/router_pckg.vhd
-vcom -2008 -quiet  -work router $DUT/simulation/src/4links/router/router_records.vhd
-#compile the library context 
+#compile the spw library context 
 vcom -2008 -quiet  -work work $DUT/simulation/src/4links/ip4l_context_RTG4.vhd
 vcom -2008 -quiet -check_synthesis -work work $DUT/simulation/src/4links/spw_rtl/spw_ctrl.vhd 
 vcom -2008 -quiet -check_synthesis -work work $DUT/simulation/src/4links/spw_rtl/spw_fifo_2c.vhd 

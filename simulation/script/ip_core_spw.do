@@ -1,0 +1,20 @@
+#compile the spw library context 
+vcom -2008 -quiet  -work spw $DUT/SpW_router/spw_data_types.vhd
+vcom -2008 -quiet  -work spw $DUT/SpW_router/spw_codes.vhd
+vcom -2008 -quiet  -work spw $DUT/SpW_router/SpaceWire_Sim_lib.vhd
+vcom -2008 -quiet  -work work $DUT/SpW_router/ip4l_context_RTG4.vhd
+vcom -2008 -quiet  -work work $DUT/SpW_router/spw_ctrl.vhd 
+vcom -2008 -quiet  -work work $DUT/SpW_router/spw_fifo_2c.vhd
+vcom -2008 -quiet  -work work $DUT/SpW_router/spw_filter_errors.vhd
+vcom -2008 -quiet  -work work $DUT/SpW_router/spw_rx_add_eep.vhd
+vcom -2008 -quiet  -work work $DUT/SpW_router/spw_rx_bit_rate.vhd
+vcom -2008 -quiet  -work work $DUT/SpW_router/spw_rx_flowcredit_x.vhd
+vcom -2008 -quiet  -work work $DUT/SpW_router/spw_rx_sync_RTG4.vhd
+vcom -2008 -quiet  -work work $DUT/SpW_router/spw_rx_to_2b_RTG4.vhd
+vcom -2008 -quiet  -work work $DUT/SpW_router/spw_rx_to_data.vhd
+vcom -2008 -quiet  -work work $DUT/SpW_router/spw_timeout_det.vhd
+vcom -2008 -quiet  -work work $DUT/SpW_router/spw_tx_discard.vhd
+vcom -2008 -quiet  -work work $DUT/SpW_router/spw_tx_ds.vhd
+vcom -2008 -quiet  -work work $DUT/SpW_router/spw_tx_flowcontrol.vhd
+vcom -2008 -quiet  -work work $DUT/SpW_router/spw_RTG4.vhd
+vcom -2008 -quiet  -work work $DUT/SpW_router/spw_wrap_top_level_RTG4.vhd
