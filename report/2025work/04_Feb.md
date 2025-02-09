@@ -10,9 +10,12 @@
 * [ ]  EGSE Ground Support Python GSpy
   * [ ]  configurate enviroment and install dependency
 
-# ~~~~04.02-
+# ~~~~04.02-09
 
 1. set DUT C:/Users/yinrui/Desktop/Envison_DHU/DHU-project
+   1. do $DUT/DHU-project/simulation/script/router_fifo_ctrl.do
+   2. write new script
+   3. 注意编译新的routing_table都要用version 2
 2. 重新编写router_fifo_ctrl_top_tb,因为之前的tb 只generate 了一个spw tx, 更新的testbench should according to predefined package g_num_ports and c_fifo_ports决定generated spw instances.
 3. 因为spw become as a arrary, refer to the codec signal and r_codec_interface_array defined in the router_top_level_tb in the source code
    1. 注意spw Rx_IR and Rx_Time_IR is setting to high, this configuration allows continuous data transfer without blocking due to receiver not being ready. In tb we want to simplify this complex buffer control mechanism

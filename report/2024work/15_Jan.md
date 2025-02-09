@@ -26,6 +26,8 @@ router_fifo_ctrl_top continue
 
 1. 在router_fifo_spwctrl 中 添加 spw
 2. vsim work.router_fifo_ctrl_top_tb -vopt -t 1ns -voptargs="+acc"
+3. set DUT C:/Users/yinrui/Desktop/Envison_DHU
+4. do $DUT/DHU-project/simulation/script/router_fifo_ctrl.do
 
 # 25.01
 
