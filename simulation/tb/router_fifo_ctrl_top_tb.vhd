@@ -119,6 +119,12 @@ architecture tb of router_fifo_ctrl_top_tb is
     --declaration the same state type in testbench
     type t_states is (ready, addr_send, read_mem, spw_tx, ramaddr_delay, eop_tx);
     signal router_ctrl_state : t_states; 
+    --monitor signals
+    signal router_fifo_debug_tx : std_logic_vector(8 downto 0) := (others => '0');
+ --   signal router_fifo_debug_rx : std_logic_vector(8 downto 0) := (others => '0');
+    --alias name
+     alias router_fifo_debug_rx  is  
+       << signal .router_fifo_ctrl_top_tb.DUT.router_inst.spw_fifo_in : r_fifo_master_array(1 to g_num_ports-1)>>; 
 
 begin
     
@@ -158,7 +164,6 @@ begin
         spw_error => spw_error,
         router_connected => router_connected
     );
-    
 
     --signal mapping for router_top
  --   din_p(1) <= Dout_p_spw;
@@ -219,6 +224,8 @@ begin
         end generate gen_spw_tx;
     end generate gen_dut_tx;
 
+
+
     -- Clock process
     clk_proc: process
     begin
@@ -231,6 +238,7 @@ begin
     -- Stimulus process
     stim_proc: process
     begin
+
         -- Initial reset
         rst_n <= '0';
         wait for 16.456 us;								-- wait for > 500us before de-asserting reset
@@ -261,19 +269,25 @@ begin
 		wait for clk_period;							    -- wait for data to be clocked in
 		report "SpW Data Loaded : " & to_string(codecs(1).Tx_data) severity note;
 		codecs(1).Tx_OR <= '0';	
-
-        assert codecs(2).Rx_data /= "011110100" 
-            report "Received data: " & to_string(codecs(2).Rx_data)
+/*
+        if codecs(2).Tx_data = "011110100" then
+            assert false
+            report "router port2 has successfully Received data: " & to_string(codecs(2).Tx_data, 2)
             severity note;
-
+        end if;
+ */
         -- Wait for data processing
         wait for clk_period*5;
+
+   --     router_fifo_debug_rx <= <<signal .router_fifo_ctrl_top_tb.DUT.router_inst.spw_fifo_in(5).rx_data : std_logic_vector(8 downto 0)>>;
         --bind the state signal to the state of router controller
         router_ctrl_state <= <<signal .router_fifo_ctrl_top_tb.DUT.gen_fifo_controller(5).gen_ctrl.router_fifo_ctrl_inst.s_state : t_states>>;
-        assert router_ctrl_state = addr_send
-            report "State check: router send port1 address"
+        if router_ctrl_state = addr_send then
+        assert false
+            report "router send port1 address:" & to_string(router_fifo_debug_rx(5).rx_data)
             severity note; 
-        
+        end if;
+
         -- Test Case 2: Send 32-bit compressed data
         ccsds_datain <= x"00000700";  -- Example 32-bit compressed data
         w_update <= '1';
@@ -326,6 +340,16 @@ begin
         end if;
         if spw_error = '1' then
             report "SpW Error detected!" severity warning;
+        end if;
+    end process;
+
+    monitor_port2: process
+    begin
+        wait until rising_edge(clk);
+        if codecs(2).Tx_data = "011110100" then
+            assert false
+            report "router port2 has successfully Received data: " & to_string(codecs(2).Tx_data)
+            severity note;
         end if;
     end process;
 
