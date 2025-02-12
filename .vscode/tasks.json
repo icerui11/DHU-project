@@ -1,0 +1,107 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "label": "vsg-check",
+        "type": "shell",
+        "command": "vsg -f \"${relativeFile}\"",
+        "problemMatcher": {
+          "owner": "vsg",
+          "fileLocation": ["autoDetect", "${workspaceFolder}"],
+          "pattern": [
+            {
+              "regexp": "^File:  ([^\\s]*)\\s*$",
+              "file": 1
+            },
+            { // match =======
+              "regexp": "^.*$"
+            },
+            { // match Phase
+              "regexp": "^.*$"
+            },
+            { // match Total Rules Checked
+              "regexp": "^.*$"
+            },
+            { // match Total Violations
+              "regexp": "^.*$"
+            },
+            { // match Error count
+              "regexp": "^.*$"
+            },
+            { // match Warning count
+              "regexp": "^.*$"
+            },
+            { // match ------
+              "regexp": "^.*$"
+            },
+            { // match Rule/severity/line/solution header
+              "regexp": "^.*$"
+            },
+            { // match ------
+              "regexp": "^.*$"
+            },
+            {
+              "regexp": "^  ([^\\s]*_\\d*)\\s*. ([^\\s]*)\\s*.\\s*([^\\s]*) . (.*)$",
+              "code": 1,
+              "severity": 2,
+              "location": 3,
+              "message": 4,
+              "loop": true
+            }
+          ]
+        }
+      },
+      {
+        "label": "vsg-fix",
+        "type": "shell",
+        "command": "vsg -f \"${relativeFile}\" --fix",
+        "problemMatcher": {
+          "owner": "vsg",
+          "fileLocation": ["autoDetect", "${workspaceFolder}"],
+          "pattern": [
+            {
+              "regexp": "^File:  ([^\\s]*)\\s*$",
+              "file": 1
+            },
+            { // match =======
+              "regexp": "^.*$"
+            },
+            { // match Phase
+              "regexp": "^.*$"
+            },
+            { // match Total Rules Checked
+              "regexp": "^.*$"
+            },
+            { // match Total Violations
+              "regexp": "^.*$"
+            },
+            { // match Error count
+              "regexp": "^.*$"
+            },
+            { // match Warning count
+              "regexp": "^.*$"
+            },
+            { // match ------
+              "regexp": "^.*$"
+            },
+            { // match Rule/severity/line/solution header
+              "regexp": "^.*$"
+            },
+            { // match ------
+              "regexp": "^.*$"
+            },
+            {
+              "regexp": "^  ([^\\s]*_\\d*)\\s*. ([^\\s]*)\\s*.\\s*([^\\s]*) . (.*)$",
+              "code": 1,
+              "severity": 2,
+              "location": 3,
+              "message": 4,
+              "loop": true
+            }
+          ]
+        }
+      }
+    ]
+  }

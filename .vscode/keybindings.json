@@ -1,0 +1,4 @@
+[
+    {"key": "ctrl+f", "command": "workbench.action.tasks.runTask", "args": "vsg-fix"},
+    {"key": "ctrl+i", "command": "workbench.action.tasks.runTask", "args": "vsg-check"}
+]

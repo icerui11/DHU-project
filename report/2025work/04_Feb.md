@@ -16,7 +16,7 @@
   * [ ]  coverage report
   * [ ]  testcase
 
-# ~~~~04.02-09
+# ~~~~04.02-12
 
 1. set DUT C:/Users/yinrui/Desktop/Envison_DHU
    1. do $DUT/DHU-project/simulation/script/router_fifo_ctrl.do
@@ -29,8 +29,15 @@
    1. use alias name
    2. directly a new monitor record
 5. testcase concept
-   1. testcase1:check spw link can set up, and can send first path address, then transmit data from port 1 and receive the same data through port2, 这里需要注意因为是在router 内部，所以实际check signal 应该是codec2.txdata
+   1. testcase1:check spw link can set up, and can send first path address, then transmit data from port 1 and receive the same data through port2, 这里需要注意因为是在router 内部，所以实际check signal 应该是txdata 或者是 gen_dut_tx 中的codec_Rx_data
+      1. Tx\_IR is controlled by the IP core and Tx\_OR is asserted by user logic.
+      2. Rx_OR is output and is set by the core, and Rx_IR is controlled by user logic
+      3. 在generate spw_tx 时 assert all codecs.Rx_IR
    2. testcase2: che
+6. 不同的procedure can interact with each other
+   1. use shared signal
+   2. shared variables
+   3. parameter passing
 
 # EGSE
 
