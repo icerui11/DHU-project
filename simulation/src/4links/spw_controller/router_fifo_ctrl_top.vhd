@@ -40,7 +40,6 @@ entity router_fifo_ctrl_top is
 port(
     rst_n               : in std_logic;				-- active low reset
     clk                 : in std_logic;				-- clock input
- --   enable  		: in 	std_logic := '0';										-- enable input, asserted high. 
 		
     rx_cmd_out		 : out 	std_logic_vector(2 downto 0)	:= (others => '0');		-- control char output bits
     rx_cmd_valid	 : out 	std_logic;												-- asserted when valid command to output

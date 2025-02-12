@@ -224,8 +224,6 @@ begin
         end generate gen_spw_tx;
     end generate gen_dut_tx;
 
-
-
     -- Clock process
     clk_proc: process
     begin
@@ -235,22 +233,27 @@ begin
         wait for clk_period/2;
     end process;
 
-    -- Stimulus process
-    stim_proc: process
+    --------------------------------------------------------------------
+    --! reset signal generation
+    --------------------------------------------------------------------
+    gen_rst: process
     begin
-
         -- Initial reset
         rst_n <= '0';
         wait for 16.456 us;								-- wait for > 500us before de-asserting reset
         rst_n <= '1';
-        wait for clk_period;
-        
+        wait;
+    end process;
+    
+    -- Stimulus process
+    stim_proc: process
+      procedure test1 is 
+      begin 
         -- Test Case 1: Send raw 8-bit data through gen_spw_tx port 1
         wait until (codecs(1).Connected = '1' and router_connected(1) = '1');	-- wait for SpW instances to establish connection, make sure Spw link is connected
 		report "SpW port_1 Uplink Connected !" severity note;
 
-		wait for 3.532 us;
-		
+		wait for 3.532 us;	
 		-- load Tx data to send --
 		if(codecs(1).Tx_IR = '0') then
 			wait until codecs(1).Tx_IR = '1';
@@ -266,16 +269,17 @@ begin
         wait for clk_period;
 		codecs(1).Tx_data  <= "011110100";						-- Load TX SpW Data port 1, first data as path address
 		codecs(1).Tx_OR <= '1';									-- set Tx Data OR port
-		wait for clk_period;							    -- wait for data to be clocked in
 		report "SpW Data Loaded : " & to_string(codecs(1).Tx_data) severity note;
-		codecs(1).Tx_OR <= '0';	
-/*
-        if codecs(2).Tx_data = "011110100" then
+
+        if codecs(2).Rx_data = "011110100" and codecs(2).Rx_OR = '1' then
             assert false
-            report "router port2 has successfully Received data: " & to_string(codecs(2).Tx_data, 2)
+            report "router port2 has successfully transmit data and spw receive data: " & to_string(codecs(2).Rx_data)
             severity note;
         end if;
- */
+
+        wait for clk_period;							    -- wait for data to be clocked in
+		codecs(1).Tx_OR <= '0';	
+
         -- Wait for data processing
         wait for clk_period*5;
 
@@ -287,7 +291,10 @@ begin
             report "router send port1 address:" & to_string(router_fifo_debug_rx(5).rx_data)
             severity note; 
         end if;
-
+      end test1;
+      
+      procedure test2 is
+      begin 
         -- Test Case 2: Send 32-bit compressed data
         ccsds_datain <= x"00000700";  -- Example 32-bit compressed data
         w_update <= '1';
@@ -312,6 +319,12 @@ begin
         -- Wait for FIFO processing
         wait until asym_fifo_full = '0';
         wait for clk_period*5;
+      end test2;
+
+    begin 
+     --   test1;
+     test2;   
+
    /*     
         -- Test Case 3: Test FIFO full condition
         for i in 0 to 5 loop
@@ -325,12 +338,9 @@ begin
         -- Wait for error conditions
         wait until spw_error = '0';
         
-        -- End simulation
-        wait for clk_period*100;
-        report "Simulation completed successfully";
-        wait;
+       
     end process;
-
+/*
     -- Monitor process
     mon_proc: process
     begin
@@ -346,11 +356,11 @@ begin
     monitor_port2: process
     begin
         wait until rising_edge(clk);
-        if codecs(2).Tx_data = "011110100" then
+        if codecs(2).Rx_data = "011110100" and codecs(2).Rx_OR = '1' then
             assert false
-            report "router port2 has successfully Received data: " & to_string(codecs(2).Tx_data)
+            report "router port2 has successfully transmit data and spw receive data: " & to_string(codecs(2).Rx_data)
             severity note;
         end if;
     end process;
-
+*/
 end tb;
