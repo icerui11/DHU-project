@@ -28,7 +28,7 @@ vcom -work work -2008 -quiet $DUT/DHU-project/simulation/src/4links/router_rtl/m
 vcom -work work -2008 -quiet $DUT/DHU-project/simulation/src/4links/router_rtl/mixed_width_ram_top_v2.vhd
 vcom -work work -2008 -quiet $DUT/DHU-project/simulation/src/4links/router_rtl/router_routing_table_top_v2.vhd
 vcom -work work -2008 -quiet $DUT/DHU-project/simulation/src/4links/router_rtl/router_rt_arbiter.vhd
-vcom -work work -2008 -quiet $DUT/SpW_router/router_top_level_RTG4.vhd
+vcom -work work -2008 -quiet $DUT/DHU-project/simulation/src/4links/router_rtl/router_top_level_RTG4.vhd
 vcom -work work -2008 -quiet $DUT/SpW_router/reg_bank_inf_asym2.vhd
 vcom -work work -2008 -quiet $DUT/SpW_router/asym_FIFO.vhd
 vcom -work work -2008 -quiet $DUT/DHU-project/simulation/src/4links/spw_controller/router_fifo_spwctrl.vhd
