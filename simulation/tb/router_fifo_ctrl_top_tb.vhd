@@ -1,6 +1,16 @@
+----------------------------------------------------------------------------------------------------------------------------------
+-- File Description  -- check the router_fifo_ctrl functionality and in future connect with SHyLoC_top
+----------------------------------------------------------------------------------------------------------------------------------
+-- @ File Name				:	router_fifo_ctrl_top_tb.vhd
+-- @ Engineer				:	Rui
+-- @ Date					: 	13.02.2024
+-- @ Version				:	1.0
+-- @ VHDL Version			:   2008
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
+use std.textio.all;
 
 library shyloc_121;
 use shyloc_121.ccsds121_parameters.all;
@@ -82,6 +92,14 @@ architecture tb of router_fifo_ctrl_top_tb is
     --alias name
      alias router_fifo_debug_rx  is  
        << signal .router_fifo_ctrl_top_tb.DUT.router_inst.spw_fifo_in : r_fifo_master_array(1 to g_num_ports-1)>>; 
+    
+    --------------------------------------------------------------------
+    --! Testbench procedures
+    --------------------------------------------------------------------
+        
+    procedure monitor_data is
+    
+    end monitor_data;
 
 begin
     
@@ -119,7 +137,7 @@ begin
         sout_p => sout_p,
         sout_n => sout_n,
         spw_error => spw_error,
-        spw_fifo_in => spw_fifo_in,
+  --      spw_fifo_in => spw_fifo_in,
         spw_fifo_out => spw_fifo_out,
         router_connected => router_connected
     );
@@ -206,97 +224,88 @@ begin
     
     -- Stimulus process
     stim_proc: process
-      procedure test1 is 
-      begin 
-        -- Test Case 1: Send raw 8-bit data through gen_spw_tx port 1
-        wait until (codecs(1).Connected = '1' and router_connected(1) = '1');	-- wait for SpW instances to establish connection, make sure Spw link is connected
-		report "SpW port_1 Uplink Connected !" severity note;
-
-		wait for 3.532 us;	
-		-- load Tx data to send --
-		if(codecs(1).Tx_IR = '0') then
-			wait until codecs(1).Tx_IR = '1';
-		end if;
-
- 		wait for clk_period;
-		codecs(1).Tx_data  <= "000000010";						-- Load TX SpW Data port 1, first data as path address
-		codecs(1).Tx_OR <= '1';									-- set Tx Data OR port
-		wait for clk_period;							    -- wait for data to be clocked in
-		report "SpW Data Loaded : " & to_string(codecs(1).Tx_data) severity note;
-		codecs(1).Tx_OR <= '0';									-- de-assert TxOR
+    procedure test1 is 
+        begin 
+          -- Test Case 1: Send raw 8-bit data through gen_spw_tx port 1
+          wait until (codecs(1).Connected = '1' and router_connected(1) = '1');	-- wait for SpW instances to establish connection, make sure Spw link is connected
+          report "SpW port_1 Uplink Connected !" severity note;
+  
+          wait for 3.532 us;	
+          -- load Tx data to send --
+          if(codecs(1).Tx_IR = '0') then
+              wait until codecs(1).Tx_IR = '1';
+          end if;
+  
+           wait for clk_period;
+          codecs(1).Tx_data  <= "000000010";						-- Load TX SpW Data port 1, first data as path address
+          codecs(1).Tx_OR <= '1';									-- set Tx Data OR port
+          wait for clk_period;							    -- wait for data to be clocked in
+          report "SpW Data Loaded : " & to_string(codecs(1).Tx_data) severity note;
+          codecs(1).Tx_OR <= '0';									-- de-assert TxOR
+          
+          wait for clk_period;
+          codecs(1).Tx_data  <= "011110100";						-- Load TX SpW Data port 1, first data as path address
+          codecs(1).Tx_OR <= '1';									-- set Tx Data OR port
+          report "SpW Data Loaded : " & to_string(codecs(1).Tx_data) severity note;
+  
+          if codecs(2).Rx_data = "011110100" and codecs(2).Rx_OR = '1' then
+              assert false
+              report "router port2 has successfully transmit data and spw receive data: " & to_string(codecs(2).Rx_data)
+              severity note;
+          end if;
+  
+          wait for clk_period;							    -- wait for data to be clocked in
+          codecs(1).Tx_OR <= '0';	
+  
+          -- Wait for data processing
+          wait for clk_period*5;
+  
+          --bind the state signal to the state of router controller
+          router_ctrl_state <= <<signal .router_fifo_ctrl_top_tb.DUT.gen_fifo_controller(5).gen_ctrl.router_fifo_ctrl_inst.s_state : t_states>>;
+          if router_ctrl_state = addr_send then
+          assert false
+              report "router send port1 address:" & to_string(router_fifo_debug_rx(5).rx_data)
+              severity note; 
+          end if;
+        end test1;
         
-        wait for clk_period;
-		codecs(1).Tx_data  <= "011110100";						-- Load TX SpW Data port 1, first data as path address
-		codecs(1).Tx_OR <= '1';									-- set Tx Data OR port
-		report "SpW Data Loaded : " & to_string(codecs(1).Tx_data) severity note;
-
-        if codecs(2).Rx_data = "011110100" and codecs(2).Rx_OR = '1' then
-            assert false
-            report "router port2 has successfully transmit data and spw receive data: " & to_string(codecs(2).Rx_data)
-            severity note;
-        end if;
-
-        wait for clk_period;							    -- wait for data to be clocked in
-		codecs(1).Tx_OR <= '0';	
-
-        -- Wait for data processing
-        wait for clk_period*5;
-
-        --bind the state signal to the state of router controller
-        router_ctrl_state <= <<signal .router_fifo_ctrl_top_tb.DUT.gen_fifo_controller(5).gen_ctrl.router_fifo_ctrl_inst.s_state : t_states>>;
-        if router_ctrl_state = addr_send then
-        assert false
-            report "router send port1 address:" & to_string(router_fifo_debug_rx(5).rx_data)
-            severity note; 
-        end if;
-      end test1;
-      
-      procedure test2 is
-      begin 	
-        wait until (clk'event and clk = '1') and router_connected(5) = '1'; 
-        assert false
-            report "router port5 is connected" severity note;
-        wait for 3 us;
-        -- Test Case 2: Send 32-bit compressed data
-        ccsds_datain <= x"00000700";  -- Example 32-bit compressed data
-        w_update <= '1';
-        wait for clk_period;
-        w_update <= '0';
-        wait for clk_period;
-        ccsds_datain <= x"08000510";  -- Example 32-bit compressed data
-        w_update <= '1';
-        wait for clk_period;
-        w_update <= '0';
-        wait for clk_period;
-        ccsds_datain <= x"00051400";  -- Example 32-bit compressed data
-        w_update <= '1';
-        wait for clk_period;
-        w_update <= '0';
-        wait for clk_period;
-        ccsds_datain <= x"1800f70f";  -- Example 32-bit compressed data
-        w_update <= '1';
-        wait for clk_period;
-        w_update <= '0';
-        
-        -- Wait for FIFO processing
-        wait until asym_fifo_full = '0';
-        wait for clk_period*5;
-      end test2;
-
+        procedure test2 is
+        begin 	
+          wait until (clk'event and clk = '1') and router_connected(5) = '1' and router_connected(1) = '1';	-- because the fifo_in data is come from other router spw port
+          assert false
+              report "router port5 is connected" severity note;
+          wait for 3 us;
+          -- Test Case 2: Send 32-bit compressed data
+          ccsds_datain <= x"00000700";  -- Example 32-bit compressed data
+          w_update <= '1';
+          report "CCSDS Data Loaded : " & to_string(ccsds_datain) severity note;
+          wait for clk_period;
+          w_update <= '0';
+          wait for clk_period;
+          ccsds_datain <= x"08000510";  -- Example 32-bit compressed data
+          w_update <= '1';
+          wait for clk_period;
+          w_update <= '0';
+          wait for clk_period;
+          ccsds_datain <= x"00051400";  -- Example 32-bit compressed data
+          w_update <= '1';
+          wait for clk_period;
+          w_update <= '0';
+          wait for clk_period;
+          ccsds_datain <= x"1800f70f";  -- Example 32-bit compressed data
+          w_update <= '1';
+          wait for clk_period;
+          w_update <= '0';
+          
+          -- Wait for FIFO processing
+          wait until asym_fifo_full = '0';
+          wait for clk_period*5;
+        end test2;
     begin 
      --   test1;
      test2;   
 
-   /*     
-        -- Test Case 3: Test FIFO full condition
-        for i in 0 to 5 loop
-            ccsds_datain <= std_logic_vector(to_unsigned(i, W_BUFFER_GEN));
-            w_update <= '1';
-            wait for clk_period;
-            w_update <= '0';
-            wait for clk_period*2;
-        end loop;
-    */    
+  
         -- Wait for error conditions
         wait until spw_error = '0';
         
