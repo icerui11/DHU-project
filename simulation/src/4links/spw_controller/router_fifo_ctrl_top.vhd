@@ -5,7 +5,7 @@
 -- @ Engineer				:	Rui
 -- @ Date					: 	10.01.2024
 
--- @ VHDL Version			:   1987, 1993, 2008
+-- @ VHDL Version			:   2008
 -- @ Supported Toolchain	:	libero 12.0
 -- @ Target Device			: 	m2s150t
 
@@ -34,16 +34,13 @@ entity router_fifo_ctrl_top is
     g_data_width		: integer 					:= 8;					-- data width of connecting RAM/fifo
     g_mode				: string 					:= "single";			-- valid options are "diff", "single" and "custom".
     g_priority          : string                    := c_priority;          
-    g_ram_style         : string                    := c_ram_style           
+    g_ram_style         : string                    := c_ram_style;
+    g_router_port_addr  : integer                   := c_router_port_addr           
 );                                                                                                    
 
 port(
     rst_n               : in std_logic;				-- active low reset
     clk                 : in std_logic;				-- clock input
-<<<<<<< HEAD
-=======
- --   enable  		: in 	std_logic := '0';										-- enable input, asserted high. 
->>>>>>> 78c2c8d4a8061f677cd6d041ef272a0a7f5eb497
 		
     rx_cmd_out		 : out 	std_logic_vector(2 downto 0)	:= (others => '0');		-- control char output bits
     rx_cmd_valid	 : out 	std_logic;												-- asserted when valid command to output
@@ -78,7 +75,10 @@ port(
     Sout_p           : out 	std_logic_vector(1 to g_num_ports-1)	:= (others => '0'); -- IO used for "single" and "diff" io modes
     Sout_n           : out 	std_logic_vector(1 to g_num_ports-1)	:= (others => '0'); -- IO used for "single" and "diff" io modes                                                     
     spw_error        : out  std_logic;
-
+    
+    --spacewire fifo IO 
+ --   spw_fifo_in		: in 	r_fifo_master_array(1 to g_num_ports-1) := (others => c_fifo_master);     -- all signal from controller
+    spw_fifo_out	: out 	r_fifo_slave_array(1 to g_num_ports-1)	:= (others => c_fifo_slave);
     router_connected    : out  std_logic_vector(31 downto 1) := (others => '0')            -- output, asserted when SpW Link is Connected
 );
 
@@ -99,7 +99,7 @@ architecture rtl of router_fifo_ctrl_top is
 	signal spw_Rx_Parity_error      :  		std_logic;                                --
 	signal spw_Rx_bits              :  		integer range 0 to 2;                   --
 	signal spw_Rx_rate              :  		std_logic_vector(15 downto 0);          --
-	signal spw_Connected            : 		std_logic;                                --
+--	signal spw_Connected            : 		std_logic;                                --
     
     signal reset           : std_logic := '1';								-- reset signal
     signal ram_addr        : std_logic_vector(g_addr_width-1 downto 0);
@@ -112,10 +112,8 @@ architecture rtl of router_fifo_ctrl_top is
  --   signal ccsds_ready_ext : std_logic;								-- fifo ready signal
     signal fifo_ack        : std_logic;		-- fifo ack signal
     signal write_done      : std_logic;		-- write done signal   
-    --signal declartion for fifo port
-    signal spw_fifo_in     : r_fifo_master_array(1 to g_num_ports-1) := (others => c_fifo_master);
-    signal spw_fifo_out    : r_fifo_slave_array(1 to g_num_ports-1) := (others => c_fifo_slave);
-    signal router_connect  : std_logic_vector(31 downto 1) := (others => '0');
+
+    signal spw_fifo_in	   : r_fifo_master_array(1 to g_num_ports-1) := (others => c_fifo_master);
 
 begin 
     TX_IR_fifo_rupdata <= spw_Tx_IR;
@@ -123,9 +121,6 @@ begin
 
     reset  <= '1' when rst_n = '0' else '0';                                -- microchip use active low reset
     ram_enable_tx <= ram_enable;
-
-    router_connected <= router_connect;
-    spw_Connected    <= router_connect(1);                                  -- router controller connected signal from fifo-spw port
 
     router_inst: entity work.router_top_level_RTG4(rtl)                 	-- instantiate SpaceWire Router 
 	generic map(
@@ -160,7 +155,7 @@ begin
 		spw_fifo_in             => spw_fifo_in,
 		spw_fifo_out	        => spw_fifo_out,
 		
-		Port_Connected			=> router_connect
+		Port_Connected			=> router_connected
 	);
 /*
     constant c_fifo_master : r_fifo_master :=(
@@ -188,9 +183,9 @@ begin
         gen_ctrl: if (g_is_fifo(i) = '1') generate
             router_fifo_ctrl_inst: entity work.router_fifo_spwctrl(rtl)
             generic map (
-            g_addr_width	=> g_addr_width,
-            router_port_num => i,                      -- 
-            g_count_max 	=> g_data_width            -- count for every ram address
+            g_addr_width	 => g_addr_width,
+            g_router_port_addr => g_router_port_addr,             -- fifo data to which port
+            g_count_max 	 => g_data_width                    -- count for every ram address
             )
             port map( 
 
@@ -205,7 +200,7 @@ begin
             write_done          =>  write_done,                           
             -- RAM signals
 
-            ram_data_in			=> 	fifo_data,					-- ram read data
+            ram_data_in			=> 	fifo_data,					              -- ram read data
             
             -- SpW Data Signals
             spw_Tx_data			=> 	spw_fifo_in(i).rx_data(7 downto 0),	      -- router fifo rxdata, is different from normal spw
@@ -227,14 +222,16 @@ begin
             rx_data_ready	    =>	rx_data_ready,                                                
             
             -- SpW Control Signals
-            spw_Connected	 	=> 	spw_Connected,			-- asserted when SpW Link is Connected
-            spw_Rx_ESC_ESC	 	=> 	spw_Rx_ESC_ESC,     	-- SpW ESC_ESC error 
-            spw_ESC_EOP 	 	=> 	spw_Rx_ESC_EOP,   		-- SpW ESC_EOP error 
-            spw_ESC_EEP      	=> 	spw_Rx_ESC_EEP,     	-- SpW ESC_EEP error 
-            spw_Parity_error 	=> 	spw_Rx_Parity_error,    -- SpW Parity error
+            spw_Connected	 	=>  '1',			                        -- asserted when SpW Link is Connected(in this case, always asserted when fifo port is generated)
+            spw_Rx_ESC_ESC	 	=> 	spw_Rx_ESC_ESC,                     	-- SpW ESC_ESC error 
+            spw_ESC_EOP 	 	=> 	spw_Rx_ESC_EOP,   		                -- SpW ESC_EOP error 
+            spw_ESC_EEP      	=> 	spw_Rx_ESC_EEP,     	                -- SpW ESC_EEP error 
+            spw_Parity_error 	=> 	spw_Rx_Parity_error,                    -- SpW Parity error
             
-            error_out			=> 	spw_error						-- assert when error
-    );
+            error_out			=> 	spw_error				                -- assert when error
+            );
+        
+            spw_fifo_in(i).connected <= '1';                                -- assert router fifo connected when fifo port is generated
 
         asym_FIFO_inst_0: entity work.asym_FIFO 
         port map( 
@@ -255,7 +252,7 @@ begin
             ack      => fifo_ack,
             data_out_chunk => fifo_data 
             );
-            
+          
         end generate gen_ctrl; 
     end generate gen_fifo_controller;
 end rtl;

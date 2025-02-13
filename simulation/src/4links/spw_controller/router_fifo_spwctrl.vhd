@@ -28,8 +28,7 @@ use ieee.numeric_std.all;
 entity router_fifo_spwctrl is
 	generic(
 		g_addr_width	: natural := 9;								 	-- address width of connecting RAM
---		CCSDS_INbitwidth : integer := 16;								-- input bitwidth of CCSDS data
-        router_port_num : integer range 1 to 254 :=1;                  -- router port number, not include port 0
+        g_router_port_addr : integer range 1 to 32 :=1;                  -- router port addr, not include port 0, defined in package
 		g_count_max 	: integer := 8   	                           -- count period between every ram address
 	);
 	port( 
@@ -92,7 +91,7 @@ architecture rtl of router_fifo_spwctrl is
 	-- Constant Declarations --
 	----------------------------------------------------------------------------------------------------------------------------
 	constant c_spw_eop	: 	std_logic_vector(7 downto 0) := x"02";
-    constant c_port_addr:   std_logic_vector(7 downto 0) := std_logic_vector(to_unsigned(router_port_num,8));
+    constant c_port_addr:   std_logic_vector(7 downto 0) := std_logic_vector(to_unsigned(g_router_port_addr,8));
 	----------------------------------------------------------------------------------------------------------------------------
 	-- Type Declarations --
 	----------------------------------------------------------------------------------------------------------------------------

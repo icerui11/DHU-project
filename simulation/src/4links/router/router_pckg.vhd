@@ -39,8 +39,8 @@ package router_pckg is
 	constant c_fabric_bus_width 	: natural range 1 to 4 		:= 1;				-- nonet-witdth of Xbar fabric data channel. 1 = 9 bits, 4 = 36 bits
 	constant c_spw_clk_freq			: real						:= 100_000_000.0;	-- frequency of SpaceWire Clock in Hz (default 200MHz)
 	constant c_router_clk_freq		: real 						:= 100_000_000.0;	-- frequency of Router Fabric & Arbitration (sim only)
-	constant c_num_ports 			: natural range 2 to 32  	:= 9;		        -- number of router ports, 0 is internal address, maximum 32 (31 + 1)
-	constant c_port_mode			: string 					:= "diff";        -- valid options are "single", "diff" and "custom". 
+	constant c_num_ports 			: natural range 2 to 32  	:= 6;		        -- number of router ports, 0 is internal address, maximum 32 (31 + 1)
+	constant c_port_mode			: string 					:= "single";        -- valid options are "single", "diff" and "custom". 
 	constant c_priority				: string 					:= "fifo";          -- valid options are "fifo" and "none"
 	constant c_ram_style			: string 					:= "auto";			-- type of ram (xilinx) to use for FiFo (block, auto, see Xillinx user guide)
 	constant c_tc_master_mask		: t_dword 	:= b"0000_0000_0000_0000_0000_0000_0010_0000";	-- set single-bit high to set that port as TimeCode Master
@@ -50,7 +50,7 @@ package router_pckg is
 		2 	=> '0',
 		3 	=> '0',
 		4	=> '0',
-		5   => '0',
+		5   => '1',
 		6   => '0',
 		7   => '0',
 		8   => '0',
@@ -95,7 +95,7 @@ package router_pckg is
 	-- minimum is 32 as 0 to 31 are pre-assigned 
 	constant c_tc_address			: integer range 0 to 31 := 0;	-- address of last time code in status registers 
 
-	
+	constant c_router_port_addr     : integer range 0 to 31 := 1;   -- router_fifo_ctrl transmit to which port address   
 
 	--------------------------------------------------------------------------------------------------------------------------
 	-- Subtype & Type Declarations --
