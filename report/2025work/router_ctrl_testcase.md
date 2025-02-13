@@ -9,25 +9,40 @@ classic testbench
 router_fifo_ctrl_top 数据类型应该都该array，应该和router 的port数量有关，定义新的数据package
 
 
-|  spw_fifo_in  |  | from | col3 |
-| :-----------: | :-: | :--: | :--: |
-|    rx_data    |  |      |      |
-|   rx_valid   |  |      |      |
-|   connected   |  |      |      |
-|    rx_time    |  |      |      |
-| rx_time_valid |  |      |      |
-|   tx_ready   |  |      |      |
-| tx_time_ready |  |      |      |
+|  spw_fifo_in  |  | from controller | col3 |
+| :-----------: | :-: | :-------------: | :--: |
+|    rx_data    |  |   spw_Tx_data   |      |
+|   rx_valid   |  |    spw_Tx_OR    |      |
+|   connected   |  |                |      |
+|    rx_time    |  |                |      |
+| rx_time_valid |  |                |      |
+|   tx_ready   |  |    spw_Rx_IR    |      |
+| tx_time_ready |  |                |      |
 
 
-| spw_fifo_out  | col2 | col3 |
-| ------------- | ---- | ---- |
-| tx_data       |      |      |
-| tx_valid      |      |      |
-| tx_time       |      |      |
-| tx_time_valid |      |      |
-| rx_ready      |      |      |
-| rx_time_ready |      |      |
+| spw_fifo_out  | from controller | col3                                                                                     |
+| ------------- | --------------- | ---------------------------------------------------------------------------------------- |
+| tx_data       | spw_Rx_data     |                                                                                          |
+| tx_valid      | spw_Rx_OR       |                                                                                          |
+| tx_time       |                 |                                                                                          |
+| tx_time_valid |                 |                                                                                          |
+| rx_ready      | spw_Tx_IR       | in state spw_tx, Handshake signal, only when Tx_IR is asserted,<br />OR will be asserted |
+| rx_time_ready |                 |                                                                                          |
+
+new parameter g_router_port_addr is defined in router_pckg c_router_port_addr, predifine as port 1
+
+创建新的monitor_data procedure
+
+* placing the monitor procedure in the architecture befor begin , higher reusability
+* 其余的testcase procedure 还是放在process中， direct access to all process signal and variable
+
+## monitor_data procedure
+
+purpose: check whether the data transmitted through the router is consistent with the input data, this includes checking the path address, EOP, and in the future, the compressed packet headers etc
+
+
+
+
 
 ## testcase1
 
@@ -49,4 +64,16 @@ debug:
    1. 应该修改fifo_in.connected 逻辑，在router_controller中置一，因为一旦生成fifo port,就证明连接上了router，这样spw_config_mem 不会disable,
    2. controller 中的 spw_fifo_in and out signal are defined as signal instead as port
    3. spw_status_memory(i)(0) <= connected(i); uncomment in router_top_level_RTG4
+      1. 问题是router 中Port_connected(5) 不能置1
 2. fifo
+
+Alert report:
+
+error:
+
+1. receive spw_port rx_data is inconsistent with controller tx_data
+2. controller first data should be predifined path address
+
+warning:
+
+1. asym fifo is full
