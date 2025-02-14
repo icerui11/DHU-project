@@ -47,10 +47,11 @@
    3. parameter passing
 10. install UVVM
 
-
-# 13.02-
+# 13.02-14
 
 1. use UVVM
+   1. do $DUT/UVVM-master/script/compile_all.do $DUT/UVVM-master/script $DUT/SpW_router/spw_router_sim
+   2. all methods are defined in methods_pkg.vhd
 
 # EGSE
 

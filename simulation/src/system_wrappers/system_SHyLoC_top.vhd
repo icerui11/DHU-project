@@ -127,7 +127,7 @@ end component;
 ----------------------------------------------------------------------
 -- Signal declaration
 ----------------------------------------------------------------------
-signal 
+signal OSC_out_25_50MHZ : std_logic;
 
 
 begin
@@ -136,7 +136,7 @@ begin
 FCCC_C0_0 : FCCC_C0
     port map( 
         -- Inputs
-        RCOSC_25_50MHZ => OSC_C0_0_RCOSC_25_50MHZ_CCC_OUT_0_RCOSC_25_50MHZ_CCC,
+        RCOSC_25_50MHZ => OSC_out_25_50MHZ,
         -- Outputs
         GL0            => FCCC_C0_0_GL0_3,
         LOCK           => FCCC_C0_0_LOCK 
@@ -146,7 +146,6 @@ FCCC_C0_0 : FCCC_C0
 OSC_C0_0 : OSC_C0
     port map( 
         -- Outputs
-        RCOSC_25_50MHZ_CCC => OSC_C0_0_RCOSC_25_50MHZ_CCC_OUT_0_RCOSC_25_50MHZ_CCC 
+        RCOSC_25_50MHZ_CCC => OSC_out_25_50MHZ  
         );
 
-        
