@@ -23,6 +23,12 @@ context work.router_context;
 entity router_fifo_ctrl_top_tb is
 end router_fifo_ctrl_top_tb;
 
+library uvvm_util;
+context uvvm_util.uvvm_util_context;
+
+library uvvm_vvc_framework;
+use uvvm_vvc_framework.ti_vvc_framework_support_pkg.all;
+
 architecture tb of router_fifo_ctrl_top_tb is
 
     -- Constants
@@ -90,15 +96,18 @@ architecture tb of router_fifo_ctrl_top_tb is
     signal router_ctrl_state : t_states; 
     
     --alias name
-     alias router_fifo_debug_rx  is  
+    alias router_fifo_debug_rx  is  
        << signal .router_fifo_ctrl_top_tb.DUT.router_inst.spw_fifo_in : r_fifo_master_array(1 to g_num_ports-1)>>; 
     
+    --alias name for testcase2
+    alias port1_rx_data is 
+       <<signal .router_fifo_ctrl_top_tb.DUT.router_inst.gen_ports(1).gen_spw.gen_fifo.spw_port_inst.Rx_data : std_logic_vector(8 downto 0)>>;
     --------------------------------------------------------------------
     --! Testbench procedures
     --------------------------------------------------------------------
-        
+
     procedure monitor_data is
-    
+    begin
     end monitor_data;
 
 begin
@@ -223,7 +232,7 @@ begin
     end process;
     
     -- Stimulus process
-    stim_proc: process
+    stim_sequencer: process
     procedure test1 is 
         begin 
           -- Test Case 1: Send raw 8-bit data through gen_spw_tx port 1
@@ -302,8 +311,16 @@ begin
           wait for clk_period*5;
         end test2;
     begin 
-     --   test1;
-     test2;   
+    
+    set_log_file_name("router_fifo_ctrl_log.txt");
+    set_alert_file_name("router_fifo_ctrl_alert.txt");
+        test1;
+        log(ID_LOG_HDR, "transmit data from port 1 and receive the same data through port2");
+        log(ID_LOG_HDR, "Test1 completed");
+
+        wait;
+        
+    -- test2;   
 
   
         -- Wait for error conditions
