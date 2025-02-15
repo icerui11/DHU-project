@@ -45,4 +45,5 @@ do $DUT/DHU-project/simulation/script/ip_core_spw.do
 do $DUT/DHU-project/simulation/script/ip_core_rmap.do
 do $DUT/DHU-project/simulation/script/ip_core_router.do
 vcom -2008 -work work -quiet $DUT/DHU-project/simulation/tb/router_fifo_ctrl_top_tb.vhd
-vsim work.router_fifo_ctrl_top_tb -vopt -t 1ns -voptargs="+acc"
+vsim -coverage work.router_fifo_ctrl_top_tb -vopt -t 1ns -voptargs="+acc"
+coverage report -file $DUT/DHU-project/simulation/coverage/router_fifo_ctrl_top_tb.covhtml -html -cvg -details -assert -codeAll
