@@ -35,14 +35,25 @@ new parameter g_router_port_addr is defined in router_pckg c_router_port_addr, p
 
 * placing the monitor procedure in the architecture befor begin , higher reusability
 * 其余的testcase procedure 还是放在process中， direct access to all process signal and variable
+  * testcase procedure use component signal, if declare before begin, there is no driven signal
+* the visibility and calling of procedures depends on where they are declared
 
 ## monitor_data procedure
 
 purpose: check whether the data transmitted through the router is consistent with the input data, this includes checking the path address, EOP, and in the future, the compressed packet headers etc
 
+# UVVM implement
 
-
-
+1. logging and verbosity control
+   1. set_log_file_name("router_fifo_ctrl_log.txt");
+      set_alert_file_name("router_fifo_ctrl_alert.txt");
+   2. **log**(ID\_LOG\_HDR**,** **"Starting test sequence"**)**;**      **-- 主要测试步骤的标题** **
+   3. log**(ID\_SEQUENCER**,** **"Sending data to UART"**)**;**      **-- 测试序列器的操作**
+   4. **log**(ID\_BFM**,** **"Writing value 0xAA to register"**)**;**  **-- BFM 层的操作**
+   5. **log**(ID\_INFO**,** **"Test configuration complete"**)**;**     **-- 一般信息**
+      1. **-- 使用默认 ID** **log**(**"Simple log message"**)**;**    **-- 或使用 NOTE 级别（推荐用于简单日志）**
+      2. **log**(NOTE**,** **"Another simple message"**)**;**
+      3. 当不需要消息分类时
 
 ## testcase1
 

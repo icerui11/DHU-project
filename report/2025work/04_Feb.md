@@ -22,6 +22,8 @@
 
 1. set DUT C:/Users/yinrui/Desktop/Envison_DHU
 2. do $DUT/DHU-project/simulation/script/router_fifo_ctrl.do
+
+   为ip_core_router new router submodules add -coverage in ip_core_router.do
 3. write new script
 4. 注意编译新的routing_table都要用version 2
 5. 重新编写router_fifo_ctrl_top_tb,因为之前的tb 只generate 了一个spw tx, 更新的testbench should according to predefined package g_num_ports and c_fifo_ports决定generated spw instances.
@@ -32,6 +34,8 @@
 7. in tb, there is a error for : external name cannot denote an element of an array
 
    1. use alias name
+      1. in the tb file, 注意路径，even though g_is_fifo(i) is set to 0, meaning we'll use the SpaceWire interface rather than the FIFO interface, the generate statement still creates a level in the hierarchy.
+      2. the if-generate statement creates a scope in the design hierarchy regardless of which branch is taken
    2. directly a new monitor record
 8. testcase concept
 
@@ -47,7 +51,7 @@
    3. parameter passing
 10. install UVVM
 
-# 13.02-14
+# 13.02-16
 
 1. use UVVM
    1. do $DUT/UVVM-master/script/compile_all.do $DUT/UVVM-master/script $DUT/SpW_router/spw_router_sim
