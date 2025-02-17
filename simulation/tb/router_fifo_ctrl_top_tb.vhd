@@ -67,13 +67,9 @@ architecture tb of router_fifo_ctrl_top_tb is
 
     -- SpaceWire Interface signals (using single mode)
     signal din_p  : std_logic_vector(1 to g_num_ports-1) := (others => '0');
-    signal din_n  : std_logic_vector(1 to g_num_ports-1) := (others => '0');
     signal sin_p  : std_logic_vector(1 to g_num_ports-1) := (others => '0');
-    signal sin_n  : std_logic_vector(1 to g_num_ports-1) := (others => '0');
     signal dout_p : std_logic_vector(1 to g_num_ports-1);
-    signal dout_n : std_logic_vector(1 to g_num_ports-1);
     signal sout_p : std_logic_vector(1 to g_num_ports-1);
-    signal sout_n : std_logic_vector(1 to g_num_ports-1);
     
     signal spw_error : std_logic;
 
@@ -137,13 +133,10 @@ begin
 
         -- SpaceWire Interface
         din_p  => din_p,
-        din_n  => din_n,
         sin_p  => sin_p,
-        sin_n  => sin_n,
         dout_p => dout_p,
-        dout_n => dout_n,
         sout_p => sout_p,
-        sout_n => sout_n,
+
         spw_error => spw_error,
   --      spw_fifo_in => spw_fifo_in,
         spw_fifo_out => spw_fifo_out,

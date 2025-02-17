@@ -58,13 +58,10 @@ port(
 
     --DS signal chose by the c_port_mode 
     Din_p  			 : in 	std_logic_vector(1 to g_num_ports-1)	:= (others => '0');	-- IO used for "single" and "diff" io modes
-    Din_n            : in 	std_logic_vector(1 to g_num_ports-1)	:= (others => '0'); -- IO used for "single" and "diff" io modes
     Sin_p            : in 	std_logic_vector(1 to g_num_ports-1)	:= (others => '0'); -- IO used for "single" and "diff" io modes
-    Sin_n            : in 	std_logic_vector(1 to g_num_ports-1)	:= (others => '0'); -- IO used for "single" and "diff" io modes
     Dout_p           : out 	std_logic_vector(1 to g_num_ports-1)	:= (others => '0'); -- IO used for "single" and "diff" io modes
-    Dout_n           : out 	std_logic_vector(1 to g_num_ports-1)	:= (others => '0'); -- IO used for "single" and "diff" io modes
     Sout_p           : out 	std_logic_vector(1 to g_num_ports-1)	:= (others => '0'); -- IO used for "single" and "diff" io modes
-    Sout_n           : out 	std_logic_vector(1 to g_num_ports-1)	:= (others => '0'); -- IO used for "single" and "diff" io modes                                                     
+                                       
     spw_error        : out  std_logic;
     
     --spacewire fifo IO 
@@ -126,13 +123,9 @@ begin
 		rst_in					=> reset,	           -- router reset active high
 		
 		Din_p               	=> Din_p, 
-		Din_n               	=> (others => '0'), 
 		Sin_p               	=> Sin_p, 
-		Sin_n               	=> (others => '0'), 
 		Dout_p              	=> Dout_p, 
-		Dout_n              	=> open, 
 		Sout_p              	=> Sout_p, 
-		Sout_n              	=> open,  
 
 		spw_fifo_in             => spw_fifo_in,
 		spw_fifo_out	        => spw_fifo_out,
