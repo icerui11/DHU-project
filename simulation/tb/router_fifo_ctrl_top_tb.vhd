@@ -56,7 +56,6 @@ architecture tb of router_fifo_ctrl_top_tb is
     signal rx_data_out : std_logic_vector(7 downto 0);
     signal rx_data_valid : std_logic;
     signal rx_data_ready : std_logic := '1';
-    signal ram_enable_tx : std_logic;
 
     -- CCSDS signals
     signal ccsds_datain  : std_logic_vector(shyloc_121.ccsds121_parameters.W_BUFFER_GEN-1 downto 0);
@@ -82,9 +81,7 @@ architecture tb of router_fifo_ctrl_top_tb is
 	signal 	spw_debug_parity	: 		std_logic;
 	signal 	spw_debug_cmd		: 		string(1 to 3);
 	signal 	spw_debug_time		: 		std_logic_vector(7 downto 0) 	:= (others => '0');
-	
-    signal  spw_fifo_in		    :       r_fifo_master_array(1 to g_num_ports-1) := (others => c_fifo_master);
-    signal  spw_fifo_out	    :       r_fifo_slave_array(1 to g_num_ports-1)	:= (others => c_fifo_slave);
+
 	signal 	router_connected	: 		std_logic_vector(31 downto 1);
 
     --declaration the same state type in testbench
@@ -125,7 +122,6 @@ begin
         rx_data_out        => rx_data_out,
         rx_data_valid      => rx_data_valid,
         rx_data_ready      => rx_data_ready,
-        ram_enable_tx      => ram_enable_tx,
         ccsds_datain       => ccsds_datain,
         w_update           => w_update,
         asym_fifo_full     => asym_fifo_full,
@@ -137,9 +133,7 @@ begin
         dout_p => dout_p,
         sout_p => sout_p,
 
-        spw_error => spw_error,
-  --      spw_fifo_in => spw_fifo_in,
-        spw_fifo_out => spw_fifo_out,
+        spw_error        => spw_error,
         router_connected => router_connected
     );
 

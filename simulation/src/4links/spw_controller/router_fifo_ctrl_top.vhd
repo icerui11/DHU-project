@@ -49,7 +49,6 @@ port(
     rx_data_out		 : out 	std_logic_vector(7 downto 0)	:= (others => '0');		-- received spacewire data output
     rx_data_valid	 : out 	std_logic := '0';										-- valid rx data on output
     rx_data_ready	 : in 	std_logic := '1';										-- assert to receive rx data
-    ram_enable_tx    : out   std_logic;
 
     ccsds_datain     : in std_logic_vector(shyloc_121.ccsds121_parameters.W_BUFFER_GEN-1 downto 0);     --convert to 8 bit data in asym_FIFO
     w_update         : in std_logic;                                                                    --connect with ccsds dataout newvalid
@@ -61,12 +60,8 @@ port(
     Sin_p            : in 	std_logic_vector(1 to g_num_ports-1)	:= (others => '0'); -- IO used for "single" and "diff" io modes
     Dout_p           : out 	std_logic_vector(1 to g_num_ports-1)	:= (others => '0'); -- IO used for "single" and "diff" io modes
     Sout_p           : out 	std_logic_vector(1 to g_num_ports-1)	:= (others => '0'); -- IO used for "single" and "diff" io modes
-                                       
+
     spw_error        : out  std_logic;
-    
-    --spacewire fifo IO 
---   spw_fifo_in		: in 	r_fifo_master_array(1 to g_num_ports-1) := (others => c_fifo_master);     -- all signal from controller
-    spw_fifo_out	    : out  r_fifo_slave_array(1 to g_num_ports-1)	:= (others => c_fifo_slave);
     router_connected    : out  std_logic_vector(31 downto 1) := (others => '0')            -- output, asserted when SpW Link is Connected
 );
 
@@ -74,39 +69,37 @@ end router_fifo_ctrl_top;
 
 architecture rtl of router_fifo_ctrl_top is 
 
-    	-- Channels                                                                 	--
+    	-- Channels                                                                 	
 	signal spw_Tx_data              :    	nonet;                                  --
 	signal spw_Tx_OR                :    	std_logic := '0';                       -- converted to std_logic for use in entity/component outputs...
-	signal spw_Tx_IR                :  		std_logic;                                --
-	signal spw_Rx_data              :  		nonet;                                  --
-	signal spw_Rx_OR                :  		std_logic;                                --
-	signal spw_Rx_IR                :    	std_logic := '0';                       --
-	signal spw_Rx_ESC_ESC           :  		std_logic;                                --
-	signal spw_Rx_ESC_EOP           :  		std_logic;                                --
-	signal spw_Rx_ESC_EEP           :  		std_logic;                                --
-	signal spw_Rx_Parity_error      :  		std_logic;                                --
-	signal spw_Rx_bits              :  		integer range 0 to 2;                   --
-	signal spw_Rx_rate              :  		std_logic_vector(15 downto 0);          --
+	signal spw_Tx_IR                :  		std_logic;                                
+	signal spw_Rx_data              :  		nonet;                                  
+	signal spw_Rx_OR                :  		std_logic;                               
+	signal spw_Rx_IR                :    	std_logic := '0';                      
+	signal spw_Rx_ESC_ESC           :  		std_logic;                                
+	signal spw_Rx_ESC_EOP           :  		std_logic;                                
+	signal spw_Rx_ESC_EEP           :  		std_logic;                                
+	signal spw_Rx_Parity_error      :  		std_logic;                                
+	signal spw_Rx_bits              :  		integer range 0 to 2;                   
+	signal spw_Rx_rate              :  		std_logic_vector(15 downto 0);          
     
-    signal reset           : std_logic := '1';								-- reset signal
+    signal reset           : std_logic := '1';								 -- reset signal
     signal ram_addr        : std_logic_vector(g_addr_width-1 downto 0);
-    signal ram_enable      : std_logic;
     signal fifo_data       : std_logic_vector(g_data_width-1 downto 0);	     -- data FROM fifo
-    signal fifo_clear      : std_logic := '0';								-- clear signal for fifo
-    signal fifo_dataout    : std_logic_vector(g_data_width-1 downto 0);	-- data out from fifo
-    signal fifo_r_update   : std_logic;								-- fifo read update signal
-    signal asym_FIFO_empty : std_logic;								-- fifo empty signal
+    signal fifo_clear      : std_logic := '0';								 -- clear signal for fifo
+    signal fifo_dataout    : std_logic_vector(g_data_width-1 downto 0);	     -- data out from fifo
+    signal fifo_r_update   : std_logic;								         -- fifo read update signal
+    signal asym_FIFO_empty : std_logic;								         -- fifo empty signal
 
-    signal fifo_ack        : std_logic;		-- fifo ack signal
-    signal write_done      : std_logic;		-- write done signal   
+    signal fifo_ack        : std_logic;		                                 -- fifo ack signal
+    signal write_done      : std_logic;		                                 -- write done signal   
 
     signal spw_fifo_in	   : r_fifo_master_array(1 to g_num_ports-1) := (others => c_fifo_master);
+    signal spw_fifo_out	   : r_fifo_slave_array(1 to g_num_ports-1)  := (others => c_fifo_slave);
 
 begin 
 
-
     reset  <= '1' when rst_n = '0' else '0';                                -- microchip use active low reset
-    ram_enable_tx <= ram_enable;
 
     router_inst: entity work.router_top_level_RTG4(rtl)                 	-- instantiate SpaceWire Router 
 	generic map(

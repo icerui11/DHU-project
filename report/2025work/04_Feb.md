@@ -22,8 +22,6 @@
 
 1. set DUT C:/Users/yinrui/Desktop/Envison_DHU
 2. do $DUT/DHU-project/simulation/script/router_fifo_ctrl.do
-
-   为ip_core_router new router submodules add -coverage in ip_core_router.do
 3. write new script
 4. 注意编译新的routing_table都要用version 2
 5. 重新编写router_fifo_ctrl_top_tb,因为之前的tb 只generate 了一个spw tx, 更新的testbench should according to predefined package g_num_ports and c_fifo_ports决定generated spw instances.
@@ -34,8 +32,6 @@
 7. in tb, there is a error for : external name cannot denote an element of an array
 
    1. use alias name
-      1. in the tb file, 注意路径，even though g_is_fifo(i) is set to 0, meaning we'll use the SpaceWire interface rather than the FIFO interface, the generate statement still creates a level in the hierarchy.
-      2. the if-generate statement creates a scope in the design hierarchy regardless of which branch is taken
    2. directly a new monitor record
 8. testcase concept
 
@@ -56,6 +52,31 @@
 1. use UVVM
    1. do $DUT/UVVM-master/script/compile_all.do $DUT/UVVM-master/script $DUT/SpW_router/spw_router_sim
    2. all methods are defined in methods_pkg.vhd
+2. BFMs vs VVC
+   1. the limitation of process-based BFMs: a process can only execute one thing at a time. when it's running a BFM procedure, it's locked into that task
+
+## 17.02--
+
+* [ ]  optimize the router_fifo_ctrl_top
+
+1. new system top-level file
+   1. when declare component, if your component uses generics, you must declare them in the component declaration
+   2. structured naming approach
+      1. signal type
+      2. polarity (_n for active low)
+      3. Domain
+      4. Location/purpose (_pad for FPGA I/O pad )
+2. router_fifo_ctrl_top
+   1. remove DDR/SDR related ports, since i've configured g_mode as single
+      1. vhdl allows leaving unused inputs unconnected
+      2. using 'open'
+      3. using default values if specified in the component declaration
+   2. 因为已经集成了controller, 所以entity不需要fifo_in data, 来源于ctrl 的spw_Tx_data,spw_Tx_data 在FSM中来源于EOP, or c_port_addr,or in read_mem state = ram_data_in, => asmy_FIFO. data_out_chunk(fifo_data) => 32 bit ccsds_datain split in 4 8bit data
+      1. spw_Rx_data is basically from spw_fifo_out.tx_data. need handshake signal to identify when the data is valid, the output is rx_data_out and rx_data_valid <= from not spw_Rx_con
+      2. rx_data_ready? rx_ready 	<= rx_cmd_ready or rx_data_ready;  因为spw_Rx_data 用于接收raw data,所以当 SHyLoC ready 时 才能接收来自router fifo_out 传输的raw data,
+   3. remove spw_fifo_in and spw_fifo_out signal in router_fifo_ctrl_top because all signal of array signa have already been assigned
+   4. declare zero initialization constant for AHB input in router_pckg.vhd
+      1. can't directly use others => '0', because different fields have different sizes, the compiler can't automatically convert a single bit value to different sized vector
 
 # EGSE
 
