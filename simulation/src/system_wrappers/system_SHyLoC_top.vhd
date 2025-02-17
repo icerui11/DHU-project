@@ -27,30 +27,28 @@ use shyloc_123.ccsds123_parameters.all;
 context work.router_context;
 
 entity system_SHyLoC_top is 
+    generic (
+        g_num_ports         : natural range 1 to 32     := c_num_ports;         -- number of ports
+        g_is_fifo           : t_dword                   := c_fifo_ports;        -- fifo ports
+        g_clock_freq        : real                      := c_spw_clk_freq;      -- clock frequency
+        g_mode				: string 					:= "single";			-- valid options are "diff", "single" and "custom".
+        g_priority          : string                    := c_priority;          
+        g_ram_style         : string                    := c_ram_style;
+        g_router_port_addr  : integer                   := c_router_port_addr           
+    );                                                                                                    
+    
     port(
-        rst_n_spw    : in std_logic;
-        rst_n        : in std_logic;
-        Din_p_1      : in  std_logic;
-        Din_p_2      : in  std_logic;
-        Din_p_3      : in  std_logic;
-        Din_p_4      : in  std_logic;
-        Sin_p_1      : in  std_logic;
-        Sin_p_2      : in  std_logic;
-        Sin_p_3      : in  std_logic;
-        Sin_p_4      : in  std_logic;
-        -- Outputs
-        Dout_p_1     : out std_logic;
-        Dout_p_2     : out std_logic;
-        Dout_p_3     : out std_logic;
-        Dout_p_4     : out std_logic;
-        Sout_p_1     : out std_logic;
-        Sout_p_2     : out std_logic;
-        Sout_p_3     : out std_logic;
-        Sout_p_4     : out std_logic;
-        spw_fmc_en   : out std_logic;
-        spw_fmc_en_2 : out std_logic;
-        spw_fmc_en_3 : out std_logic;
-        spw_fmc_en_4 : out std_logic
+        rst_n_spw_pad : in std_logic;
+        rst_n_pad     : in std_logic;
+        rst_AHB_pad   : in std_logic;
+		Din_p  		  : in std_logic_vector(1 to g_num_ports-1)	:= (others => '0');	-- IO used for "single" and "diff" io modes
+		Sin_p         : in std_logic_vector(1 to g_num_ports-1)	:= (others => '0'); -- IO used for "single" and "diff" io modes
+		Dout_p        : out std_logic_vector(1 to g_num_ports-1)	:= (others => '0'); -- IO used for "single" and "diff" io modes
+		Sout_p        : out std_logic_vector(1 to g_num_ports-1)	:= (others => '0'); -- IO used for "single" and "diff" io modes
+        spw_fmc_en    : out std_logic;
+        spw_fmc_en_2  : out std_logic;
+        spw_fmc_en_3  : out std_logic;
+        spw_fmc_en_4  : out std_logic
     );
 end entity system_SHyLoC_top;
 
@@ -96,22 +94,11 @@ port(
     rx_data_out		 : out 	std_logic_vector(7 downto 0)	:= (others => '0');		-- received spacewire data output
     rx_data_valid	 : out 	std_logic := '0';										-- valid rx data on output
     rx_data_ready	 : in 	std_logic := '1';										-- assert to receive rx data
-    ram_enable_tx    : out   std_logic;
 
-    ccsds_datain     : in std_logic_vector(shyloc_121.ccsds121_parameters.W_BUFFER_GEN-1 downto 0);     --convert to 8 bit data in asym_FIFO
-    w_update         : in std_logic;                                                                    --connect with ccsds dataout newvalid
-    asym_FIFO_full   : out std_logic;								                                    -- fifo full signal
-    ccsds_ready_ext  : out std_logic;								                                    -- fifo ready signal
-
-    --TX_IR indicate fifo read data and transmit data to spw
-    TX_IR_fifo_rupdata : out std_logic;
-    --DS signal chose by the c_port_mode 
-    DDR_din_r		 : in	std_logic_vector(1 to g_num_ports-1)	:= (others => '0');	-- IO used for "custom" io mode 
-    DDR_din_f   	 : in	std_logic_vector(1 to g_num_ports-1)	:= (others => '0'); -- IO used for "custom" io mode 
-    DDR_sin_r   	 : in	std_logic_vector(1 to g_num_ports-1)	:= (others => '0'); -- IO used for "custom" io mode 
-    DDR_sin_f   	 : in	std_logic_vector(1 to g_num_ports-1)	:= (others => '0'); -- IO used for "custom" io mode 
-    SDR_Dout		 : out	std_logic_vector(1 to g_num_ports-1)	:= (others => '0'); -- IO used for "custom" io mode 
-    SDR_Sout		 : out	std_logic_vector(1 to g_num_ports-1)	:= (others => '0'); -- IO used for "custom" io mode 
+    ccsds_datain     : in   std_logic_vector(shyloc_121.ccsds121_parameters.W_BUFFER_GEN-1 downto 0);     --convert to 8 bit data in asym_FIFO
+    w_update         : in   std_logic;                                                                    --connect with ccsds dataout newvalid
+    asym_FIFO_full   : out  std_logic;								                                    -- fifo full signal
+    ccsds_ready_ext  : out  std_logic;								                                    -- fifo ready signal
 
     Din_p  			 : in 	std_logic_vector(1 to g_num_ports-1)	:= (others => '0');	-- IO used for "single" and "diff" io modes
     Din_n            : in 	std_logic_vector(1 to g_num_ports-1)	:= (others => '0'); -- IO used for "single" and "diff" io modes
@@ -209,7 +196,7 @@ end component;
     -- Data Interface signals
     signal data_in_shyloc     : std_logic_vector(shyloc_123.ccsds123_parameters.D_GEN-1 downto 0);
     signal data_in_newvalid   : std_logic;
-    signal data_out           : std_logic_vector(shyloc_121.ccsds121_parameters.W_BUFFER_GEN-1 downto 0);
+    signal data_out_shyloc    : std_logic_vector(shyloc_121.ccsds121_parameters.W_BUFFER_GEN-1 downto 0);
     signal data_out_newvalid  : std_logic;
     
     -- Control signals
@@ -226,7 +213,6 @@ end component;
     -- Reset Management Signals
     ----------------------------------------------------------------------
     signal reset_n_spw_s : std_logic;             -- Debounced SpaceWire reset (active low)
-    signal rst_spw_s     : std_logic;             -- Debounced SpaceWire reset (active high)
     signal reset_n_s     : std_logic;             -- Debounced system reset (active low)
 
 begin
@@ -250,43 +236,90 @@ OSC_C0_0 : OSC_C0
         );
 
 ----------------------------------------------------------------------
--- ShyLoc_top_Wrapper instantiation
+-- ShyLoc_top_Wrapper instantiation, CCSDS123+CCSDS121
 ----------------------------------------------------------------------
 ShyLoc_top_inst : ShyLoc_top_Wrapper
     port map(
         -- System Interface
         Clk_S             => clk_s,              -- Using the clock from FCCC
-        Rst_N             => rst_n,              -- Using the top-level reset
+        Rst_N             => reset_n_s,              -- Using the top-level reset
         
         -- Amba Interface
-        AHBSlave121_In    => ahb_slave121_in,
+        AHBSlave121_In    => C_AHB_SLV_IN_ZERO,  --declared in router_package.vhd
         Clk_AHB           => clk_AHB,            -- Using the AHB clock from FCCC
-        Reset_AHB         => not rst_n,          -- Inverting reset for AHB
-        AHBSlave121_Out   => ahb_slave121_out,
+        Reset_AHB         => rst_AHB_pad,          
+        AHBSlave121_Out   => open,
         
         -- AHB 123 Interfaces
-        AHBSlave123_In    => ahb_slave123_in,
-        AHBSlave123_Out   => ahb_slave123_out,
-        AHBMaster123_In   => ahb_master123_in,
-        AHBMaster123_Out  => ahb_master123_out,
+        AHBSlave123_In    => C_AHB_SLV_IN_ZERO,
+        AHBSlave123_Out   => open,
+        AHBMaster123_In   => C_AHB_MST_IN_ZERO,
+        AHBMaster123_Out  => open,
         
         -- Data Input Interface
-        DataIn_shyloc     => data_in_shyloc,
-        DataIn_NewValid   => data_in_newvalid,
+        DataIn_shyloc     => rx_data_out,
+        DataIn_NewValid   => rx_data_valid,
         
         -- Data Output Interface CCSDS121
-        DataOut           => data_out,
+        DataOut           => data_out_shyloc,
         DataOut_NewValid  => data_out_newvalid,
-        Ready_Ext         => ready_ext,
+
+        Ready_Ext         => ccsds_ready_ext,           --input, external receiver not ready such external fifo is full
         
         -- CCSDS123 IP Core Interface
         ForceStop         => force_stop,
         AwaitingConfig    => awaiting_config,
-        Ready             => ready,
+        Ready             => ready,                     --output, configuration received and IP ready for new samples
         FIFO_Full         => fifo_full,
         EOP               => eop,
         Finished          => finished,
         Error             => error
+    );
+
+    router_fifo_ctrl_inst : router_fifo_ctrl_top
+    -- Generic map section defines the configuration parameters
+    generic map (
+        g_num_ports     => c_num_ports,         -- Number of SpaceWire ports
+        g_is_fifo       => c_fifo_ports,        -- Define which ports are FIFO ports
+        g_clock_freq    => c_spw_clk_freq,      -- System clock frequency
+        g_addr_width    => 9,                   -- Address width for RAM/FIFO
+        g_data_width    => 8,                   -- Data width for RAM/FIFO
+        g_mode          => "single",            -- Operating mode (single/diff/custom)
+        g_priority      => c_priority,          -- Priority scheme for routing
+        g_ram_style     => c_ram_style,         -- RAM implementation style
+        g_router_port_addr => c_router_port_addr -- Router port address
+    )
+    -- Port map section connects the actual signals
+    port map (
+        -- Clock and Reset
+        rst_n           => reset_n_spw_s,         -- Active low reset
+        clk             => clk_s,                 -- System clock
+
+        -- Receive Command Interface
+        rx_cmd_out      => rx_cmd_out,         -- Control character output
+        rx_cmd_valid    => rx_cmd_valid,       -- Command valid signal
+        rx_cmd_ready    => rx_cmd_ready,       -- Command ready signal
+
+        -- Receive Data Interface
+        rx_data_out     => rx_data_out,        -- Received raw data and travel to CCSDS
+        rx_data_valid   => rx_data_valid,      -- Data valid signal
+        rx_data_ready   => ready,              -- from SHyLoC 
+
+        -- CCSDS Interface
+        ccsds_datain    => data_out_shyloc,       -- CCSDS output data, compressed data
+        w_update        => data_out_newvalid,     -- Write update signal
+        asym_FIFO_full  => open ,                 -- inverted signal of ccsds_ready_ext
+        ccsds_ready_ext => ccsds_ready_ext,       -- CCSDS ready signal
+
+        -- SpaceWire Interface (Single-ended mode)
+        Din_p           => Din_p,              -- Data input positive
+        Sin_p           => Sin_p,              -- Strobe input positive
+        Dout_p          => Dout_p,             -- Data output positive
+        Sout_p          => Sout_p,             -- Strobe output positive
+
+        -- Status Signals
+        spw_error        => open,          -- SpaceWire error flag
+        router_connected => open    -- Port connection status
     );
 
 ----------------------------------------------------------------------
@@ -298,15 +331,15 @@ Debounce_inst : Debounce_Single_Input
     )
     port map (
         i_Clk        => clk_s,                -- Connect to system clock from FCCC
-        rst_n        => rst_n,                -- Connect to top-level reset input
-        rst_n_spw    => rst_n_spw,           -- Connect to SpaceWire reset input
+        rst_n        => rst_n_pad,            -- Connect to top-level reset input
+        rst_n_spw    => rst_n_spw_pad,        -- Connect to SpaceWire reset input
         locked       => locked,               -- Connect to FCCC locked signal
         spw_fmc_en   => spw_fmc_en,          -- Connect directly to top-level output
         spw_fmc_en_2 => spw_fmc_en_2,        -- Connect directly to top-level output
         spw_fmc_en_3 => spw_fmc_en_3,        -- Connect directly to top-level output
         spw_fmc_en_4 => spw_fmc_en_4,        -- Connect directly to top-level output
         reset_n_spw  => reset_n_spw_s,        -- Connect to internal signal
-        rst_spw      => rst_spw_s,           -- Connect to internal signal
+        rst_spw      => open,           -- Connect to internal signal
         reset_n      => reset_n_s             -- Connect to internal signal
     );
 
