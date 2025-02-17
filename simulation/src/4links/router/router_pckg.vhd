@@ -97,6 +97,27 @@ package router_pckg is
 
 	constant c_router_port_addr     : integer range 0 to 31 := 1;   -- router_fifo_ctrl transmit to which port address   
 
+	-- AHB Master Input initialization
+	constant C_AHB_MST_IN_ZERO : AHB_Mst_In_Type := (
+		HGRANT     => '0',                    -- Single bit signal
+		HREADY     => '0',                    -- Single bit signal
+		HRESP      => (others => '0'),        -- 2-bit response vector
+		HRDATA     => (others => '0')         -- HDMAX-width data bus
+	);
+	constant C_AHB_SLV_IN_ZERO : AHB_Slv_In_Type := (
+		HSEL       => '0',                    -- Slave select signal
+		HADDR      => (others => '0'),        -- HAMAX-width address bus
+		HWRITE     => '0',                    -- Read/Write signal
+		HTRANS     => (others => '0'),        -- 2-bit transfer type
+		HSIZE      => (others => '0'),        -- 3-bit transfer size
+		HBURST     => (others => '0'),        -- 3-bit burst type
+		HWDATA     => (others => '0'),        -- HDMAX-width data bus
+		HPROT      => (others => '0'),        -- 4-bit protection control
+		HREADY     => '0',                    -- Transfer done signal
+		HMASTER    => (others => '0'),        -- 4-bit master identifier
+		HMASTLOCK  => '0'                     -- Locked access signal
+	);
+	
 	--------------------------------------------------------------------------------------------------------------------------
 	-- Subtype & Type Declarations --
 	--------------------------------------------------------------------------------------------------------------------------
