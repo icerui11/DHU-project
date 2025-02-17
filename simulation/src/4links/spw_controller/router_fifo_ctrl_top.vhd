@@ -56,16 +56,7 @@ port(
     asym_FIFO_full   : out std_logic;								                                    -- fifo full signal
     ccsds_ready_ext  : out std_logic;								                                    -- fifo ready signal
 
-    --TX_IR indicate fifo read data and transmit data to spw
-    TX_IR_fifo_rupdata : out std_logic;
     --DS signal chose by the c_port_mode 
-    DDR_din_r		 : in	std_logic_vector(1 to g_num_ports-1)	:= (others => '0');	-- IO used for "custom" io mode 
-    DDR_din_f   	 : in	std_logic_vector(1 to g_num_ports-1)	:= (others => '0'); -- IO used for "custom" io mode 
-    DDR_sin_r   	 : in	std_logic_vector(1 to g_num_ports-1)	:= (others => '0'); -- IO used for "custom" io mode 
-    DDR_sin_f   	 : in	std_logic_vector(1 to g_num_ports-1)	:= (others => '0'); -- IO used for "custom" io mode 
-    SDR_Dout		 : out	std_logic_vector(1 to g_num_ports-1)	:= (others => '0'); -- IO used for "custom" io mode 
-    SDR_Sout		 : out	std_logic_vector(1 to g_num_ports-1)	:= (others => '0'); -- IO used for "custom" io mode 
-
     Din_p  			 : in 	std_logic_vector(1 to g_num_ports-1)	:= (others => '0');	-- IO used for "single" and "diff" io modes
     Din_n            : in 	std_logic_vector(1 to g_num_ports-1)	:= (others => '0'); -- IO used for "single" and "diff" io modes
     Sin_p            : in 	std_logic_vector(1 to g_num_ports-1)	:= (others => '0'); -- IO used for "single" and "diff" io modes
@@ -77,8 +68,8 @@ port(
     spw_error        : out  std_logic;
     
     --spacewire fifo IO 
- --   spw_fifo_in		: in 	r_fifo_master_array(1 to g_num_ports-1) := (others => c_fifo_master);     -- all signal from controller
-    spw_fifo_out	: out 	r_fifo_slave_array(1 to g_num_ports-1)	:= (others => c_fifo_slave);
+--   spw_fifo_in		: in 	r_fifo_master_array(1 to g_num_ports-1) := (others => c_fifo_master);     -- all signal from controller
+    spw_fifo_out	    : out  r_fifo_slave_array(1 to g_num_ports-1)	:= (others => c_fifo_slave);
     router_connected    : out  std_logic_vector(31 downto 1) := (others => '0')            -- output, asserted when SpW Link is Connected
 );
 
@@ -99,7 +90,6 @@ architecture rtl of router_fifo_ctrl_top is
 	signal spw_Rx_Parity_error      :  		std_logic;                                --
 	signal spw_Rx_bits              :  		integer range 0 to 2;                   --
 	signal spw_Rx_rate              :  		std_logic_vector(15 downto 0);          --
---	signal spw_Connected            : 		std_logic;                                --
     
     signal reset           : std_logic := '1';								-- reset signal
     signal ram_addr        : std_logic_vector(g_addr_width-1 downto 0);
@@ -109,15 +99,14 @@ architecture rtl of router_fifo_ctrl_top is
     signal fifo_dataout    : std_logic_vector(g_data_width-1 downto 0);	-- data out from fifo
     signal fifo_r_update   : std_logic;								-- fifo read update signal
     signal asym_FIFO_empty : std_logic;								-- fifo empty signal
- --   signal ccsds_ready_ext : std_logic;								-- fifo ready signal
+
     signal fifo_ack        : std_logic;		-- fifo ack signal
     signal write_done      : std_logic;		-- write done signal   
 
     signal spw_fifo_in	   : r_fifo_master_array(1 to g_num_ports-1) := (others => c_fifo_master);
 
 begin 
-    TX_IR_fifo_rupdata <= spw_Tx_IR;
- --   ccsds_ready_ext    <= ccsds_ready_ext;
+
 
     reset  <= '1' when rst_n = '0' else '0';                                -- microchip use active low reset
     ram_enable_tx <= ram_enable;
@@ -135,13 +124,6 @@ begin
 	port map( 
 		router_clk              => clk,
 		rst_in					=> reset,	           -- router reset active high
-	
-		DDR_din_r				=> (others => '0'),	
-		DDR_din_f   			=> (others => '0'),  
-		DDR_sin_r   			=> (others => '0'),  
-		DDR_sin_f   			=> (others => '0'),  
-		SDR_Dout				=> open,
-		SDR_Sout				=> open,
 		
 		Din_p               	=> Din_p, 
 		Din_n               	=> (others => '0'), 
@@ -188,7 +170,6 @@ begin
             g_count_max 	 => g_data_width                    -- count for every ram address
             )
             port map( 
-
             -- standard register control signals --
             clk_in				=> 	clk,						-- clk input, rising edge trigger
             rst_in				=>	reset,						-- reset input, active high
@@ -199,9 +180,8 @@ begin
             fifo_ack            =>  fifo_ack,                   
             write_done          =>  write_done,                           
             -- RAM signals
-
             ram_data_in			=> 	fifo_data,					              -- ram read data
-            
+  
             -- SpW Data Signals
             spw_Tx_data			=> 	spw_fifo_in(i).rx_data(7 downto 0),	      -- router fifo rxdata, is different from normal spw
             spw_Tx_Con			=> 	spw_fifo_in(i).rx_data(8),				  -- SpW Control Char Bit

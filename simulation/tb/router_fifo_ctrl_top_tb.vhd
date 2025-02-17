@@ -134,8 +134,7 @@ begin
         w_update           => w_update,
         asym_fifo_full     => asym_fifo_full,
         ccsds_ready_ext    => ccsds_ready_ext,
-        tx_ir_fifo_rupdata => tx_ir_fifo_rupdata,
-        
+
         -- SpaceWire Interface
         din_p  => din_p,
         din_n  => din_n,
