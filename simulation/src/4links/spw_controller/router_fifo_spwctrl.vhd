@@ -4,7 +4,7 @@
 -- @ File Name				:	router_fifo_spwctrl.vhd
 -- @ Engineer				:	Rui
 -- @ Date					: 	10.01.2024
-
+-- @ version				:	2.0
 -- @ VHDL Version			:   1987, 1993, 2008
 -- @ Supported Toolchain	:	libero 12.0
 -- @ Target Device			: 	m2s150t
@@ -42,12 +42,10 @@ entity router_fifo_spwctrl is
         ccsds_ready_ext : out std_logic;	-- ccsds ready signal
         fifo_ack    : in 	std_logic;		-- fifo ack signal
         write_done  : out 	std_logic;		-- write done signal
---        ccsds_data  : out 	std_logic_vector(CCSDS_INbitwidth-1 downto 0);	-- ccsds data output
         
 		-- RAM signals
 		ram_data_in		: in 	std_logic_vector(7 downto 0) ;	-- data read from RAM
 
-		
 		-- SpW Data Signals
 		spw_Tx_data		: out   std_logic_vector(7 downto 0);		-- SpW Tx_data
 		spw_Tx_Con		: out 	std_logic;					-- SpW character control bit
