@@ -16,6 +16,9 @@ use smartfusion2.all;
 library src;
 use src.all;
 
+library work;
+use work.system_constant_pckg.all;
+
 --! Use shyloc_121 library
 library shyloc_121; 
 --! Use generic shyloc121 parameters
@@ -23,6 +26,9 @@ use shyloc_121.ccsds121_parameters.all;
 
 library shyloc_123; 
 use shyloc_123.ccsds123_parameters.all;
+
+library shyloc_utils;
+use shyloc_utils.amba.all;
 
 context work.router_context;
 
@@ -83,6 +89,15 @@ component OSC_C0
 end component;
 
 component router_fifo_ctrl_top
+generic (
+    g_num_ports         : natural range 1 to 32     := c_num_ports;         -- number of ports
+    g_is_fifo           : t_dword                   := c_fifo_ports;        -- fifo ports
+    g_clock_freq        : real                      := c_spw_clk_freq;      -- clock frequency
+    g_mode				: string 					:= "single";			-- valid options are "diff", "single" and "custom".
+    g_priority          : string                    := c_priority;          
+    g_ram_style         : string                    := c_ram_style;
+    g_router_port_addr  : integer                   := c_router_port_addr           
+);
 port(
     rst_n               : in std_logic;				-- active low reset
     clk                 : in std_logic;				-- clock input
@@ -186,12 +201,12 @@ end component;
     -- Signal declarations for ShyLoc_top_Wrapper
     ----------------------------------------------------------------------
     -- AHB Interface signals
-    signal ahb_slave121_in    : AHB_Slv_In_Type;    -- AHB slave input signals
-    signal ahb_slave121_out   : AHB_Slv_Out_Type;   -- AHB slave output signals
-    signal ahb_slave123_in    : AHB_Slv_In_Type;    -- AHB 123 slave input signals
-    signal ahb_slave123_out   : AHB_Slv_Out_Type;   -- AHB 123 slave output signals
-    signal ahb_master123_in   : AHB_Mst_In_Type;    -- AHB 123 master input signals
-    signal ahb_master123_out  : AHB_Mst_Out_Type;   -- AHB 123 master output signals
+--    signal ahb_slave121_in    : AHB_Slv_In_Type;    -- AHB slave input signals
+--    signal ahb_slave121_out   : AHB_Slv_Out_Type;   -- AHB slave output signals
+--    signal ahb_slave123_in    : AHB_Slv_In_Type;    -- AHB 123 slave input signals
+--    signal ahb_slave123_out   : AHB_Slv_Out_Type;   -- AHB 123 slave output signals
+--    signal ahb_master123_in   : AHB_Mst_In_Type;    -- AHB 123 master input signals
+--    signal ahb_master123_out  : AHB_Mst_Out_Type;   -- AHB 123 master output signals
     
     -- Data Interface signals
     signal data_in_shyloc     : std_logic_vector(shyloc_123.ccsds123_parameters.D_GEN-1 downto 0);
@@ -209,6 +224,12 @@ end component;
     signal finished           : std_logic;
     signal error              : std_logic;
 
+    ----------------------------------------------------------------------
+    -- Signal declarations for router_fifo_ctrl_top
+    ----------------------------------------------------------------------
+    signal rx_data_out		 : 	std_logic_vector(7 downto 0);
+    signal rx_data_valid	 : 	std_logic;
+    signal ccsds_ready_ext   :  std_logic;
     ----------------------------------------------------------------------
     -- Reset Management Signals
     ----------------------------------------------------------------------
@@ -282,8 +303,6 @@ ShyLoc_top_inst : ShyLoc_top_Wrapper
         g_num_ports     => c_num_ports,         -- Number of SpaceWire ports
         g_is_fifo       => c_fifo_ports,        -- Define which ports are FIFO ports
         g_clock_freq    => c_spw_clk_freq,      -- System clock frequency
-        g_addr_width    => 9,                   -- Address width for RAM/FIFO
-        g_data_width    => 8,                   -- Data width for RAM/FIFO
         g_mode          => "single",            -- Operating mode (single/diff/custom)
         g_priority      => c_priority,          -- Priority scheme for routing
         g_ram_style     => c_ram_style,         -- RAM implementation style
@@ -296,9 +315,9 @@ ShyLoc_top_inst : ShyLoc_top_Wrapper
         clk             => clk_s,                 -- System clock
 
         -- Receive Command Interface
-        rx_cmd_out      => rx_cmd_out,         -- Control character output
-        rx_cmd_valid    => rx_cmd_valid,       -- Command valid signal
-        rx_cmd_ready    => rx_cmd_ready,       -- Command ready signal
+        rx_cmd_out      => open,                 -- Control character output
+        rx_cmd_valid    => open,                 -- Command valid signal
+        rx_cmd_ready    => '0',                  -- Command ready signal
 
         -- Receive Data Interface
         rx_data_out     => rx_data_out,        -- Received raw data and travel to CCSDS
