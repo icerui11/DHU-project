@@ -28,7 +28,6 @@
 6. 因为spw become as a arrary, refer to the codec signal and r_codec_interface_array defined in the router_top_level_tb in the source code
 
    1. 注意spw Rx_IR and Rx_Time_IR is setting to high, this configuration allows continuous data transfer without blocking due to receiver not being ready. In tb we want to simplify this complex buffer control mechanism
-      <<<<<<< HEAD
 7. in tb, there is a error for : external name cannot denote an element of an array
 
    1. use alias name
@@ -77,6 +76,11 @@
    3. remove spw_fifo_in and spw_fifo_out signal in router_fifo_ctrl_top because all signal of array signa have already been assigned
    4. declare zero initialization constant for AHB input in router_pckg.vhd
       1. can't directly use others => '0', because different fields have different sizes, the compiler can't automatically convert a single bit value to different sized vector
+      2. system_constant_pckg, 将之前定义的放入这个package中
+         1. package: used for declaring constant, types, components, contains interface declarations of functions and procedures(declarations only, no implementation)
+         2. package body: the actual implementation of functions and procedures
+      3. 添加新package 到tcl, compile in work.
+   5. when declaring components in VHDL, it's recommanded to declare both generic and port. if using default generic values, it is feasible that only declare the port section
 
 # EGSE
 

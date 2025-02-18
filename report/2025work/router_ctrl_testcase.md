@@ -54,6 +54,8 @@ purpose: check whether the data transmitted through the router is consistent wit
       1. **-- 使用默认 ID** **log**(**"Simple log message"**)**;**    **-- 或使用 NOTE 级别（推荐用于简单日志）**
       2. **log**(NOTE**,** **"Another simple message"**)**;**
       3. 当不需要消息分类时
+2. check_value function
+   1. but if i want to check that the values of inputs and outputs are continuous, how should i handle that?
 
 ## testcase1
 
