@@ -3,7 +3,7 @@
 ----------------------------------------------------------------------------------------------------------------------------------
 -- @ File Name				:	router_fifo_ctrl_top.vhd
 -- @ Engineer				:	Rui
--- @ Date					: 	10.01.2024
+-- @ Date					: 	18.02.2024
 
 -- @ VHDL Version			:   2008
 -- @ Supported Toolchain	:	libero 12.0
@@ -12,8 +12,6 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
-
---context work.spw_context;
 
 library smartfusion2;
 use smartfusion2.all;
@@ -36,7 +34,7 @@ entity router_fifo_ctrl_top is
     g_priority          : string                    := c_priority;          
     g_ram_style         : string                    := c_ram_style;
     g_router_port_addr  : integer                   := c_router_port_addr           
-);                                                                                                    
+    );                                                                                                    
 
 port(
     rst_n               : in std_logic;				-- active low reset
@@ -62,7 +60,7 @@ port(
     Sout_p           : out 	std_logic_vector(1 to g_num_ports-1)	:= (others => '0'); -- IO used for "single" and "diff" io modes
 
     spw_error        : out  std_logic;
-    router_connected    : out  std_logic_vector(31 downto 1) := (others => '0')            -- output, asserted when SpW Link is Connected
+    router_connected : out  std_logic_vector(31 downto 1) := (others => '0')            -- output, asserted when SpW Link is Connected
 );
 
 end router_fifo_ctrl_top;
@@ -184,7 +182,7 @@ begin
             rx_cmd_ready	    =>  rx_cmd_ready,                            
 
             rx_data_out		    =>	rx_data_out,                             --rx_data_out, output 8 bit data to SHyLoc as raw data
-            rx_data_valid	    =>	rx_data_valid,                           --not spw_Rx_Con; assert data valid if data received
+            rx_data_valid	    =>	rx_data_valid,                           --not spw_Rx_Con; assert data valid if data received and handshake is asserted
             rx_data_ready	    =>	rx_data_ready,                                                
             
             -- SpW Control Signals
@@ -193,7 +191,7 @@ begin
             spw_ESC_EOP 	 	=> 	spw_Rx_ESC_EOP,   		                -- SpW ESC_EOP error 
             spw_ESC_EEP      	=> 	spw_Rx_ESC_EEP,     	                -- SpW ESC_EEP error 
             spw_Parity_error 	=> 	spw_Rx_Parity_error,                    -- SpW Parity error
-            
+     
             error_out			=> 	spw_error				                -- assert when error
             );
         
