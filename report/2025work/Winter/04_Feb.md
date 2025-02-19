@@ -82,6 +82,16 @@
       3. 添加新package 到tcl, compile in work.
    5. when declaring components in VHDL, it's recommanded to declare both generic and port. if using default generic values, it is feasible that only declare the port section
 
+# 19.02 
+
+##### system_router_SHyLoc_hdl  pure HDL flow
+
+1. since constraint of CCSDS121, the system max frequence is about 80MHz, later can be optimized
+2.
+
+
+
+
 # EGSE
 
 1. in every EGSE the cornerstone can be identified as "common core". this component implements the fundamental functions : Telemetry monitoring, Telecommand sending, Procedure Execution, Data Archiving, and so on.
