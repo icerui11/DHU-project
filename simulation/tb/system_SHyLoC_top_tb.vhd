@@ -30,6 +30,7 @@ entity system_SHyLoC_top_tb is
 end system_SHyLoC_top_tb;
 
 architecture rtl of system_SHyLoC_top_tb is
+    
 
     -- Constants
     constant clk_period   : time := 10 ns;
@@ -46,6 +47,17 @@ architecture rtl of system_SHyLoC_top_tb is
     -- Component signals
     signal rst_n : std_logic := '0';
     signal clk : std_logic := '0';
+    
+    -- DUT signals
+    signal reset_n_s : std_logic := '0';
+
+    signal force_stop         : std_logic;
+    signal awaiting_config    : std_logic;
+    signal ready              : std_logic;
+    signal fifo_full          : std_logic;
+    signal eop                : std_logic;
+    signal finished           : std_logic;
+    signal error              : std_logic;
     
     -- Control signals
     signal rx_cmd_out : std_logic_vector(2 downto 0);
@@ -107,30 +119,76 @@ begin
     
     reset_spw <= not rst_n;                 -- reset signal for SpW IP core
     -- Instantiate DUT using package constants
-    DUT: entity work.system_SHyLoC_top(rtl)
-    generic map (
-        g_num_ports         => c_num_ports,
-        g_is_fifo           => c_fifo_ports,
-        g_clock_freq        => c_spw_clk_freq,
-        g_mode              => "single",
-        g_priority          => c_priority,
-        g_ram_style         => c_ram_style,
-        g_router_port_addr  => c_router_port_addr
+
+    DUT: entity work.router_fifo_ctrl_top 
+    generic map(
+        g_num_ports        => g_num_ports,
+        g_data_width       => g_data_width,
+        g_addr_width       => g_addr_width
     )
-    port map (
-        rst_n_spw_pad => rst_n_spw_pad,
-        rst_n_pad     => rst_n_pad,
-        rst_AHB_pad   => rst_AHB_pad,
-        Din_p         => Din_p,
-        Sin_p         => Sin_p,
-        Dout_p        => Dout_p,
-        Sout_p        => Sout_p,
-        spw_fmc_en    => spw_fmc_en,
-        spw_fmc_en_2  => spw_fmc_en_2,
-        spw_fmc_en_3  => spw_fmc_en_3,
-        spw_fmc_en_4  => spw_fmc_en_4
+    port map(
+        rst_n              => rst_n,
+        clk                => clk,
+        rx_cmd_out         => open,
+        rx_cmd_valid       => open,
+        rx_cmd_ready       => '0',
+        rx_data_out        => rx_data_out,
+        rx_data_valid      => rx_data_valid,
+        rx_data_ready      => ready,                      -- from SHyLoC
+        ccsds_datain       => data_out_shyloc,            -- output data from SHyLoC 32-bit
+        w_update           => data_out_newvalid,          -- write update signal
+        asym_fifo_full     => open,
+        ccsds_ready_ext    => ccsds_ready_ext,
+
+        -- SpaceWire Interface
+        din_p              => din_p,
+        sin_p              => sin_p,
+        dout_p             => dout_p,
+        sout_p             => sout_p,
+
+        spw_error          => spw_error,
+        router_connected   => router_connected
     );
-                                                                
+    
+    --! Instantiate the SHyLoC_subtop component
+    ShyLoc_top_inst : entity work.ShyLoc_top_Wrapper(arch)
+    port map(
+        -- System Interface
+        Clk_S             => clk,                    
+        Rst_N             => reset_n_s,                   -- differe from reset_n
+        
+        -- Amba Interface
+        AHBSlave121_In    => C_AHB_SLV_IN_ZERO,          --declared in router_package.vhd
+        Clk_AHB           => clk_AHB,                  
+        Reset_AHB         => reset_n_s,          
+        AHBSlave121_Out   => open,
+        
+        -- AHB 123 Interfaces
+        AHBSlave123_In    => C_AHB_SLV_IN_ZERO,
+        AHBSlave123_Out   => open,
+        AHBMaster123_In   => C_AHB_MST_IN_ZERO,
+        AHBMaster123_Out  => open,
+        
+        -- Data Input Interface
+        DataIn_shyloc     => rx_data_out,
+        DataIn_NewValid   => rx_data_valid,
+        
+        -- Data Output Interface CCSDS121
+        DataOut           => data_out_shyloc,
+        DataOut_NewValid  => data_out_newvalid,
+
+        Ready_Ext         => ccsds_ready_ext,           --input, external receiver not ready such external fifo is full
+        
+        -- CCSDS123 IP Core Interface
+        ForceStop         => force_stop,
+        AwaitingConfig    => awaiting_config,
+        Ready             => ready,                     --output, configuration received and IP ready for new samples
+        FIFO_Full         => fifo_full,
+        EOP               => eop,
+        Finished          => finished,
+        Error             => error
+    );
+
     gen_dut_tx: for i in 1 to g_num_ports-1 generate
       gen_spw_tx: if c_fifo_ports(i) = '0' generate
        SPW_inst: entity work.spw_wrap_top_level_RTG4(rtl)
@@ -287,14 +345,20 @@ begin
           wait for clk_period*5;
         end test2;
     begin 
-    
-    set_log_file_name("router_fifo_ctrl_log.txt");
-    set_alert_file_name("router_fifo_ctrl_alert.txt");
+
+        spw_fmc_en <= '1';
+        spw_fmc_en_2 <= '1';
+        spw_fmc_en_3 <= '1';
+        spw_fmc_en_4 <= '1';
+        wait for 100 ns; 
+        
+        set_log_file_name("router_fifo_ctrl_log.txt");
+        set_alert_file_name("router_fifo_ctrl_alert.txt");
         test1;
         log(ID_LOG_HDR, "transmit data from port 1 and receive the same data through port2");
         log(ID_LOG_HDR, "Test1 completed");
         wait;
-    -- test2;   
+        -- test2;   
         -- Wait for error conditions
         wait until spw_error = '0';
     end process;
