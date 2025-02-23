@@ -82,15 +82,15 @@
       3. 添加新package 到tcl, compile in work.
    5. when declaring components in VHDL, it's recommanded to declare both generic and port. if using default generic values, it is feasible that only declare the port section
 
-# 19.02 
+# 19.02
 
 ##### system_router_SHyLoc_hdl  pure HDL flow
 
 1. since constraint of CCSDS121, the system max frequence is about 80MHz, later can be optimized
-2.
-
-
-
+2. 测试后存在的问题是：使用path address router可以删掉地址，但是使用logic address数据会保留并传给compressor
+3. 注意SHyLoC parameter, in ccsds121, when the unit-delay predictor is not present (preprocessor different to 2), the is_signed option is ignored and all samples are treated as unsigned,这是因为它接收的是CCSDS 123输出的映射残差,这些残差永远是非负的
+   1. 根据CCSDS 123标准(CCSDS 123.0-B-1)的4.9节,映射的预测残差δz(t)被定义为非负整数
+4. 注意top 中 直接assign forcestop low, 否则综合会导致随机值
 
 # EGSE
 

@@ -201,13 +201,7 @@ end component;
     -- Signal declarations for ShyLoc_top_Wrapper
     ----------------------------------------------------------------------
     -- AHB Interface signals
---    signal ahb_slave121_in    : AHB_Slv_In_Type;    -- AHB slave input signals
---    signal ahb_slave121_out   : AHB_Slv_Out_Type;   -- AHB slave output signals
---    signal ahb_slave123_in    : AHB_Slv_In_Type;    -- AHB 123 slave input signals
---    signal ahb_slave123_out   : AHB_Slv_Out_Type;   -- AHB 123 slave output signals
---    signal ahb_master123_in   : AHB_Mst_In_Type;    -- AHB 123 master input signals
---    signal ahb_master123_out  : AHB_Mst_Out_Type;   -- AHB 123 master output signals
-    
+
     -- Data Interface signals
     signal data_in_shyloc     : std_logic_vector(shyloc_123.ccsds123_parameters.D_GEN-1 downto 0);
     signal data_in_newvalid   : std_logic;
@@ -215,7 +209,7 @@ end component;
     signal data_out_newvalid  : std_logic;
     
     -- Control signals
-    signal ready_ext          : std_logic;
+
     signal force_stop         : std_logic;
     signal awaiting_config    : std_logic;
     signal ready              : std_logic;
@@ -288,7 +282,7 @@ ShyLoc_top_inst : ShyLoc_top_Wrapper
         Ready_Ext         => ccsds_ready_ext,           --input, external receiver not ready such external fifo is full
         
         -- CCSDS123 IP Core Interface
-        ForceStop         => force_stop,
+        ForceStop         => '0',
         AwaitingConfig    => awaiting_config,
         Ready             => ready,                     --output, configuration received and IP ready for new samples
         FIFO_Full         => fifo_full,
