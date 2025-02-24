@@ -15,10 +15,13 @@ use std.textio.all;
 library shyloc_121;
 use shyloc_121.ccsds121_parameters.all;
 
-library smartfusion2;
-use smartfusion2.all;
+library shyloc_123; 
+use shyloc_123.ccsds123_parameters.all;
 
 context work.router_context;
+
+library work;
+use work.system_constant_pckg.all;
 
 library uvvm_util;
 context uvvm_util.uvvm_util_context;
@@ -30,8 +33,6 @@ entity system_SHyLoC_top_tb is
 end system_SHyLoC_top_tb;
 
 architecture rtl of system_SHyLoC_top_tb is
-    
-
     -- Constants
     constant clk_period   : time := 10 ns;
     constant g_num_ports  : natural range 1 to 32 := c_num_ports ;      --  defined in package    
@@ -58,7 +59,7 @@ architecture rtl of system_SHyLoC_top_tb is
     signal eop                : std_logic;
     signal finished           : std_logic;
     signal error              : std_logic;
-    
+
     -- Control signals
     signal rx_cmd_out : std_logic_vector(2 downto 0);
     signal rx_cmd_valid : std_logic;
@@ -75,6 +76,13 @@ architecture rtl of system_SHyLoC_top_tb is
     signal asym_fifo_full : std_logic;
     signal ccsds_ready_ext : std_logic;
     signal tx_ir_fifo_rupdata : std_logic;
+    
+
+    -- Data Interface signals
+    signal data_in_shyloc     : std_logic_vector(shyloc_123.ccsds123_parameters.D_GEN-1 downto 0);
+    signal data_in_newvalid   : std_logic;
+    signal data_out_shyloc    : std_logic_vector(shyloc_121.ccsds121_parameters.W_BUFFER_GEN-1 downto 0);
+    signal data_out_newvalid  : std_logic;
 
     -- SpaceWire Interface signals (using single mode)
     signal din_p  : std_logic_vector(1 to g_num_ports-1) := (others => '0');
@@ -97,16 +105,16 @@ architecture rtl of system_SHyLoC_top_tb is
 	signal 	router_connected	: 		std_logic_vector(31 downto 1);
 
     --declaration the same state type in testbench
-    type t_states is (ready, addr_send, read_mem, spw_tx, ramaddr_delay, eop_tx);
+    type t_states is (fsm_ready, addr_send, read_mem, spw_tx, ramaddr_delay, eop_tx);
     signal router_ctrl_state : t_states; 
     
     --alias name
     alias router_fifo_debug_rx  is  
-       << signal .router_fifo_ctrl_top_tb.DUT.router_inst.spw_fifo_in : r_fifo_master_array(1 to g_num_ports-1)>>; 
+       << signal .system_SHyLoC_top_tb.DUT.router_inst.spw_fifo_in : r_fifo_master_array(1 to g_num_ports-1)>>; 
     
     --alias name for testcase2
     alias port1_rx_data is 
-       <<signal .router_fifo_ctrl_top_tb.DUT.router_inst.gen_ports(1).gen_spw.gen_fifo.spw_port_inst.Rx_data : std_logic_vector(8 downto 0)>>;
+       <<signal .system_SHyLoC_top_tb.DUT.router_inst.gen_ports(1).gen_spw.gen_fifo.spw_port_inst.Rx_data : std_logic_vector(8 downto 0)>>;
     --------------------------------------------------------------------
     --! Testbench procedures
     --------------------------------------------------------------------
@@ -159,7 +167,7 @@ begin
         
         -- Amba Interface
         AHBSlave121_In    => C_AHB_SLV_IN_ZERO,          --declared in router_package.vhd
-        Clk_AHB           => clk_AHB,                  
+        Clk_AHB           => clk,                  
         Reset_AHB         => reset_n_s,          
         AHBSlave121_Out   => open,
         
@@ -304,7 +312,7 @@ begin
           wait for clk_period*5;
   
           --bind the state signal to the state of router controller
-          router_ctrl_state <= <<signal .router_fifo_ctrl_top_tb.DUT.gen_fifo_controller(5).gen_ctrl.router_fifo_ctrl_inst.s_state : t_states>>;
+          router_ctrl_state <= <<signal .system_SHyLoC_top_tb.DUT.gen_fifo_controller(5).gen_ctrl.router_fifo_ctrl_inst.s_state : t_states>>;
           if router_ctrl_state = addr_send then
           assert false
               report "router send port1 address:" & to_string(router_fifo_debug_rx(5).rx_data)
@@ -346,10 +354,7 @@ begin
         end test2;
     begin 
 
-        spw_fmc_en <= '1';
-        spw_fmc_en_2 <= '1';
-        spw_fmc_en_3 <= '1';
-        spw_fmc_en_4 <= '1';
+
         wait for 100 ns; 
         
         set_log_file_name("router_fifo_ctrl_log.txt");
