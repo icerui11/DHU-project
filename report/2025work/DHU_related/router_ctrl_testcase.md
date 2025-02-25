@@ -90,3 +90,28 @@ error:
 warning:
 
 1. asym fifo is full
+
+# testcase 3
+
+To send data through SpaceWire:
+
+1. Wait for the SpaceWire connection to be established
+2. Wait until the Tx\_IR signal is high (SpW is ready to receive)
+3. Set the data on Tx\_data
+4. Assert Tx\_OR to indicate data is valid
+5. Wait for a clock cycle
+6. Deassert Tx\_OR
+7. Repeat for each data value
+
+The data will then flow: SpW → Router → FIFO → ShyLoc\_top\_Wrapper
+
+
+1. 引入ccsds_shyloc tb 中的gen_stim
+   1. signal s is the input of Shyloc
+2. 可以将原本的gen_stim 变为procedure
+   1. stim_file依然使用ccsds123_tb_parameter 中定义的文件
+   2. 如果procedure 定义在testbench architecture内，则可以访问该architecture内所有信号，无需参数传递
+
+## spw_send_file_data
+
+1. character is a basic data type in VHDL representing a single ASCII character
