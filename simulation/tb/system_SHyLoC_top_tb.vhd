@@ -13,10 +13,10 @@ use ieee.numeric_std.all;
 use std.textio.all;
 
 library shyloc_121;
-use shyloc_121.ccsds121_parameters.all;
+use work.ccsds121_tb_parameters.all;
 
 library shyloc_123; 
-use shyloc_123.ccsds123_parameters.all;
+use work.ccsds123_tb_parameters.all;
 
 context work.router_context;
 
@@ -93,7 +93,7 @@ architecture rtl of system_SHyLoC_top_tb is
     signal spw_error : std_logic;
 
     -- create signal arrary for spw tx
-    signal codecs               : r_codec_interface_array(1 to c_num_ports-1) := (others => c_codec_interface);
+    signal codecs               :       r_codec_interface_array(1 to c_num_ports-1) := (others => c_codec_interface);
     signal reset_spw            :       std_logic := '0';                                      -- activ high
 	
 	signal 	spw_debug_tx		: 		std_logic_vector(8 downto 0)	:= (others => '0');
@@ -103,6 +103,18 @@ architecture rtl of system_SHyLoC_top_tb is
 	signal 	spw_debug_time		: 		std_logic_vector(7 downto 0) 	:= (others => '0');
 
 	signal 	router_connected	: 		std_logic_vector(31 downto 1);
+
+    --! Testbench signals
+    signal s                    : std_logic_vector (work.ccsds123_tb_parameters.D_G_tb-1 downto 0);
+    signal s_valid              : std_logic;
+    signal sign: std_logic;
+    signal counter: unsigned(1 downto 0);
+    signal counter_samples: unsigned (31 downto 0);
+
+    ---------------------files------------------------
+    type bin_file_type is file of character;
+    file stimulus: bin_file_type;
+    file output: bin_file_type;
 
     --declaration the same state type in testbench
     type t_states is (fsm_ready, addr_send, read_mem, spw_tx, ramaddr_delay, eop_tx);
@@ -272,7 +284,7 @@ begin
         rst_n <= '1';
         wait;
     end process;
-    
+
     -- Stimulus process
     stim_sequencer: process
     procedure test1 is 
@@ -352,6 +364,120 @@ begin
           wait until asym_fifo_full = '0';
           wait for clk_period*5;
         end test2;
+
+        procedure spw_send_file_data(
+            signal   spw_codec  : inout r_codec_interface;         -- define in spw_data_type
+            constant file_path  : in string;                       -- in ccsds123_tb_parameters.vhd
+            constant router_port: in integer;                      -- 目标路由端口
+            constant data_width : in integer;                      -- 数据位宽
+            constant endianness : in integer;                      -- 端序 (0=小端, 1=大端)
+            constant nx, ny, nz : in integer                       -- 图像尺寸参数
+        ) is
+            file data_file      : text;
+            variable line_v     : line;
+            variable pixel_char : character;
+            variable value_high : natural;
+            variable value_low  : natural;
+            variable data_byte  : std_logic_vector(7 downto 0);
+            variable pixel_count: integer := 0;
+            variable route_addr : std_logic_vector(8 downto 0);
+        begin
+            -- 生成路由地址
+            route_addr := '0' & std_logic_vector(to_unsigned(router_port, 8));
+            
+            -- 打开文件
+            report "open the stim_file: " & file_path severity note;
+            file_open(data_file, file_path, read_mode);
+            
+            -- 发送路由地址
+            wait until spw_codec.Tx_IR = '1';
+            wait for clk_period;
+            spw_codec.Tx_data <= route_addr;
+            spw_codec.Tx_OR <= '1';
+            wait for clk_period;
+            spw_codec.Tx_OR <= '0';
+            report "send path address: " & integer'image(router_port) severity note;
+            wait for clk_period * 2;
+            
+            -- 读取文件并通过SpaceWire发送
+            while not endfile(data_file) and pixel_count < nx*ny*nz loop
+                -- 读取一个字节的数据
+                read(data_file, pixel_char);
+                value_high := character'pos(pixel_char);
+                
+                -- 如果数据宽度大于8位，需要读取第二个字节
+                if data_width > 8 then
+                    read(data_file, pixel_char);
+                    value_low := character'pos(pixel_char);
+                    
+                    -- 根据端序设置要发送的第一个字节
+                    if endianness = 0 then  -- 小端序
+                        data_byte := std_logic_vector(to_unsigned(value_high, 8));
+                    else  -- 大端序
+                        data_byte := std_logic_vector(to_unsigned(value_low, 8));
+                    end if;
+                else
+                    -- 8位或更少的数据
+                    data_byte := std_logic_vector(to_unsigned(value_high, 8));
+                end if;
+                
+                -- 等待SpaceWire准备好接收数据
+                if spw_codec.Tx_IR = '0' then
+                    wait until spw_codec.Tx_IR = '1';
+                end if;
+                
+                -- 发送第一个字节
+                wait for clk_period;
+                spw_codec.Tx_data <= '0' & data_byte;  -- 非控制字符
+                spw_codec.Tx_OR <= '1';
+                wait for clk_period;
+                spw_codec.Tx_OR <= '0';
+                
+                -- 如果数据宽度大于8位，发送第二个字节
+                if data_width > 8 then
+                    -- 准备第二个字节
+                    if endianness = 0 then  -- 小端序
+                        data_byte := std_logic_vector(to_unsigned(value_low, 8));
+                    else  -- 大端序
+                        data_byte := std_logic_vector(to_unsigned(value_high, 8));
+                    end if;
+                    
+                    -- 等待SpW准备好
+                    if spw_codec.Tx_IR = '0' then
+                        wait until spw_codec.Tx_IR = '1';
+                    end if;
+                    
+                    -- 发送第二个字节
+                    wait for clk_period;
+                    spw_codec.Tx_data <= '0' & data_byte;
+                    spw_codec.Tx_OR <= '1';
+                    wait for clk_period;
+                    spw_codec.Tx_OR <= '0';
+                end if;
+                
+                -- 计数并适时等待
+                pixel_count := pixel_count + 1;
+                if pixel_count mod 100 = 0 then
+                    report "已发送 " & integer'image(pixel_count) & " 像素" severity note;
+                    wait for clk_period * 10;
+                else
+                    wait for clk_period * 2;
+                end if;
+            end loop;
+            
+            -- 发送EOP结束包
+            wait until spw_codec.Tx_IR = '1';
+            wait for clk_period;
+            spw_codec.Tx_data <= "000000010";  -- EOP
+            spw_codec.Tx_OR <= '1';
+            wait for clk_period;
+            spw_codec.Tx_OR <= '0';
+            report "文件传输完成，已发送EOP" severity note;
+            
+            -- 关闭文件
+            file_close(data_file);
+        end procedure spw_send_file_data;
+
     begin 
 
 
@@ -365,6 +491,16 @@ begin
         wait;
         -- test2;   
         -- Wait for error conditions
+        spw_send_file_data(
+            spw_codec    => codecs(1),               
+            file_path    =  work.ccsds123_tb_parameters.stim_file,        
+            router_port  => 5,                       
+            data_width   => work.ccsds123_tb_parameters.D_tb,                      
+            endianness   => work.ccsds123_tb_parameters.ENDIANESS_tb,                       
+            nx           => work.ccsds123_tb_parameters.Nx_tb,                      
+            ny           => work.ccsds123_tb_parameters.Ny_tb,                      
+            nz           => work.ccsds123_tb_parameters.Nz_tb                        
+        );
         wait until spw_error = '0';
     end process;
 end rtl;
