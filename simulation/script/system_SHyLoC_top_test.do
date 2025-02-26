@@ -45,6 +45,6 @@ do $DUT/DHU-project/simulation/script/ip_core_spw.do
 do $DUT/DHU-project/simulation/script/ip_core_rmap.do
 do $DUT/DHU-project/simulation/script/ip_core_router.do
 do $DUT/DHU-project/simulation/script/ip_core_system.do
-vcom -2008 -work work -quiet $DUT/DHU-project/simulation/tb/system_SHyLoC_top_tb.vhd
-vsim -coverage work.system_SHyLoC_top_tb -vopt -t 1ns -voptargs="+acc"
-coverage report -file $DUT/DHU-project/simulation/coverage/system_SHyLoC_top_tb.covhtml -html -cvg -details -assert -codeAll
+vcom -2008 -work work -quiet $DUT/DHU-project/simulation/tb/system_SHyLoC_top_tb_v2.vhd
+vsim -coverage work.system_SHyLoC_top_tb_v2 -vopt -t 1ns -voptargs="+acc"
+coverage report -file $DUT/DHU-project/simulation/coverage/system_SHyLoC_top_tb_v2.covhtml -html -cvg -details -assert -codeAll
