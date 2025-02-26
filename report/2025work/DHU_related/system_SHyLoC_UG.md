@@ -20,10 +20,59 @@
 
 1. Configured ENDIANESS in the CCSDS121 IP core shall be always set to big endian (1).
 
+# decleration spw_codec
 
+type r_codec_interface is record
+-- Channels
+	Tx_data         : 	t_nonet;
+	Tx_OR           : 	std_logic;
+	Tx_IR           : 	std_logic;
 
+	Rx_data         : 	t_nonet;
+	Rx_OR           : 	std_logic;
+	Rx_IR           : 	std_logic;
 
+	Rx_ESC_ESC      : 	std_logic;
+	Rx_ESC_EOP      : 	std_logic;
+	Rx_ESC_EEP      : 	std_logic;
+	Rx_Parity_error : 	std_logic;
+	Rx_bits         : 	std_logic_vector(1 downto 0);
+	Rx_rate         : 	std_logic_vector(15 downto 0);
 
+	Rx_Time         : 	t_byte;
+	Rx_Time_OR      : 	std_logic;
+	Rx_Time_IR      : 	std_logic;
+
+	Tx_Time         : 	t_byte;
+	Tx_Time_OR      : 	std_logic;
+	Tx_Time_IR      : 	std_logic;
+
+	-- Contol
+	Disable         : 	std_logic;
+	Connected       : 	std_logic;
+	Error_select    : 	std_logic_vector(3 downto 0);
+	Error_inject    : 	std_logic;
+
+	-- DDR/SDR IO, only when "custom" mode is used
+	-- when instantiating, if not used, you can ignore these ports. 
+	DDR_din_r		: 	std_logic;
+	DDR_din_f   	: 	std_logic;
+	DDR_sin_r   	: 	std_logic;
+	DDR_sin_f   	: 	std_logic;
+	SDR_Dout		:  	std_logic;
+	SDR_Sout		:  	std_logic;
+
+	-- SpW
+	Din_p    		:  	std_logic;
+	Din_n    		:  	std_logic;
+	Sin_p    		:  	std_logic;
+	Sin_n    		:  	std_logic;
+	Dout_p   		: 	std_logic;
+	Dout_n   		: 	std_logic;
+	Sout_p   		:	std_logic;
+	Sout_n   		: 	std_logic;
+
+end record r_codec_interface;
 # Timing
 
 create_clock -ignore_errors -name {OSC_C0_0/OSC_C0_0/I_RCOSC_25_50MHZ/CLKOUT} -period 20 [ get_pins { OSC_C0_0/OSC_C0_0/I_RCOSC_25_50MHZ/CLKOUT } ]
