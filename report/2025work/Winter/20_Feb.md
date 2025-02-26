@@ -26,6 +26,12 @@ Last week, I completed the pure HDL development process in Libero, which means I
 2. 如果需要在没有VVC的情况下实现类似的功能。如果没有VVC，就需要手动编写监控和驱动的逻辑
 3. set DUT C:/Users/yinrui/Desktop/Envison_DHU
    do $DUT/DHU-project/simulation/script/system_SHyLoC_top_test.do
+4. 读取文件：use text and line-based reading when dealing with structured text files where each line contains meaningful data that can be processes as a unit
+   1. use character when you need to precisely control reading and processing at a character level
+      1. sequential reading, each call to the read procedure fetches the next character from ther current position in the file
+      2. no need for line buffer
+   2. read function from std.textio, the general syntax : read(file_var, variable);
+   3. 但似乎read file 并不适合使用procedure完成
 
 # UVVM work
 
