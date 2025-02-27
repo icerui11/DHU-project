@@ -31,7 +31,16 @@ Last week, I completed the pure HDL development process in Libero, which means I
       1. sequential reading, each call to the read procedure fetches the next character from ther current position in the file
       2. no need for line buffer
    2. read function from std.textio, the general syntax : read(file_var, variable);
-   3. 但似乎read file 并不适合使用procedure完成
+   3. 但似乎read file 并不适合使用procedure完成, (可以不全部包含在一个procedure中完成)
+      1. i declared bin_file parameter as character type, but i pass a file to it,
+      2. in VHDL cannot directly define a file parameter as a character type
+         1. You first need to define a file type using the `file of` syntax
+         2. character represents a single character value (similar to char in C), not a file stream.
+5. File opening: the file should be declared outside the procedure, typically in a process or architecture declarative area, so it maintains its state between procedure calls
+   1. ensure the file is opened for reading before entering the loop or procedure that will read data
+   2. 原因：the file handle maintains its internal position pointer regardless of  scope changes, typically do so with a file variable (or handle) that represents the connection of the external file
+   3. 如果需要多个process 访问同一个文件，declare the file handle outside all processes and perform file operations by referencing this handle
+6. gen_stim process中的问题在于codecs.Tx_data 是t_nonet,
 
 # UVVM work
 

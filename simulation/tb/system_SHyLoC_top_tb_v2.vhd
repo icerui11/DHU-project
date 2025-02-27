@@ -86,7 +86,7 @@ architecture rtl of system_SHyLoC_top_tb_v2 is
     signal spw_error : std_logic;
 
     -- create signal arrary for spw tx
-    signal codecs               :       r_codec_interface_array(1 to c_num_ports-1) := (others => c_codec_interface);
+    signal codecs               :       r_codec_interface_array(1 to c_num_ports-1);
     signal reset_spw            :       std_logic := '0';                                      -- activ high
 	
 	signal 	spw_debug_tx		: 		std_logic_vector(8 downto 0)	:= (others => '0');
@@ -104,7 +104,7 @@ architecture rtl of system_SHyLoC_top_tb_v2 is
     signal counter: unsigned(1 downto 0);
     signal counter_samples: unsigned (31 downto 0);
 
-    signal   spw_codec  :  r_codec_interface;         -- define in spw_data_type
+ --   signal   spw_codec  :  r_codec_interface;         -- define in spw_data_type
     ---------------------files------------------------
     type bin_file_type is file of character;
     file bin_file               : bin_file_type;
@@ -130,9 +130,40 @@ architecture rtl of system_SHyLoC_top_tb_v2 is
     --! Testbench procedures
     --------------------------------------------------------------------
 
-    procedure monitor_data is
-    begin
-    end monitor_data;
+    procedure read_pixel_data(
+        file     bin_file      : bin_file_type;
+        variable data_out      : out std_logic_vector(work.ccsds123_tb_parameters.D_G_tb-1 downto 0);
+        constant data_width    : in integer;
+        constant endianness    : in integer
+      ) is
+        variable pixel_file    : character;
+        variable value_high    : natural;
+        variable value_low     : natural;
+      begin
+        -- read data depending on data width
+        if data_width <= 8 then
+          -- single byte data
+          read(bin_file, pixel_file);
+          value_high := character'pos(pixel_file);
+          data_out := std_logic_vector(to_unsigned(value_high, data_width));
+        else
+          -- 处理多字节数据并应用正确的字节序
+          read(bin_file, pixel_file);
+          value_high := character'pos(pixel_file);
+          read(bin_file, pixel_file);
+          value_low := character'pos(pixel_file);
+          
+          if endianness = 0 then
+            -- 小端序
+            data_out := std_logic_vector(to_unsigned(value_high, 8)) & 
+                       std_logic_vector(to_unsigned(value_low, data_width-8));
+          else
+            -- 大端序
+            data_out := std_logic_vector(to_unsigned(value_high, data_width-8)) & 
+                       std_logic_vector(to_unsigned(value_low, 8));
+          end if;
+        end if;
+    end procedure;
 
 begin
     
@@ -279,13 +310,15 @@ begin
     begin
         -- Initial reset
         rst_n <= '0';
+        reset_n_s <= '0';
         wait for 16.456 us;								-- wait for > 500us before de-asserting reset
         rst_n <= '1';
+        reset_n_s <= '1';
         wait;
     end process;
 
     -- Stimulus process
-    gen_stim: process (clk, rst_n)
+    gen_stim: process (clk)
     
         -- File and data variables
         variable pixel_file : character;
@@ -299,25 +332,25 @@ begin
         constant spw_port      : integer := 1;                       -- Use SpW port 1
 
     begin
-        if rst_n = '0' then
-            -- Reset state and variables
-            state <= IDLE;
-            sample_count := (others => '0');
-            codecs(spw_port).Tx_data <= (others => '0');
-            codecs(spw_port).Tx_OR <= '0';
-            
-        elsif rising_edge(clk) then
-            -- Default signal settings
-            spw_codec.Tx_IR <= '0';
-            
+        if rising_edge(clk) then
+        -- Default signal settings
+           codecs(1).Tx_OR <= '0';
+            if rst_n = '0' then
+                -- Reset state and variables
+                state <= IDLE;
+                sample_count := (others => '0');
+                codecs(spw_port).Tx_data <= (others => '0');
+                codecs(spw_port).Tx_OR <= '0';
+            else 
             -- State machine
-            case state is
+                case state is
                 when IDLE =>
                     -- Initialize, prepare to start transmission
                     total_samples := to_unsigned(work.ccsds123_tb_parameters.Nx_tb * 
                                               work.ccsds123_tb_parameters.Ny_tb * 
                                               work.ccsds123_tb_parameters.Nz_tb + 4, 32);
                     route_addr := '0' & std_logic_vector(to_unsigned(5, 8)); -- Assume router port 5
+                    codecs(spw_port).Tx_OR <= '0';
                     state <= WAIT_CONNECTION;
                     report "Initializing SpW transmission to router port 5" severity note;
 
@@ -364,42 +397,17 @@ begin
                             report "All samples processed: " & to_string(sample_count) severity note;
                             state <= SEND_EOP;
                         -- Read and send next sample when ready
-                        elsif codecs(spw_port).Tx_IR = '1' and codecs(spw_port).Tx_OR = '1'then
-                            codecs(spw_port).Tx_OR <= '0';
-
-                          if r_shyloc.Ready = '1' and r_shyloc.AwaitingConfig = '0' and codecs(spw_port).Tx_IR = '1' then
-                            -- Read data from file based on data width
-                            if work.ccsds123_tb_parameters.D_G_tb <= 8 then
-                            read(bin_file, pixel_file);
-                            value_high := character'pos(pixel_file);
-                            s_in_var := std_logic_vector(to_unsigned(value_high, work.ccsds123_tb_parameters.D_G_tb));
-                            else
-                            -- Handle multi-byte data with proper endianness
-                            read(bin_file, pixel_file);
-                            value_high := character'pos(pixel_file);
-                            read(bin_file, pixel_file);
-                            value_low := character'pos(pixel_file);
-                            
-                                if work.ccsds123_tb_parameters.ENDIANESS_tb = 0 then
-                                    -- Little endian
-                                    s_in_var := std_logic_vector(to_unsigned(value_high, 8)) & 
-                                                std_logic_vector(to_unsigned(value_low, work.ccsds123_tb_parameters.D_G_tb-8));
-                                else
-                                    -- Big endian
-                                    s_in_var := std_logic_vector(to_unsigned(value_high, work.ccsds123_tb_parameters.D_G_tb-8)) & 
-                                                std_logic_vector(to_unsigned(value_low, 8));
-                                end if;
-                            end if;
-                            
-                            -- Send data through SpW port
-                            codecs(spw_port).Tx_data <= '0' & s_in_var;
-                            codecs(spw_port).Tx_OR <= '1';
-                            sample_count := sample_count + 1;
-                            
-                            -- Log progress periodically
-                            if sample_count mod 1000 = 0 then
-                            report "Sent " & to_string(sample_count) & " / " & 
-                                    to_string(total_samples) & " samples" severity note;
+                        elsif r_shyloc.Ready = '1' and r_shyloc.AwaitingConfig = '0' then
+                            if codecs(spw_port).Tx_IR = '1' and codecs(spw_port).Tx_OR = '1'then                     
+                                -- Read data from file based on data width
+                                read_pixel_data(bin_file, s_in_var, work.ccsds123_tb_parameters.D_G_tb, 0);
+                                codecs(spw_port).Tx_OR <= '0';
+                                
+                                -- Send data through SpW port
+                                codecs(spw_port).Tx_data <= '0' & s_in_var;
+                                codecs(spw_port).Tx_OR <= '1';
+                                sample_count := sample_count + 1;
+                                report "Sent sample " & to_string(sample_count) & ": " & to_string(s_in_var) severity note;
                             end if;
                         end if;
                         
@@ -424,10 +432,12 @@ begin
                             state <= IDLE;
                         end if;
                     end case;
+                end if;
         end if;
     end process;
 
     stim_sequencer: process
+    /*
     procedure test1 is 
         begin 
           -- Test Case 1: Send raw 8-bit data through gen_spw_tx port 1
@@ -505,7 +515,7 @@ begin
           wait until asym_fifo_full = '0';
           wait for clk_period*5;
         end test2;
-
+*/
     begin 
 
 
