@@ -109,6 +109,11 @@ architecture rtl of system_SHyLoC_top_tb_v2 is
     type bin_file_type is file of character;
     file bin_file               : bin_file_type;
     file output                 : bin_file_type;
+    --gen_stim state declaration
+    type t_spw_tx_state is (
+        IDLE, WAIT_CONNECTION, OPEN_FILE, SEND_ADDR, READ_AND_SEND, SEND_EOP, CLOSE_FILE
+        );
+    signal state : t_spw_tx_state := IDLE;
 
     --declaration the same state type in testbench
     type t_states is (fsm_ready, addr_send, read_mem, spw_tx, ramaddr_delay, eop_tx);
@@ -281,10 +286,6 @@ begin
 
     -- Stimulus process
     gen_stim: process (clk, rst_n)
-        type t_spw_tx_state is (
-            IDLE, WAIT_CONNECTION, OPEN_FILE, SEND_ADDR, READ_AND_SEND, SEND_EOP, CLOSE_FILE
-            );
-        variable state : t_spw_tx_state := IDLE;
     
         -- File and data variables
         variable pixel_file : character;
@@ -300,7 +301,7 @@ begin
     begin
         if rst_n = '0' then
             -- Reset state and variables
-            state := IDLE;
+            state <= IDLE;
             sample_count := (others => '0');
             codecs(spw_port).Tx_data <= (others => '0');
             codecs(spw_port).Tx_OR <= '0';
@@ -317,14 +318,14 @@ begin
                                               work.ccsds123_tb_parameters.Ny_tb * 
                                               work.ccsds123_tb_parameters.Nz_tb + 4, 32);
                     route_addr := '0' & std_logic_vector(to_unsigned(5, 8)); -- Assume router port 5
-                    state := WAIT_CONNECTION;
+                    state <= WAIT_CONNECTION;
                     report "Initializing SpW transmission to router port 5" severity note;
 
                 when WAIT_CONNECTION =>
                     -- Wait for SpW link to be established
                     if codecs(spw_port).Connected = '1' and router_connected(spw_port) = '1' then
                         report "SpW port " & integer'image(spw_port) & " connected" severity note;
-                        state := OPEN_FILE;
+                        state <= OPEN_FILE;
                     end if;
                     
                 when OPEN_FILE =>
@@ -332,34 +333,41 @@ begin
                     file_open(file_status, bin_file, work.ccsds123_tb_parameters.stim_file, read_mode);
                     if file_status = open_ok then
                         report "File opened successfully: " & work.ccsds123_tb_parameters.stim_file severity note;
-                        state := SEND_ADDR;
+                        state <= SEND_ADDR;
                     else
                         report "Unable to open file: " & work.ccsds123_tb_parameters.stim_file severity error;
-                        state := CLOSE_FILE;
+                        state <= CLOSE_FILE;
                     end if;
                     
                     when SEND_ADDR =>
                         -- Send the router address
                         if codecs(spw_port).Tx_IR = '1' then
-                          codecs(spw_port).Tx_data <= route_addr;
                           codecs(spw_port).Tx_OR <= '1';
+                        end if;
+                        if codecs(spw_port).Tx_IR = '1' and codecs(spw_port).Tx_OR = '1'then
+                          codecs(spw_port).Tx_data <= route_addr;
+                          codecs(spw_port).Tx_OR <= '0';
                           report "Sent routing address: " & to_string(route_addr) severity note;
-                          state := READ_AND_SEND;
+                          state <= READ_AND_SEND;
                         end if;
                     
                     when READ_AND_SEND =>
-                        -- First handle the Tx_OR signal if it's currently active
-                        if codecs(spw_port).Tx_OR = '1' then
-                            codecs(spw_port).Tx_OR <= '0';
+                        if codecs(spw_port).Tx_IR = '1' then
+                            codecs(spw_port).Tx_OR <= '1';
+                        end if;
+
                         -- Check termination conditions
-                        elsif r_shyloc.Finished = '1' or r_shyloc.ForceStop = '1' then
+                        if r_shyloc.Finished = '1' or r_shyloc.ForceStop = '1' then
                             report "Early termination requested" severity note;
-                            state := SEND_EOP;
+                            state <= SEND_EOP;
                         elsif sample_count >= total_samples then
                             report "All samples processed: " & to_string(sample_count) severity note;
-                            state := SEND_EOP;
+                            state <= SEND_EOP;
                         -- Read and send next sample when ready
-                        elsif r_shyloc.Ready = '1' and r_shyloc.AwaitingConfig = '0' and codecs(spw_port).Tx_IR = '1' then
+                        elsif codecs(spw_port).Tx_IR = '1' and codecs(spw_port).Tx_OR = '1'then
+                            codecs(spw_port).Tx_OR <= '0';
+
+                          if r_shyloc.Ready = '1' and r_shyloc.AwaitingConfig = '0' and codecs(spw_port).Tx_IR = '1' then
                             -- Read data from file based on data width
                             if work.ccsds123_tb_parameters.D_G_tb <= 8 then
                             read(bin_file, pixel_file);
@@ -372,15 +380,15 @@ begin
                             read(bin_file, pixel_file);
                             value_low := character'pos(pixel_file);
                             
-                            if work.ccsds123_tb_parameters.ENDIANESS_tb = 0 then
-                                -- Little endian
-                                s_in_var := std_logic_vector(to_unsigned(value_high, 8)) & 
-                                            std_logic_vector(to_unsigned(value_low, work.ccsds123_tb_parameters.D_G_tb-8));
-                            else
-                                -- Big endian
-                                s_in_var := std_logic_vector(to_unsigned(value_high, work.ccsds123_tb_parameters.D_G_tb-8)) & 
-                                            std_logic_vector(to_unsigned(value_low, 8));
-                            end if;
+                                if work.ccsds123_tb_parameters.ENDIANESS_tb = 0 then
+                                    -- Little endian
+                                    s_in_var := std_logic_vector(to_unsigned(value_high, 8)) & 
+                                                std_logic_vector(to_unsigned(value_low, work.ccsds123_tb_parameters.D_G_tb-8));
+                                else
+                                    -- Big endian
+                                    s_in_var := std_logic_vector(to_unsigned(value_high, work.ccsds123_tb_parameters.D_G_tb-8)) & 
+                                                std_logic_vector(to_unsigned(value_low, 8));
+                                end if;
                             end if;
                             
                             -- Send data through SpW port
@@ -403,7 +411,7 @@ begin
                             codecs(spw_port).Tx_data <= "100000010";  -- EOP
                             codecs(spw_port).Tx_OR <= '1';
                             report "Transmission complete, sending EOP" severity note;
-                            state := CLOSE_FILE;
+                            state <= CLOSE_FILE;
                         end if;
                         
                         when CLOSE_FILE =>
@@ -413,7 +421,7 @@ begin
                         else
                             file_close(bin_file);
                             report "File closed, sent " & to_string(sample_count) & " samples" severity note;
-                            state := IDLE;
+                            state <= IDLE;
                         end if;
                     end case;
         end if;
