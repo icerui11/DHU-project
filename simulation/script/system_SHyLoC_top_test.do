@@ -32,12 +32,12 @@ if $lib_exists==1 {vdel -all -lib router}
 vlib router
 if $lib_exists==1 {vdel -all -lib rmap}
 vlib rmap
-vcom -work shyloc_123 -93 -explicit  $SRC/modelsim/tb_stimuli/30_Test/ccsds123_parameters.vhd
-vcom -work shyloc_121 -93 -explicit  $SRC/modelsim/tb_stimuli/30_Test/ccsds121_parameters.vhd
+vcom -work shyloc_123 -93 -explicit  $SRC/modelsim/tb_stimuli/30a_Test/ccsds123_parameters.vhd
+vcom -work shyloc_121 -93 -explicit  $SRC/modelsim/tb_stimuli/30a_Test/ccsds121_parameters.vhd
 do $SRC/modelsim/tb_scripts/ip_core.do
 do $SRC/modelsim/tb_scripts/ip_core_block.do
-vcom -work work -93 -explicit $SRC/modelsim/tb_stimuli/30_Test/ccsds123_tb_parameters.vhd
-vcom -work work -93 -explicit $SRC/modelsim/tb_stimuli/30_Test/ccsds121_tb_parameters.vhd
+vcom -work work -93 -explicit $SRC/modelsim/tb_stimuli/30a_Test/ccsds123_tb_parameters.vhd
+vcom -work work -93 -explicit $SRC/modelsim/tb_stimuli/30a_Test/ccsds121_tb_parameters.vhd
 do $SRC/modelsim/tb_scripts/testbench.do
 #router library
 do $DUT/DHU-project/simulation/script/SpW_all_library.do
@@ -48,3 +48,4 @@ do $DUT/DHU-project/simulation/script/ip_core_system.do
 vcom -2008 -work work -quiet $DUT/DHU-project/simulation/tb/system_SHyLoC_top_tb_v2.vhd
 vsim -coverage work.system_SHyLoC_top_tb_v2 -vopt -t 1ns -voptargs="+acc"
 coverage report -file $DUT/DHU-project/simulation/coverage/system_SHyLoC_top_tb_v2.covhtml -html -cvg -details -assert -codeAll
+
