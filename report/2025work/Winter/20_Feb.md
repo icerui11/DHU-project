@@ -1,3 +1,7 @@
+# thinking
+
+* 问题：当SHyLoC 在结束reset后 会立即输出header，所以需要等待router connected完成后 再reset shyloc
+
 # 20.02
 
 ### router_multi_shyloc_ctrl
@@ -40,7 +44,12 @@ Last week, I completed the pure HDL development process in Libero, which means I
    1. ensure the file is opened for reading before entering the loop or procedure that will read data
    2. 原因：the file handle maintains its internal position pointer regardless of  scope changes, typically do so with a file variable (or handle) that represents the connection of the external file
    3. 如果需要多个process 访问同一个文件，declare the file handle outside all processes and perform file operations by referencing this handle
+      4.integer'image(to_integer(sample_count)) 用于转换成integer 字符串
 6. gen_stim process中的问题在于codecs.Tx_data 是t_nonet,
+7. 问题是shyloc datain newvalid 没有响应，需检查dut 中的router_fifo_spwctrl，rx_data_valid
+   1. 只看见fifo_in 的rx_data, 也就是来自SHYloc 的数据，没有raw data
+   2. 验证router spw node 1
+   3. 原因是send_addr router_addr应提前assign，但也发现传输两次path address, the reason is that the handshake signal is not nested after Shyloc is ready
 
 # UVVM work
 

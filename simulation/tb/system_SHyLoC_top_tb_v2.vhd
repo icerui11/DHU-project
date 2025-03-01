@@ -310,10 +310,10 @@ begin
     begin
         -- Initial reset
         rst_n <= '0';
-        reset_n_s <= '0';
+ --       reset_n_s <= '0';
         wait for 16.456 us;								-- wait for > 500us before de-asserting reset
         rst_n <= '1';
-        reset_n_s <= '1';
+ --       reset_n_s <= '1';
         wait;
     end process;
 
@@ -348,7 +348,7 @@ begin
                     -- Initialize, prepare to start transmission
                     total_samples := to_unsigned(work.ccsds123_tb_parameters.Nx_tb * 
                                               work.ccsds123_tb_parameters.Ny_tb * 
-                                              work.ccsds123_tb_parameters.Nz_tb + 4, 32);
+                                              work.ccsds123_tb_parameters.Nz_tb, 32);
                     route_addr := '0' & std_logic_vector(to_unsigned(5, 8)); -- Assume router port 5
                     codecs(spw_port).Tx_OR <= '0';
                     state <= WAIT_CONNECTION;
@@ -374,30 +374,30 @@ begin
                     
                     when SEND_ADDR =>
                         -- Send the router address
+                        codecs(spw_port).Tx_data <= route_addr;
                         if codecs(spw_port).Tx_IR = '1' then
                           codecs(spw_port).Tx_OR <= '1';
                         end if;
                         if codecs(spw_port).Tx_IR = '1' and codecs(spw_port).Tx_OR = '1'then
-                          codecs(spw_port).Tx_data <= route_addr;
                           codecs(spw_port).Tx_OR <= '0';
                           report "Sent routing address: " & to_string(route_addr) severity note;
                           state <= READ_AND_SEND;
                         end if;
                     
                     when READ_AND_SEND =>
-                        if codecs(spw_port).Tx_IR = '1' then
-                            codecs(spw_port).Tx_OR <= '1';
-                        end if;
 
                         -- Check termination conditions
                         if r_shyloc.Finished = '1' or r_shyloc.ForceStop = '1' then
                             report "Early termination requested" severity note;
                             state <= SEND_EOP;
                         elsif sample_count >= total_samples then
-                            report "All samples processed: " & to_string(sample_count) severity note;
+                            report "All samples processed: " & integer'image(to_integer(sample_count)) severity note;
                             state <= SEND_EOP;
                         -- Read and send next sample when ready
                         elsif r_shyloc.Ready = '1' and r_shyloc.AwaitingConfig = '0' then
+                            if codecs(spw_port).Tx_IR = '1' then
+                                codecs(spw_port).Tx_OR <= '1';
+                            end if;
                             if codecs(spw_port).Tx_IR = '1' and codecs(spw_port).Tx_OR = '1'then                     
                                 -- Read data from file based on data width
                                 read_pixel_data(bin_file, s_in_var, work.ccsds123_tb_parameters.D_G_tb, 0);
@@ -407,7 +407,7 @@ begin
                                 codecs(spw_port).Tx_data <= '0' & s_in_var;
                                 codecs(spw_port).Tx_OR <= '1';
                                 sample_count := sample_count + 1;
-                                report "Sent sample " & to_string(sample_count) & ": " & to_string(s_in_var) severity note;
+                                report "Sent sample " & integer'image(to_integer(sample_count)) & ": " & to_string(s_in_var) severity note;
                             end if;
                         end if;
                         
@@ -517,10 +517,13 @@ begin
         end test2;
 */
     begin 
+        reset_n_s <= '0';
+        r_shyloc.ForceStop <= '0';                                              -- default value
+        wait until (codecs(1).Connected = '1' and router_connected(1) = '1');	-- wait for SpW instances to establish connection, make sure Spw link is connected
+        report "SpW port_1 Uplink Connected !" severity note;
+        wait for clk_period; 
+        reset_n_s <= '1';
 
-
-        wait for 100 ns; 
-        
         set_log_file_name("router_fifo_ctrl_log.txt");
         set_alert_file_name("router_fifo_ctrl_alert.txt");
        -- test1;
