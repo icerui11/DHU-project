@@ -50,6 +50,7 @@ Last week, I completed the pure HDL development process in Libero, which means I
    1. 只看见fifo_in 的rx_data, 也就是来自SHYloc 的数据，没有raw data
    2. 验证router spw node 1
    3. 原因是send_addr router_addr应提前assign，但也发现传输两次path address, the reason is that the handshake signal is not nested after Shyloc is ready
+8. 创建写程序，VHDL doesn't allow you to specify a mode for file parameters because they are already treated as inout by default
 
 # UVVM work
 

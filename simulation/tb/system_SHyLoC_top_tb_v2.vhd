@@ -102,18 +102,18 @@ architecture rtl of system_SHyLoC_top_tb_v2 is
     signal s_valid              : std_logic;
     signal sign: std_logic;
     signal counter: unsigned(1 downto 0);
-    signal counter_samples: unsigned (31 downto 0);
+    signal counter_samples: unsigned (31 downto 0); 
 
  --   signal   spw_codec  :  r_codec_interface;         -- define in spw_data_type
     ---------------------files------------------------
     type bin_file_type is file of character;
     file bin_file               : bin_file_type;
-    file output                 : bin_file_type;
+    file output_file            : bin_file_type;
     --gen_stim state declaration
     type t_spw_tx_state is (
         IDLE, WAIT_CONNECTION, OPEN_FILE, SEND_ADDR, READ_AND_SEND, SEND_EOP, CLOSE_FILE
-        );
-    signal state : t_spw_tx_state := IDLE;
+        );                                                         
+    signal state : t_spw_tx_state := IDLE;                                                                  
 
     --declaration the same state type in testbench
     type t_states is (fsm_ready, addr_send, read_mem, spw_tx, ramaddr_delay, eop_tx);
@@ -147,7 +147,6 @@ architecture rtl of system_SHyLoC_top_tb_v2 is
           value_high := character'pos(pixel_file);
           data_out := std_logic_vector(to_unsigned(value_high, data_width));
         else
-          -- 处理多字节数据并应用正确的字节序
           read(bin_file, pixel_file);
           value_high := character'pos(pixel_file);
           read(bin_file, pixel_file);
@@ -165,8 +164,88 @@ architecture rtl of system_SHyLoC_top_tb_v2 is
         end if;
     end procedure;
 
-begin
-    
+    procedure write_pixel_data(
+        signal clk          : in std_logic;
+        signal rst_n        : in std_logic;
+        signal ForceStop    : in std_logic;
+        signal Error_s      : in std_logic;
+        signal DataOut_Valid: in std_logic;
+        signal AwaitingConfig: in std_logic;
+        signal DataOut      : in std_logic_vector;
+        signal Finished     : in std_logic;
+        variable file_write_status : file_open_status;
+        file output         : bin_file_type
+      ) is
+        variable ini        : integer := 0;
+        variable fin        : integer := 0;
+        variable error_f    : integer := 1;
+        variable probe      : std_logic_vector(7 downto 0);
+        variable uns        : unsigned(7 downto 0);
+        variable int        : integer;
+        variable pixel_file : character;
+        variable size       : integer;
+        variable status     : FILE_OPEN_STATUS;
+      begin
+        -- Handle reset condition
+        if rst_n = '0' then
+          ini := 0;
+          fin := 0;
+        -- Handle force stop condition
+        elsif ForceStop = '1' then
+          assert false report "Comparison not possible because there has been a ForceStop assertion" severity note;
+          file_close(output);
+          ini := 0;
+          fin := 0;
+          error_f := 0;
+        -- Handle error condition
+        elsif Error_s = '1' then
+          if error_f = 1 then
+            assert false report "Comparison not possible because there has not been compression performed (configuration error)" severity note;
+            file_close(output);
+            ini := 0;
+            fin := 0;
+            error_f := 0;
+          end if;
+        else
+          -- Process valid data
+          if DataOut_Valid = '1' and AwaitingConfig = '0' then
+            -- Initialize file if first time
+            if ini = 0 then
+              file_open(status, output, work.ccsds123_tb_parameters.out_file, write_mode);
+              ini := 1;
+              fin := 1;
+            end if;
+            
+            -- Determine buffer size
+            if work.ccsds123_tb_parameters.EN_RUNCFG_G = 1 then
+              size := work.ccsds121_tb_parameters.W_BUFFER_tb;
+            else
+              size := work.ccsds121_tb_parameters.W_BUFFER_G_tb;
+            end if;
+            
+            -- Write data to file byte by byte
+            for i in 0 to (size/8) - 1 loop
+              probe := DataOut((((size/8) - 1 - i) + 1) * 8 - 1 downto ((size/8) - 1 - i) * 8);
+              uns := unsigned(probe);
+              int := to_integer(uns);
+              pixel_file := character'val(int);
+              write(output, pixel_file);
+            end loop;
+          end if;
+          
+          -- Handle completion
+          if Finished = '1' then
+            if fin = 1 then
+              file_close(output);
+              ini := 0;
+              fin := 0;
+              error_f := 0;
+            end if;
+          end if;
+        end if;
+    end procedure;
+
+begin 
     reset_spw <= not rst_n;                 -- reset signal for SpW IP core
     -- Instantiate DUT using package constants
 
@@ -383,9 +462,8 @@ begin
                           report "Sent routing address: " & to_string(route_addr) severity note;
                           state <= READ_AND_SEND;
                         end if;
-                    
+                
                     when READ_AND_SEND =>
-
                         -- Check termination conditions
                         if r_shyloc.Finished = '1' or r_shyloc.ForceStop = '1' then
                             report "Early termination requested" severity note;
@@ -437,6 +515,7 @@ begin
     end process;
 
     stim_sequencer: process
+    variable file_write_status : file_open_status;                --write file status
     /*
     procedure test1 is 
         begin 
@@ -524,6 +603,13 @@ begin
         wait for clk_period; 
         reset_n_s <= '1';
 
+        write_pixel_data(clk, reset_n_s, r_shyloc.ForceStop, r_shyloc.Error, r_shyloc.DataOut_NewValid, 
+        r_shyloc.AwaitingConfig, r_shyloc.DataOut, r_shyloc.Finished, file_write_status, output_file);
+        if file_write_status = open_ok then
+            report "File opened successfully: " & work.ccsds123_tb_parameters.out_file severity note;
+        else
+            report "Unable to open file: " & work.ccsds123_tb_parameters.out_file severity error;
+        end if;
         set_log_file_name("router_fifo_ctrl_log.txt");
         set_alert_file_name("router_fifo_ctrl_alert.txt");
        -- test1;
@@ -535,4 +621,6 @@ begin
 
         wait until spw_error = '0';
     end process;
+
+
 end rtl;
