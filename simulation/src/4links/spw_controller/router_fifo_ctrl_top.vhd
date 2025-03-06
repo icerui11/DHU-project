@@ -21,6 +21,9 @@ library shyloc_121;
 --! Use generic shyloc121 parameters
 use shyloc_121.ccsds121_parameters.all;
 
+library shyloc_123; 
+use shyloc_123.ccsds123_parameters.all;
+
 context work.router_context;
 
 entity router_fifo_ctrl_top is 
@@ -52,7 +55,9 @@ port(
     w_update         : in std_logic;                                                                    --connect with ccsds dataout newvalid
     asym_FIFO_full   : out std_logic;								                                    -- fifo full signal
     ccsds_ready_ext  : out std_logic;								                                    -- fifo ready signal
-
+    
+    raw_ccsds_data     : out std_logic_vector(shyloc_123.ccsds123_parameters.D_GEN-1 downto 0);      -- transmit to ccsds 123 encoder
+    ccsds_datanewValid : out std_logic;	                                            -- enable ccsds data input
     --DS signal chose by the c_port_mode 
     Din_p  			 : in 	std_logic_vector(1 to g_num_ports-1)	:= (others => '0');	-- IO used for "single" and "diff" io modes
     Sin_p            : in 	std_logic_vector(1 to g_num_ports-1)	:= (others => '0'); -- IO used for "single" and "diff" io modes
@@ -147,7 +152,7 @@ begin
 
     gen_fifo_controller: for i in 1 to g_num_ports-1 generate 
         gen_ctrl: if (g_is_fifo(i) = '1') generate
-            router_fifo_ctrl_inst: entity work.router_fifo_spwctrl(rtl)
+            router_fifo_ctrl_inst: entity work.router_fifo_spwctrl_16bit(rtl)
             generic map (
             g_addr_width	 => g_addr_width,
             g_router_port_addr => g_router_port_addr,             -- fifo data to which port
@@ -182,9 +187,13 @@ begin
             rx_cmd_ready	    =>  rx_cmd_ready,                            
 
             rx_data_out		    =>	rx_data_out,                             --rx_data_out, output 8 bit data to SHyLoc as raw data
-            rx_data_valid	    =>	rx_data_valid,                           --not spw_Rx_Con; assert data valid if data received and handshake is asserted
+  --          rx_data_valid	    =>	rx_data_valid,                           --not spw_Rx_Con; assert data valid if data received and handshake is asserted
             rx_data_ready	    =>	rx_data_ready,                                                
             
+            -- ccsds raw data input
+            raw_ccsds_data      =>  raw_ccsds_data,                         -- output, raw ccsds data
+		    ccsds_datanewValid  =>  ccsds_datanewValid,                     -- output, enable ccsds data input
+
             -- SpW Control Signals
             spw_Connected	 	=>  '1',			                        -- asserted when SpW Link is Connected(in this case, always asserted when fifo port is generated)
             spw_Rx_ESC_ESC	 	=> 	spw_Rx_ESC_ESC,                     	-- SpW ESC_ESC error 
@@ -198,6 +207,13 @@ begin
             spw_fifo_in(i).connected <= '1';                                -- assert router fifo connected when fifo port is generated
 
         asym_FIFO_inst_0: entity work.asym_FIFO 
+        generic map(
+            RESET_TYPE  => 1,         --! Reset type (Synchronous or asynchronous).
+            W_Size      => 32,        --! Bit width of the stored values.
+            R_Size      => 8,         --! Bit width of the read values.
+            NE          => 256,        --! Number of elements of the FIFO.
+            W_ADDR      => 8,         --! Bit width of the address.
+            TECH        => 0)         --! Parameter used to change technology; (0) uses inferred memories.
         port map( 
             -- Inputs
             clk      => clk,

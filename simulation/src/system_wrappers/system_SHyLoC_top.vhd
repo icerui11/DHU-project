@@ -114,7 +114,9 @@ port(
     w_update         : in   std_logic;                                                                    --connect with ccsds dataout newvalid
     asym_FIFO_full   : out  std_logic;								                                    -- fifo full signal
     ccsds_ready_ext  : out  std_logic;								                                    -- fifo ready signal
-
+    
+    raw_ccsds_data     : out std_logic_vector(shyloc_123.ccsds123_parameters.D_GEN-1 downto 0);      -- transmit to ccsds 123 encoder
+    ccsds_datanewValid : out std_logic;	                                                             -- enable ccsds data input
     Din_p  			 : in 	std_logic_vector(1 to g_num_ports-1)	:= (others => '0');	-- IO used for "single" and "diff" io modes
     Din_n            : in 	std_logic_vector(1 to g_num_ports-1)	:= (others => '0'); -- IO used for "single" and "diff" io modes
     Sin_p            : in 	std_logic_vector(1 to g_num_ports-1)	:= (others => '0'); -- IO used for "single" and "diff" io modes
@@ -201,15 +203,20 @@ end component;
     -- Signal declarations for ShyLoc_top_Wrapper
     ----------------------------------------------------------------------
     -- AHB Interface signals
-
+--    signal ahb_slave121_in    : AHB_Slv_In_Type;    -- AHB slave input signals
+--    signal ahb_slave121_out   : AHB_Slv_Out_Type;   -- AHB slave output signals
+--    signal ahb_slave123_in    : AHB_Slv_In_Type;    -- AHB 123 slave input signals
+--    signal ahb_slave123_out   : AHB_Slv_Out_Type;   -- AHB 123 slave output signals
+--    signal ahb_master123_in   : AHB_Mst_In_Type;    -- AHB 123 master input signals
+--    signal ahb_master123_out  : AHB_Mst_Out_Type;   -- AHB 123 master output signals
+    
     -- Data Interface signals
-    signal data_in_shyloc     : std_logic_vector(shyloc_123.ccsds123_parameters.D_GEN-1 downto 0);
-    signal data_in_newvalid   : std_logic;
     signal data_out_shyloc    : std_logic_vector(shyloc_121.ccsds121_parameters.W_BUFFER_GEN-1 downto 0);
     signal data_out_newvalid  : std_logic;
-    
+    signal raw_ccsds_data     : std_logic_vector(shyloc_123.ccsds123_parameters.D_GEN-1 downto 0);      -- transmit to ccsds 123 encoder
+    signal ccsds_datanewValid : std_logic;	                                                            -- enable ccsds data input 
     -- Control signals
-
+    signal ready_ext          : std_logic;
     signal force_stop         : std_logic;
     signal awaiting_config    : std_logic;
     signal ready              : std_logic;
@@ -272,8 +279,8 @@ ShyLoc_top_inst : ShyLoc_top_Wrapper
         AHBMaster123_Out  => open,
         
         -- Data Input Interface
-        DataIn_shyloc     => rx_data_out,
-        DataIn_NewValid   => rx_data_valid,
+        DataIn_shyloc     => raw_ccsds_data,
+        DataIn_NewValid   => ccsds_datanewValid,
         
         -- Data Output Interface CCSDS121
         DataOut           => data_out_shyloc,
@@ -324,6 +331,8 @@ ShyLoc_top_inst : ShyLoc_top_Wrapper
         asym_FIFO_full  => open ,                 -- inverted signal of ccsds_ready_ext
         ccsds_ready_ext => ccsds_ready_ext,       -- CCSDS ready signal
 
+        raw_ccsds_data     => raw_ccsds_data,
+		ccsds_datanewValid => ccsds_datanewValid,
         -- SpaceWire Interface (Single-ended mode)
         Din_p           => Din_p,              -- Data input positive
         Sin_p           => Sin_p,              -- Strobe input positive
