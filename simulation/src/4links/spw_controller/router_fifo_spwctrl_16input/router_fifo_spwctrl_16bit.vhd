@@ -2,7 +2,7 @@
 -- File Description  -- Three SHyLoC compressors are connected to the SPW router, and the compressors must be connected to the SpW FIFO ports.
 -- SHyLoC raw input data should be 16 bits wide.
 ----------------------------------------------------------------------------------------------------------------------------------
--- @ File Name				:	router_multi_shyloc_ctrl.vhd
+-- @ File Name				:	router_fifo_spwctrl_16bit.vhd
 -- @ Engineer				:	Rui Yin
 -- @ Date					: 	04.03.2024
 -- @ version				:	1.0
@@ -18,6 +18,8 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
+library shyloc_123; 
+use shyloc_123.ccsds123_parameters.all;
 ----------------------------------------------------------------------------------------------------------------------------------
 -- Package Declarations --
 ----------------------------------------------------------------------------------------------------------------------------------
@@ -26,7 +28,7 @@ use ieee.numeric_std.all;
 ----------------------------------------------------------------------------------------------------------------------------------
 -- Entity Declarations --
 ----------------------------------------------------------------------------------------------------------------------------------
-entity router_multi_shyloc_ctrl is
+entity router_fifo_spwctrl_16bit is
 	generic(
 		g_addr_width	: natural := 9;								 	-- address width of connecting RAM
         g_router_port_addr : integer range 1 to 32 :=1;                  -- router port addr, not include port 0, defined in package
@@ -37,13 +39,14 @@ entity router_multi_shyloc_ctrl is
 		-- standard register control signals --
 		clk_in	       : in 	std_logic;		-- clk input, rising edge trigger
 		rst_in	       : in 	std_logic;		-- reset input, active high
-        fifo_full      : in 	std_logic;		-- fifo full signal
+        fifo_full      : in 	std_logic;		-- fifo full signal, asym fifo 
 		fifo_empty     : in 	std_logic;		-- enable input, asserted high. 
 		fifo_r_update  : out 	std_logic;	    -- fifo read request signal.
         ccsds_ready_ext : out   std_logic;	    -- ccsds ready signal
         fifo_ack        : in 	std_logic;		-- fifo ack signal
-        write_done      : out 	std_logic;		-- write done signal
-        
+        write_done      : out 	std_logic;		-- write done signal      
+
+
 		-- RAM signals
 		ram_data_in		: in 	std_logic_vector(7 downto 0);	-- data read from RAM
 
@@ -63,9 +66,13 @@ entity router_multi_shyloc_ctrl is
 		rx_cmd_ready	: in 	std_logic;												-- assert to receive rx command. 
 		
 		rx_data_out		: out 	std_logic_vector(7 downto 0)	:= (others => '0');		-- received spacewire data output
-		rx_data_valid	: out 	std_logic := '0';										-- valid rx data on output
+	--	rx_data_valid	: out 	std_logic := '0';										-- valid rx data on output
 		rx_data_ready	: in 	std_logic := '1';										-- assert to receive rx data
 		
+        -- ccsds raw data input
+        raw_ccsds_data     : out std_logic_vector(shyloc_123.ccsds123_parameters.D_GEN-1 downto 0);      -- transmit to ccsds 123 encoder
+		ccsds_datanewValid : out std_logic;	                                            -- enable ccsds data input
+
 		-- SpW Control Signals
 		spw_Connected	: in 	std_logic	:= '0';										-- asserted when SpW Link is Connected
 		spw_Rx_ESC_ESC	: in 	std_logic 	:= '0';                                     
@@ -73,17 +80,15 @@ entity router_multi_shyloc_ctrl is
 		spw_ESC_EEP     : in	std_logic 	:= '0';                                       
 		spw_Parity_error: in	std_logic 	:= '0';
 		
-		ccsds_datanewValid : out std_logic;	                                            -- enable ccsds data input
 		error_out		   : out std_logic 	:= '0'									    -- assert when error
     );
-end router_multi_shyloc_ctrl;
+end router_fifo_spwctrl_16bit;
 
 ---------------------------------------------------------------------------------------------------------------------------------
 -- Code Description & Developer Notes --
 ---------------------------------------------------------------------------------------------------------------------------------
 
-
-architecture rtl of router_multi_shyloc_ctrl is
+architecture rtl of router_fifo_spwctrl_16bit is
 
 	----------------------------------------------------------------------------------------------------------------------------
 	-- Constant Declarations --
@@ -113,9 +118,12 @@ architecture rtl of router_multi_shyloc_ctrl is
 	signal s_ram_reg		: std_logic_vector(7 downto 0) := (others => '0');	-- register for storing SpW Characters from RAM, or port address data
 	signal rx_ready			: std_logic := '0';
     signal write_done_r     : std_logic := '0';
-	signal convert_valid    : std_logic := '0';                --indicate convert logic data start convert
-
-
+    --for control rx channel 
+    signal byte_concat_fin      : std_logic := '0';                --indicate byte concatanation finish
+    signal rx_value_low         : std_logic_vector(7 downto 0) := (others => '0');    --store low byte
+    
+    signal ccsds_data_ready     : std_logic := '0';                --indicate ccsds data ready
+    signal rx_data_valid	    : std_logic := '0';				   -- valid rx data on rx channel
 begin
 	----------------------------------------------------------------------------------------------------------------------------
 	-- Asynchronous Signal Assignments --
@@ -125,14 +133,14 @@ begin
     write_done      <= write_done_r;
     --ccsds ready_ext , when fifo full stop compression
     ccsds_ready_ext <= '0' when fifo_full = '1' else '1';    --fifo full, stop compression	
-
+    
 	----------------------------------------------------------------------------------------------------------------------------
 	-- Synchronous Processes --
 	----------------------------------------------------------------------------------------------------------------------------
 	control_tx_fsm: process(clk_in)
 	begin
 		if(rising_edge(clk_in)) then
-			spw_Tx_OR 		<= '0';
+			spw_Tx_OR <= '0';
 			if(rst_in = '1') then							-- Synchronous reset condition. 
 				s_time_counter	<= 0;
 				spw_Tx_Con 		<= '0';
@@ -218,8 +226,9 @@ begin
 			if(rst_in = '1') then								-- if synchronous reset asserted ?
 				rx_data_valid 	<= '0';							-- de-assert rx_data valid
 				rx_cmd_valid 	<= '0';							-- de-assert rx_cmd valid
+                ccsds_data_ready <= '0';
+
 			else												-- reset de-asserted ?
-			
 				if(rx_data_ready = '1') then					-- rx data output logic ready ?
 					rx_data_valid <= '0';						-- de-assert rx data valid
 				end if;
@@ -240,13 +249,34 @@ begin
 					rx_cmd_valid 	<= spw_Rx_Con;				-- assert cmd valid if command received
 					rx_data_valid   <= not spw_Rx_Con;			-- assert data valid if data received
 					if spw_Rx_Con = '0' then
-					   convert_valid <= '1';
+                        if shyloc_123.ccsds123_parameters.ENDIANESS_GEN = 0 then             -- little endian
+                             if byte_concat_fin = '0' then
+                                 rx_value_low    <= spw_Rx_data;
+                                 byte_concat_fin <= '1';
+                                 ccsds_data_ready <= '0';
+                             else
+                                 raw_ccsds_data <= rx_value_low & spw_Rx_data;
+                                 byte_concat_fin <= '0';
+                                 ccsds_data_ready <= '1';
+                             end if;
+                        else
+                            if byte_concat_fin = '0' then
+                                rx_value_low    <= spw_Rx_data;
+                                byte_concat_fin <= '1';
+                                ccsds_data_ready <= '0';
+                            else
+                                raw_ccsds_data <=  spw_Rx_data & rx_value_low;                   
+                                byte_concat_fin <= '0';
+                                ccsds_data_ready <= '1';
+                            end if;
+                        end if;
 					end if;
 				end if;									
 			end if;
 		end if;
 	end process;
 
+    ccsds_datanewValid <= ccsds_data_ready and rx_data_valid;
 	----------------------------------------------------------------------------------------------------------------------------
 	-- Asynchronous Processes --
 	----------------------------------------------------------------------------------------------------------------------------

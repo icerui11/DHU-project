@@ -77,6 +77,8 @@ architecture rtl of system_SHyLoC_top_tb_v2 is
     signal data_out_shyloc    : std_logic_vector(shyloc_121.ccsds121_parameters.W_BUFFER_GEN-1 downto 0);
     signal data_out_newvalid  : std_logic;
 
+    signal raw_ccsds_data     : std_logic_vector(shyloc_123.ccsds123_parameters.D_GEN-1 downto 0);      -- transmit to ccsds 123 encoder
+    signal ccsds_datanewValid : std_logic;	                                                            -- enable ccsds data input
     -- SpaceWire Interface signals (using single mode)
     signal din_p  : std_logic_vector(1 to g_num_ports-1) := (others => '0');
     signal sin_p  : std_logic_vector(1 to g_num_ports-1) := (others => '0');
@@ -109,6 +111,8 @@ architecture rtl of system_SHyLoC_top_tb_v2 is
     type bin_file_type is file of character;
     file bin_file               : bin_file_type;
     file output_file            : bin_file_type;
+
+    signal   byte_value : std_logic := '0';                                                        --indicate read value high or low            
     --gen_stim state declaration
     type t_spw_tx_state is (
         IDLE, WAIT_CONNECTION, OPEN_FILE, SEND_ADDR, READ_AND_SEND, SEND_EOP, CLOSE_FILE
@@ -269,6 +273,8 @@ begin
         asym_fifo_full     => open,
         ccsds_ready_ext    => ccsds_ready_ext,
 
+        raw_ccsds_data     => raw_ccsds_data,
+		ccsds_datanewValid => ccsds_datanewValid,
         -- SpaceWire Interface
         din_p              => din_p,
         sin_p              => sin_p,
@@ -299,8 +305,8 @@ begin
         AHBMaster123_Out  => open,
         
         -- Data Input Interface
-        DataIn_shyloc     => rx_data_out,
-        DataIn_NewValid   => rx_data_valid,
+        DataIn_shyloc     => raw_ccsds_data,
+        DataIn_NewValid   => ccsds_datanewValid,
         
         -- Data Output Interface CCSDS121
         DataOut           => data_out_shyloc,
@@ -401,9 +407,9 @@ begin
     
         -- File and data variables
         variable pixel_file : character;
-        variable value_high : natural;
-        variable value_low  : natural;
-        variable s_in_var   : std_logic_vector(work.ccsds123_tb_parameters.D_G_tb-1 downto 0);
+        variable v_value_high : natural;
+        variable v_value_low  : natural;
+        variable s_in_var   : std_logic_vector(work.ccsds123_tb_parameters.D_G_tb-1 downto 0);            
         variable sample_count  : unsigned(31 downto 0) := (others => '0');
         variable total_samples : unsigned(31 downto 0);
         variable file_status   : file_open_status;
@@ -476,16 +482,31 @@ begin
                             if codecs(spw_port).Tx_IR = '1' then
                                 codecs(spw_port).Tx_OR <= '1';
                             end if;
-                            if codecs(spw_port).Tx_IR = '1' and codecs(spw_port).Tx_OR = '1'then                     
-                                -- Read data from file based on data width
-                                read_pixel_data(bin_file, s_in_var, work.ccsds123_tb_parameters.D_G_tb, 0);
-                                codecs(spw_port).Tx_OR <= '0';
-                                
-                                -- Send data through SpW port
-                                codecs(spw_port).Tx_data <= '0' & s_in_var;
-                                codecs(spw_port).Tx_OR <= '1';
-                                sample_count := sample_count + 1;
-                                report "Sent sample " & integer'image(to_integer(sample_count)) & ": " & to_string(s_in_var) severity note;
+                            if codecs(spw_port).Tx_IR = '1' and codecs(spw_port).Tx_OR = '1'then      
+                                if (work.ccsds123_tb_parameters.D_G_tb <= 8) then               
+                                    -- Read data from file based on data width
+                                    read_pixel_data(bin_file, s_in_var, work.ccsds123_tb_parameters.D_G_tb, 0);
+                                    codecs(spw_port).Tx_OR <= '0';
+                                    
+                                    -- Send data through SpW port
+                                    codecs(spw_port).Tx_data <= '0' & s_in_var;
+                 --                   codecs(spw_port).Tx_OR <= '1';
+                                    sample_count := sample_count + 1;
+                                    report "Sent sample " & integer'image(to_integer(sample_count)) & ": " & to_string(s_in_var) severity note;
+                                else
+                                    if byte_value = '0' then
+                                        read_pixel_data(bin_file, s_in_var, work.ccsds123_tb_parameters.D_G_tb, 0);
+                                        codecs(spw_port).Tx_data <= '0' & s_in_var(15 downto 8);
+                                        codecs(spw_port).Tx_OR <= '0';
+                                        byte_value <= '1';
+                                    else 
+                                        codecs(spw_port).Tx_data <= '0' & s_in_var(7 downto 0);
+                                        codecs(spw_port).Tx_OR <= '0';
+                                        byte_value <= '0';
+                                        sample_count := sample_count + 1;
+                                        report "Sent sample " & integer'image(to_integer(sample_count)) & ": " & to_string(s_in_var) severity note;
+                                    end if;
+                                end if;
                             end if;
                         end if;
                         

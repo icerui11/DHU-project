@@ -19,7 +19,6 @@ add wave -position end  sim:/system_shyloc_top_tb_v2/ShyLoc_top_inst/Finished
 add wave -position end  sim:/system_shyloc_top_tb_v2/ShyLoc_top_inst/Error
 add wave -position end  sim:/system_shyloc_top_tb_v2/ShyLoc_top_inst/Finished_Ext
 
-tx_spw_node
 
 add wave -position end  sim:/system_shyloc_top_tb_v2/gen_dut_tx(1)/gen_spw_tx/SPW_inst/clock
 add wave -position end  sim:/system_shyloc_top_tb_v2/gen_dut_tx(1)/gen_spw_tx/SPW_inst/reset
