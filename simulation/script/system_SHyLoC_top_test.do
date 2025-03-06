@@ -32,12 +32,12 @@ if $lib_exists==1 {vdel -all -lib router}
 vlib router
 if $lib_exists==1 {vdel -all -lib rmap}
 vlib rmap
-vcom -work shyloc_123 -93 -explicit  $SRC/modelsim/tb_stimuli/30a_Test/ccsds123_parameters.vhd
-vcom -work shyloc_121 -93 -explicit  $SRC/modelsim/tb_stimuli/30a_Test/ccsds121_parameters.vhd
+vcom -work shyloc_123 -93 -explicit  $SRC/modelsim/tb_stimuli/30_Test/ccsds123_parameters.vhd
+vcom -work shyloc_121 -93 -explicit  $SRC/modelsim/tb_stimuli/30_Test/ccsds121_parameters.vhd
 do $SRC/modelsim/tb_scripts/ip_core.do
 do $SRC/modelsim/tb_scripts/ip_core_block.do
-vcom -work work -93 -explicit $SRC/modelsim/tb_stimuli/30a_Test/ccsds123_tb_parameters.vhd
-vcom -work work -93 -explicit $SRC/modelsim/tb_stimuli/30a_Test/ccsds121_tb_parameters.vhd
+vcom -work work -93 -explicit $SRC/modelsim/tb_stimuli/30_Test/ccsds123_tb_parameters.vhd
+vcom -work work -93 -explicit $SRC/modelsim/tb_stimuli/30_Test/ccsds121_tb_parameters.vhd
 do $SRC/modelsim/tb_scripts/testbench.do
 #router library
 do $DUT/DHU-project/simulation/script/SpW_all_library.do
