@@ -3,6 +3,7 @@
 * [ ]  memory controller, may be GRLIB, need to be determined
 * [ ]  Time code for SpaceWire
 * [ ]  研究压缩数据流 到memory 后完整性
+* [X]  16bits Shyloc input
 
 # router_fifo_spwctrl_16bit
 
@@ -37,7 +38,13 @@
 debug
 
 1. Ready_Ext asserted了，是因为ccsds_ready_ext <= '0' when fifo_full = '1' else '1';
-   1. 原因是asym fifo深度不够，需要N
+   1. 原因是asym fifo深度不够，需要NE 设置为256
+
+tb:
+
+1. add use std.env.all;
+   stop(0);                        --is commonly used to immediately terminate a simulation. the parameter (0) represents an exit code of 0, indicating a normal or successful termination
+2.
 
 ## gen_stim
 

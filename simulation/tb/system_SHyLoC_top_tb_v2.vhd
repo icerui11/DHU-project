@@ -11,6 +11,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use std.textio.all;
+use std.env.all;
 
 library shyloc_121;
 use work.ccsds121_tb_parameters.all;
@@ -240,6 +241,7 @@ architecture rtl of system_SHyLoC_top_tb_v2 is
           -- Handle completion
           if Finished = '1' then
             if fin = 1 then
+              assert false report "compression has been done and write into file" severity note;
               file_close(output);
               ini := 0;
               fin := 0;
@@ -640,7 +642,10 @@ begin
         -- test2;   
         -- Wait for error conditions
 
-        wait until spw_error = '0';
+        wait until r_shyloc.Finished = '1';
+        assert false report "**** system Testbench done ****" severity note; 
+        stop(0);
+
     end process;
 
 

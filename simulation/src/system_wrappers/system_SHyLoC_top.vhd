@@ -107,8 +107,8 @@ port(
     rx_cmd_ready	 : in 	std_logic;												-- assert to receive rx command. 
     
     rx_data_out		 : out 	std_logic_vector(7 downto 0)	:= (others => '0');		-- received spacewire data output
-    rx_data_valid	 : out 	std_logic := '0';										-- valid rx data on output
-    rx_data_ready	 : in 	std_logic := '1';										-- assert to receive rx data
+    rx_data_valid	 : out 	std_logic;										        -- valid rx data on output
+    rx_data_ready	 : in 	std_logic;										        -- assert to receive rx data
 
     ccsds_datain     : in   std_logic_vector(shyloc_121.ccsds121_parameters.W_BUFFER_GEN-1 downto 0);     --convert to 8 bit data in asym_FIFO
     w_update         : in   std_logic;                                                                    --connect with ccsds dataout newvalid
