@@ -436,7 +436,7 @@ begin
                     total_samples := to_unsigned(work.ccsds123_tb_parameters.Nx_tb * 
                                               work.ccsds123_tb_parameters.Ny_tb * 
                                               work.ccsds123_tb_parameters.Nz_tb, 32);
-                    route_addr := '0' & std_logic_vector(to_unsigned(5, 8)); -- Assume router port 5
+                    route_addr := '0' & std_logic_vector(to_unsigned(36, 8)); -- Assume router port 5
                     codecs(spw_port).Tx_OR <= '0';
                     state <= WAIT_CONNECTION;
                     report "Initializing SpW transmission to router port 5" severity note;
@@ -645,7 +645,7 @@ begin
         wait until r_shyloc.Finished = '1';
         assert false report "**** system Testbench done ****" severity note; 
         stop(0);
-
+        wait;
     end process;
 
 

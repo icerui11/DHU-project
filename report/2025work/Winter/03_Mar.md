@@ -4,6 +4,7 @@
 * [ ]  Time code for SpaceWire
 * [ ]  研究压缩数据流 到memory 后完整性
 * [X]  16bits Shyloc input
+* [ ]  地址数据需要删除
 
 # router_fifo_spwctrl_16bit
 
@@ -14,6 +15,7 @@
 2. address_send state need to strip off the logic address (greater than 31)
 3. compressor need 16 bits input data, spw transmit 8 bits data. SHyLoC receive the raw data from Router spw_fifo_out.tx_data. In the router_fifo_spwctrl module, rx_data should be assembled into a 16-bit CCSDS raw data
 4. modify router_fifo_spwctrl_16bit in router_fifo_ctrl_top
+5.
 
 ## control_rx channel
 
@@ -22,6 +24,7 @@
 2. temporarily keep rx_data_out for simulation
 3. rx_data_valid will not used as datain_newvalid connected to SHyloc
 4. ccsds_datanewvalid 赋值完没有deassert， 需要替代rx_data_valid
+5. 还存在的问题就是会将第一个地址的数据传输出去，需要额外逻辑处理
 
 # router_fifo_ctrl_top
 
@@ -44,7 +47,8 @@ tb:
 
 1. add use std.env.all;
    stop(0);                        --is commonly used to immediately terminate a simulation. the parameter (0) represents an exit code of 0, indicating a normal or successful termination
-2.
+2. if want to keep the sensivity list with r_shyloc.Finished, must remove all wait statements and implement a state machine to manage the flow, the remove the sensitivity List.
+   1. 或者删除敏感信号
 
 ## gen_stim
 
