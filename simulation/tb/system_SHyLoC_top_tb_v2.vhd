@@ -112,6 +112,7 @@ architecture rtl of system_SHyLoC_top_tb_v2 is
     type bin_file_type is file of character;
     file bin_file               : bin_file_type;
     file output_file            : bin_file_type;
+    signal file_opened : boolean := false;
 
     signal   byte_value : std_logic := '0';                                                        --indicate read value high or low            
     --gen_stim state declaration
@@ -168,7 +169,7 @@ architecture rtl of system_SHyLoC_top_tb_v2 is
           end if;
         end if;
     end procedure;
-
+/*
     procedure write_pixel_data(
         signal clk          : in std_logic;
         signal rst_n        : in std_logic;
@@ -250,6 +251,7 @@ architecture rtl of system_SHyLoC_top_tb_v2 is
           end if;
         end if;
     end procedure;
+*/
 
 begin 
     reset_spw <= not rst_n;                 -- reset signal for SpW IP core
@@ -426,7 +428,7 @@ begin
                 -- Reset state and variables
                 state <= IDLE;
                 sample_count := (others => '0');
-                codecs(spw_port).Tx_data <= (others => '0');
+                codecs(spw_port).Tx_data <= (others => '0') := 
                 codecs(spw_port).Tx_OR <= '0';
             else 
             -- State machine
@@ -436,7 +438,7 @@ begin
                     total_samples := to_unsigned(work.ccsds123_tb_parameters.Nx_tb * 
                                               work.ccsds123_tb_parameters.Ny_tb * 
                                               work.ccsds123_tb_parameters.Nz_tb, 32);
-                    route_addr := '0' & std_logic_vector(to_unsigned(36, 8)); -- Assume router port 5
+                    route_addr := '0' & std_logic_vector(to_unsigned(5, 8)); -- Assume router port 5
                     codecs(spw_port).Tx_OR <= '0';
                     state <= WAIT_CONNECTION;
                     report "Initializing SpW transmission to router port 5" severity note;
@@ -452,6 +454,7 @@ begin
                     -- Open file
                     file_open(file_status, bin_file, work.ccsds123_tb_parameters.stim_file, read_mode);
                     if file_status = open_ok then
+                        log(ID_FILE_OPEN_CLOSE, "File opened successfully: " & work.ccsds123_tb_parameters.stim_file);
                         report "File opened successfully: " & work.ccsds123_tb_parameters.stim_file severity note;
                         state <= SEND_ADDR;
                     else
@@ -537,6 +540,80 @@ begin
         end if;
     end process;
 
+    write_pixel_data_process: process(clk)
+        variable ini        : integer := 0;
+        variable fin        : integer := 0;
+        variable error_f    : integer := 1;
+        variable probe      : std_logic_vector(7 downto 0);
+        variable uns        : unsigned(7 downto 0);
+        variable int        : integer;
+        variable pixel_file : character;
+        variable size       : integer;
+        variable status     : FILE_OPEN_STATUS;
+    begin
+        if rising_edge(clk) then
+            -- Handle reset condition
+            if reset_n_s = '0' then
+                ini := 0;
+                fin := 0;
+            -- Handle force stop condition
+            elsif r_shyloc.ForceStop = '1' then
+                assert false report "Comparison not possible because there has been a ForceStop assertion" severity note;
+                file_close(output_file);
+                ini := 0;
+                fin := 0;
+                error_f := 0;
+            -- Handle error condition
+            elsif r_shyloc.Error = '1' then
+                if error_f = 1 then
+                    assert false report "Comparison not possible because there has not been compression performed (configuration error)" severity note;
+                    file_close(output_file);
+                    ini := 0;
+                    fin := 0;
+                    error_f := 0;
+                end if;
+            else
+                -- Process valid data
+                if data_out_newvalid = '1' and r_shyloc.AwaitingConfig = '0' then
+                    -- Initialize file if first time
+                    if ini = 0 then
+                        file_open(status, output_file, work.ccsds123_tb_parameters.out_file, write_mode);
+                        report "Output file opened successfully: " & work.ccsds123_tb_parameters.out_file severity note;
+                        ini := 1;
+                        fin := 1;
+                    end if;
+                    
+                    -- Determine buffer size
+                    if work.ccsds123_tb_parameters.EN_RUNCFG_G = 1 then
+                        size := work.ccsds121_tb_parameters.W_BUFFER_tb;
+                    else
+                        size := work.ccsds121_tb_parameters.W_BUFFER_G_tb;
+                    end if;
+                    
+                    -- Write data to file byte by byte
+                    for i in 0 to (size/8) - 1 loop
+                        probe := data_out_shyloc((((size/8) - 1 - i) + 1) * 8 - 1 downto ((size/8) - 1 - i) * 8);
+                        uns := unsigned(probe);
+                        int := to_integer(uns);
+                        pixel_file := character'val(int);
+                        write(output_file, pixel_file);
+                    end loop;
+                end if;
+                
+                -- Handle completion
+                if r_shyloc.Finished = '1' then
+                    if fin = 1 then
+                        assert false report "Compression has been done and written to file" severity note;
+                        file_close(output_file);
+                        ini := 0;
+                        fin := 0;
+                        error_f := 0;
+                    end if;
+                end if;
+            end if;
+        end if;
+    end process write_pixel_data_process;
+   
     stim_sequencer: process
     variable file_write_status : file_open_status;                --write file status
     /*
@@ -619,13 +696,15 @@ begin
         end test2;
 */
     begin 
+        set_log_file_name("datatransfer.txt");
+
         reset_n_s <= '0';
         r_shyloc.ForceStop <= '0';                                              -- default value
         wait until (codecs(1).Connected = '1' and router_connected(1) = '1');	-- wait for SpW instances to establish connection, make sure Spw link is connected
         report "SpW port_1 Uplink Connected !" severity note;
         wait for clk_period; 
         reset_n_s <= '1';
-
+/*
         write_pixel_data(clk, reset_n_s, r_shyloc.ForceStop, r_shyloc.Error, r_shyloc.DataOut_NewValid, 
         r_shyloc.AwaitingConfig, r_shyloc.DataOut, r_shyloc.Finished, file_write_status, output_file);
         if file_write_status = open_ok then
@@ -633,6 +712,7 @@ begin
         else
             report "Unable to open file: " & work.ccsds123_tb_parameters.out_file severity error;
         end if;
+*/
         set_log_file_name("router_fifo_ctrl_log.txt");
         set_alert_file_name("router_fifo_ctrl_alert.txt");
        -- test1;
