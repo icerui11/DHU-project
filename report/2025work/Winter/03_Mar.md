@@ -50,6 +50,10 @@ tb:
 2. if want to keep the sensivity list with r_shyloc.Finished, must remove all wait statements and implement a state machine to manage the flow, the remove the sensitivity List.
    1. 或者删除敏感信号
 
+write_pixel_data
+
+1. 将procedure改为process，因为write procedure is only called once in the stim_sequencer process
+
 ## gen_stim
 
 1. s_in_var: since the datainput format is not fix and it is most likely 16bits bandwidth, for convenient processing handle it by parameterizing the data type
