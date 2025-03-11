@@ -3,8 +3,10 @@
 * [ ]  memory controller, may be GRLIB, need to be determined
 * [ ]  Time code for SpaceWire
 * [ ]  研究压缩数据流 到memory 后完整性
-* [X]  16bits Shyloc input
+* [X]  16bits Shyloc input, Venspec-U data will always be 1 bit
 * [ ]  地址数据需要删除
+
+## week report
 
 # router_fifo_spwctrl_16bit
 
@@ -25,6 +27,8 @@
 3. rx_data_valid will not used as datain_newvalid connected to SHyloc
 4. ccsds_datanewvalid 赋值完没有deassert， 需要替代rx_data_valid
 5. 还存在的问题就是会将第一个地址的数据传输出去，需要额外逻辑处理
+6. 发现不但logic address 收到了，即使是path address 也没去掉
+   1. 添加信号验证，主要是router_port_rx_controller rx_state should in strip_path_addr remove path address
 
 # router_fifo_ctrl_top
 
@@ -53,6 +57,8 @@ tb:
 write_pixel_data
 
 1. 将procedure改为process，因为write procedure is only called once in the stim_sequencer process
+2. split read_and_send state to read_file and spw_tx two state,
+   避免重复发送地址
 
 ## gen_stim
 

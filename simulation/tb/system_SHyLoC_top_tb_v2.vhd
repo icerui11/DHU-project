@@ -115,11 +115,11 @@ architecture rtl of system_SHyLoC_top_tb_v2 is
     signal file_opened : boolean := false;
 
     signal   byte_value : std_logic := '0';                                                        --indicate read value high or low            
-    --gen_stim state declaration
+    --gen_stim datatx_state declaration
     type t_spw_tx_state is (
-        IDLE, WAIT_CONNECTION, OPEN_FILE, SEND_ADDR, READ_AND_SEND, SEND_EOP, CLOSE_FILE
+        IDLE, WAIT_CONNECTION, OPEN_FILE, SEND_ADDR, READ_FILE, SPW_TX, SEND_EOP, CLOSE_FILE
         );                                                         
-    signal state : t_spw_tx_state := IDLE;                                                                  
+    signal datatx_state : t_spw_tx_state := IDLE;                                                                  
 
     --declaration the same state type in testbench
     type t_states is (fsm_ready, addr_send, read_mem, spw_tx, ramaddr_delay, eop_tx);
@@ -426,13 +426,13 @@ begin
            codecs(1).Tx_OR <= '0';
             if rst_n = '0' then
                 -- Reset state and variables
-                state <= IDLE;
+                datatx_state <= IDLE;
                 sample_count := (others => '0');
-                codecs(spw_port).Tx_data <= (others => '0') := 
+                codecs(spw_port).Tx_data <= (others => '0');
                 codecs(spw_port).Tx_OR <= '0';
             else 
             -- State machine
-                case state is
+                case datatx_state is
                 when IDLE =>
                     -- Initialize, prepare to start transmission
                     total_samples := to_unsigned(work.ccsds123_tb_parameters.Nx_tb * 
@@ -440,14 +440,14 @@ begin
                                               work.ccsds123_tb_parameters.Nz_tb, 32);
                     route_addr := '0' & std_logic_vector(to_unsigned(5, 8)); -- Assume router port 5
                     codecs(spw_port).Tx_OR <= '0';
-                    state <= WAIT_CONNECTION;
+                    datatx_state <= WAIT_CONNECTION;
                     report "Initializing SpW transmission to router port 5" severity note;
 
                 when WAIT_CONNECTION =>
                     -- Wait for SpW link to be established
                     if codecs(spw_port).Connected = '1' and router_connected(spw_port) = '1' then
                         report "SpW port " & integer'image(spw_port) & " connected" severity note;
-                        state <= OPEN_FILE;
+                        datatx_state <= OPEN_FILE;
                     end if;
                     
                 when OPEN_FILE =>
@@ -456,10 +456,10 @@ begin
                     if file_status = open_ok then
                         log(ID_FILE_OPEN_CLOSE, "File opened successfully: " & work.ccsds123_tb_parameters.stim_file);
                         report "File opened successfully: " & work.ccsds123_tb_parameters.stim_file severity note;
-                        state <= SEND_ADDR;
+                        datatx_state <= SEND_ADDR;
                     else
                         report "Unable to open file: " & work.ccsds123_tb_parameters.stim_file severity error;
-                        state <= CLOSE_FILE;
+                        datatx_state <= CLOSE_FILE;
                     end if;
                     
                     when SEND_ADDR =>
@@ -471,17 +471,17 @@ begin
                         if codecs(spw_port).Tx_IR = '1' and codecs(spw_port).Tx_OR = '1'then
                           codecs(spw_port).Tx_OR <= '0';
                           report "Sent routing address: " & to_string(route_addr) severity note;
-                          state <= READ_AND_SEND;
+                          datatx_state <= READ_FILE;
                         end if;
-                
+/*                
                     when READ_AND_SEND =>
                         -- Check termination conditions
                         if r_shyloc.Finished = '1' or r_shyloc.ForceStop = '1' then
                             report "Early termination requested" severity note;
-                            state <= SEND_EOP;
+                            datatx_state <= SEND_EOP;
                         elsif sample_count >= total_samples then
                             report "All samples processed: " & integer'image(to_integer(sample_count)) severity note;
-                            state <= SEND_EOP;
+                            datatx_state <= SEND_EOP;
                         -- Read and send next sample when ready
                         elsif r_shyloc.Ready = '1' and r_shyloc.AwaitingConfig = '0' then
                             if codecs(spw_port).Tx_IR = '1' then
@@ -505,7 +505,7 @@ begin
                                         codecs(spw_port).Tx_OR <= '0';
                                         byte_value <= '1';
                                     else 
-                                        codecs(spw_port).Tx_data <= '0' & s_in_var(7 downto 0);
+                                        codecs(spw_port).Tx41_data <= '0' & s_in_var(7 downto 0);
                                         codecs(spw_port).Tx_OR <= '0';
                                         byte_value <= '0';
                                         sample_count := sample_count + 1;
@@ -514,18 +514,116 @@ begin
                                 end if;
                             end if;
                         end if;
-                        
+  
+                    when READ_AND_SEND =>
+                        codecs(spw_port).Tx_OR <= '0';
+                        -- Check termination conditions
+                        if r_shyloc.Finished = '1' or r_shyloc.ForceStop = '1' then
+                            report "Early termination requested" severity note;
+                            datatx_state <= SEND_EOP;
+                        elsif sample_count >= total_samples then
+                            report "All samples processed: " & integer'image(to_integer(sample_count)) severity note;
+                            datatx_state <= SEND_EOP;
+                        -- Read and send next sample when ready
+                        elsif r_shyloc.Ready = '1' and r_shyloc.AwaitingConfig = '0' then
+                            
+                            if codecs(spw_port).Tx_IR = '1' then
+                                codecs(spw_port).Tx_OR <= '1';
+                            end if;   
+                            
+                            if codecs(spw_port).Tx_IR = '1' and codecs(spw_port).Tx_OR = '1' then
+                                if (work.ccsds123_tb_parameters.D_G_tb <= 8) then               
+                                    -- Read data from file based on data width
+                                    read_pixel_data(bin_file, s_in_var, work.ccsds123_tb_parameters.D_G_tb, 0);
+                          --          if codecs(spw_port).Tx_IR = '1' then
+                          --              codecs(spw_port).Tx_OR <= '1';
+                          --          end if;
+                                                                    
+                                    -- Send data through SpW port
+                                    codecs(spw_port).Tx_data <= '0' & s_in_var;
+                    --                   codecs(spw_port).Tx_OR <= '1';
+                                    sample_count := sample_count + 1;
+                                    report "Sent sample " & integer'image(to_integer(sample_count)) & ": " & to_string(s_in_var) severity note;
+                                    
+                                else
+                                    if byte_value = '0' then
+                                        
+                                        read_pixel_data(bin_file, s_in_var, work.ccsds123_tb_parameters.D_G_tb, 0);
+                                        codecs(spw_port).Tx_data <= '0' & s_in_var(15 downto 8);
+                                --        codecs(spw_port).Tx_OR <= '1';
+                                --        codecs(spw_port).Tx_OR <= '0';
+                                        byte_value <= '1';
+                                    else 
+                                        codecs(spw_port).Tx_data <= '0' & s_in_var(7 downto 0);
+                                 --       codecs(spw_port).Tx_OR <= '1';
+                                 --       codecs(spw_port).Tx_OR <= '0';
+                                        byte_value <= '0';
+                                        sample_count := sample_count + 1;
+                                        report "Sent sample " & integer'image(to_integer(sample_count)) & ": " & to_string(s_in_var) severity note;
+                                    end if;
+                                end if;
+                            end if;
+                        end if;    
+      */                      
+                        when READ_FILE =>
+                            if r_shyloc.Finished = '1' or r_shyloc.ForceStop = '1' then
+                                report "Early termination requested" severity note;
+                                datatx_state <= SEND_EOP;
+    
+                            -- Read and send next sample when ready
+                            elsif r_shyloc.Ready = '1' and r_shyloc.AwaitingConfig = '0' then
+                                if (work.ccsds123_tb_parameters.D_G_tb <= 8) then               
+                                    -- Read data from file based on data width
+                                    read_pixel_data(bin_file, s_in_var, work.ccsds123_tb_parameters.D_G_tb, 0);
+
+                                    codecs(spw_port).Tx_data <= '0' & s_in_var;
+                                    report "Sent sample " & integer'image(to_integer(sample_count)) & ": " & to_string(s_in_var) severity note;                                       
+                                    datatx_state <= SPW_TX;
+                                else
+                                    if byte_value = '0' then  
+                                        read_pixel_data(bin_file, s_in_var, work.ccsds123_tb_parameters.D_G_tb, 0);
+                                        codecs(spw_port).Tx_data <= '0' & s_in_var(15 downto 8);
+                                        byte_value <= '1';
+                                        datatx_state <= SPW_TX;
+                                    else 
+                                        codecs(spw_port).Tx_data <= '0' & s_in_var(7 downto 0);
+                                        byte_value <= '0';
+                                        report "Sent sample " & integer'image(to_integer(sample_count)) & ": " & to_string(s_in_var) severity note;
+                                        datatx_state <= SPW_TX;
+                                    end if;
+                                end if;
+                            end if;   
+
+                        when SPW_TX =>
+                            if codecs(spw_port).Tx_IR = '1' then
+                                codecs(spw_port).Tx_OR <= '1';
+                            end if; 
+                            
+                            if codecs(spw_port).Tx_IR = '1' and codecs(spw_port).Tx_OR = '1' then
+                                codecs(spw_port).Tx_OR <= '0';
+                                sample_count := sample_count + 1;
+                                if sample_count >= total_samples then
+                                    report "All samples processed: " & integer'image(to_integer(sample_count)) severity note;
+                                    datatx_state <= SEND_EOP;
+                                else
+                                    datatx_state <= READ_FILE;
+                                end if;
+                            end if;
+
                         when SEND_EOP =>
                         -- Send End-of-Packet marker
-                        if codecs(spw_port).Tx_OR = '1' then
-                            codecs(spw_port).Tx_OR <= '0';
-                        elsif codecs(spw_port).Tx_IR = '1' then
+
+                        if codecs(spw_port).Tx_IR = '1' then
                             codecs(spw_port).Tx_data <= "100000010";  -- EOP
                             codecs(spw_port).Tx_OR <= '1';
-                            report "Transmission complete, sending EOP" severity note;
-                            state <= CLOSE_FILE;
+                            report "Transmission complete, sending EOP" severity note;                      
                         end if;
-                        
+                        if codecs(spw_port).Tx_IR = '1' and codecs(spw_port).Tx_OR = '1' then
+                            codecs(spw_port).Tx_OR <= '0';
+                            datatx_state <= CLOSE_FILE;
+                        end if;
+                    
+
                         when CLOSE_FILE =>
                         -- Close file and return to idle
                         if codecs(spw_port).Tx_OR = '1' then
@@ -533,7 +631,7 @@ begin
                         else
                             file_close(bin_file);
                             report "File closed, sent " & to_string(sample_count) & " samples" severity note;
-                            state <= IDLE;
+                            datatx_state <= IDLE;
                         end if;
                     end case;
                 end if;
