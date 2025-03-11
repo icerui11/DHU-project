@@ -100,13 +100,6 @@ architecture rtl of system_SHyLoC_top_tb_v2 is
 
 	signal 	router_connected	: 		std_logic_vector(31 downto 1);
 
-    --! Testbench signals
-    signal s                    : std_logic_vector (work.ccsds123_tb_parameters.D_G_tb-1 downto 0);
-    signal s_valid              : std_logic;
-    signal sign: std_logic;
-    signal counter: unsigned(1 downto 0);
-    signal counter_samples: unsigned (31 downto 0); 
-
  --   signal   spw_codec  :  r_codec_interface;         -- define in spw_data_type
     ---------------------files------------------------
     type bin_file_type is file of character;
@@ -399,10 +392,8 @@ begin
     begin
         -- Initial reset
         rst_n <= '0';
- --       reset_n_s <= '0';
         wait for 16.456 us;								-- wait for > 500us before de-asserting reset
         rst_n <= '1';
- --       reset_n_s <= '1';
         wait;
     end process;
 
@@ -437,7 +428,7 @@ begin
                     -- Initialize, prepare to start transmission
                     total_samples := to_unsigned(work.ccsds123_tb_parameters.Nx_tb * 
                                               work.ccsds123_tb_parameters.Ny_tb * 
-                                              work.ccsds123_tb_parameters.Nz_tb, 32);
+                                              work.ccsds123_tb_parameters.Nz_tb*2, 32);
                     route_addr := '0' & std_logic_vector(to_unsigned(5, 8)); -- Assume router port 5
                     codecs(spw_port).Tx_OR <= '0';
                     datatx_state <= WAIT_CONNECTION;
@@ -800,7 +791,7 @@ begin
         r_shyloc.ForceStop <= '0';                                              -- default value
         wait until (codecs(1).Connected = '1' and router_connected(1) = '1');	-- wait for SpW instances to establish connection, make sure Spw link is connected
         report "SpW port_1 Uplink Connected !" severity note;
-        wait for clk_period; 
+        wait for clk_period*10; 
         reset_n_s <= '1';
 /*
         write_pixel_data(clk, reset_n_s, r_shyloc.ForceStop, r_shyloc.Error, r_shyloc.DataOut_NewValid, 
