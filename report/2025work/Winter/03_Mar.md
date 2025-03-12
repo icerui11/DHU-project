@@ -54,6 +54,8 @@ debug
 
 1. Ready_Ext asserted了，是因为ccsds_ready_ext <= '0' when fifo_full = '1' else '1';
    1. 原因是asym fifo深度不够，需要NE 设置为256
+2. 当 使用logic address 时，tx传输了，FIFo_port却没收到数据
+   1. 首先通过dut_tx(1) 对router port1 发送数据，router port1 rx_data 经过 rx_dp_fifo 再经过port_rx_controller接收数据
 
 tb:
 
