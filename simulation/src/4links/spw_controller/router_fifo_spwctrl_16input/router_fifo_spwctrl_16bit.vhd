@@ -250,27 +250,15 @@ begin
 					rx_cmd_valid 	<= spw_Rx_Con;				-- assert cmd valid if command received
 					rx_data_valid   <= not spw_Rx_Con;			-- assert data valid if data received
 					if spw_Rx_Con = '0' then
-                        if shyloc_123.ccsds123_parameters.ENDIANESS_GEN = 0 then             -- little endian
-                             if byte_concat_fin = '0' then
-                                 rx_value_low    <= spw_Rx_data;
-                                 byte_concat_fin <= '1';
-                                 ccsds_data_ready <= '0';
-                             else
-                                 raw_ccsds_data <= rx_value_low & spw_Rx_data;
-                                 byte_concat_fin <= '0';
-                                 ccsds_data_ready <= '1';
-                             end if;
-                        else
-                            if byte_concat_fin = '0' then
-                                rx_value_low    <= spw_Rx_data;
-                                byte_concat_fin <= '1';
-                                ccsds_data_ready <= '0';
-                            else
-                                raw_ccsds_data <=  spw_Rx_data & rx_value_low;                   
-                                byte_concat_fin <= '0';
-                                ccsds_data_ready <= '1';
-                            end if;
-                        end if;
+						if byte_concat_fin = '0' then
+							rx_value_low    <= spw_Rx_data;
+							byte_concat_fin <= '1';
+							ccsds_data_ready <= '0';
+						else
+							raw_ccsds_data <= rx_value_low & spw_Rx_data;                   
+							byte_concat_fin <= '0';
+							ccsds_data_ready <= '1';
+						end if;
 					end if;
 				end if;									
 			end if;

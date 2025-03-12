@@ -32,6 +32,11 @@
    2. the issue was found to be that byte_concat is assert to high when receiving the first raw data
       1. however it is opposite to the simulation, i suspect it's because the byte_concat signal is not deasserted during reset
 7. the issue, repeat the identical data transfer but found that each compressed data are different, the root reason is because ccsds_datanewvalid needs to be asserted only when both ccsds_data_ready and rx_data_valid are asserted simultaneously, the issue arises that ccsds_data_ready doesn't take into account the scenario where, after the rx_channel completes transmitting 16-bit data and stop receving, but it doesn't deassert ccsds_data_ready
+8. remove  the endianess convert, since it should be accomplished by ShyLoc IP
+
+# router_fifo_spwctrl_16bit_v2
+
+purpose: When a logic address is received, the logic address should be removed
 
 # router_fifo_ctrl_top
 
