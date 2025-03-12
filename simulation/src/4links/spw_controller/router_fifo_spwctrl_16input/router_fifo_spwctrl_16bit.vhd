@@ -223,11 +223,12 @@ begin
 		if(rising_edge(clk_in)) then							-- Synchronous to rising edge
 		    error_out <= (spw_Rx_ESC_ESC or spw_ESC_EOP  or spw_ESC_EEP or spw_Parity_error);
 			spw_Rx_IR <= '0';									-- default spw_Rx_IR low
+			ccsds_data_ready <= '0';                            -- default ccsds data ready low
 			if(rst_in = '1') then								-- if synchronous reset asserted ?
 				rx_data_valid 	<= '0';							-- de-assert rx_data valid
 				rx_cmd_valid 	<= '0';							-- de-assert rx_cmd valid
                 ccsds_data_ready <= '0';
-
+                byte_concat_fin <= '0';
 			else												-- reset de-asserted ?
 				if(rx_data_ready = '1') then					-- rx data output logic ready ?
 					rx_data_valid <= '0';						-- de-assert rx data valid
