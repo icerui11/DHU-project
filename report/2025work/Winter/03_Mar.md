@@ -56,6 +56,8 @@ debug
    1. 原因是asym fifo深度不够，需要NE 设置为256
 2. 当 使用logic address 时，tx传输了，FIFo_port却没收到数据
    1. 首先通过dut_tx(1) 对router port1 发送数据，router port1 rx_data 经过 rx_dp_fifo 再经过port_rx_controller接收数据
+   2. 问题在于ip_core_router.do 里的模块 没有更新成新的module
+      1. such like routing_table and mixed_width_ram router_rt_arbiter, 更新后正常了
 
 tb:
 
