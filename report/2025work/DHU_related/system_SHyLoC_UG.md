@@ -6,9 +6,9 @@
 |       w_update       |          | data_out_newvalid |                                                            |
 |     ccsds_datain     |          |  data_out_shyloc  |        shyloc_121.ccsds121_parameters.W_BUFFER_GEN-1        |
 |   ccsds_ready_ext   |          |  ccsds_ready_ext  | ccsds_ready_ext <= '0' when fifo_full = '1' in fifo_spwctrl |
-|     rx_data_out     |    out    |   data_in_shyloc   |      shyloc_123.ccsds123_parameters.D_GEN-1(normal 8)      |
-|    rx_data_valid    |    out    |  DataIn_NewValid  |                                                            |
-|    rx_data_ready    |    in    |       ready       |                                                            |
+|    raw_ccsds_data    |    out    |   data_in_shyloc   |      shyloc_123.ccsds123_parameters.D_GEN-1(normal 8)      |
+|  ccsds_datanewvalid  |    out    |  DataIn_NewValid  |                                                            |
+|    rx_data_ready    |    in    |       Ready       |                                                            |
 |     rx_cmd_valid     |    out    |        open        |                                                            |
 |      rx_cmd_out      |    out    |        open        |                                                            |
 |     rx_cmd_ready     |    in    |                    |                                                            |
@@ -20,7 +20,41 @@
 
 1. Configured ENDIANESS in the CCSDS121 IP core shall be always set to big endian (1).
 2. Ny number of lines, Nx : number of columns,  Nz: number of bands
-3.
+
+### From Venspec CCU-Channels SWICD
+
+Every sensor readout shall have a fixed predefined data format (number of columns, rows, bits per pixel). The same is true for the number of readouts to compose one 3D cube array.
+
+## spw_controller
+
+### router_fifo_spwctrl_16bit
+
+This version is able to compress data correctly, except for the scenarios involving input logic addresses. Note that the first transfer will send predefined address(currently, the transmitted address is the path address)
+
+### router_fifo_spwctrl_16bit_v2
+
+when the router sends a logic address, it transmits the address information together with the payload data. However, when sending to the spw_fifo port, the compressor receives non-raw data, so the address needs to be removed in the RX_channel
+
+additionally, remove the sorting caused by endian ordering in control_rx, because the shyloc input allocates based on the data's endianness, elimination the need for the controller to allocate it agian
+
+#### signal
+
+* spw_Rx_IR output: map to router spw_fifo_in.tx_ready
+* spw_Rx_OR input
+
+# SpaceWire Router
+
+## router clock
+
+in order to keep the SpaceWire link saturated, the router clock speed and data width  must be configured so that the router fabric throughput is greater than the CoDec Tx throughput.
+
+### reset requirement
+
+To improve timing performance, pipeline registers are inserted at several stages within the fabric  architecture. The registers have no associated resets to improve timing, therefore when performing  a system reset, the reset should be held for 5 clock cycles
+
+## router data width
+
+The `c_fabric_bus_width` parameter determines the internal data bus width for the crossbar switch fabric in the RMAP Router.
 
 # decleration spw_codec
 
@@ -56,7 +90,7 @@ Error_select    : 	std_logic_vector(3 downto 0);
 Error_inject    : 	std_logic;
 
 -- DDR/SDR IO, only when "custom" mode is used
--- when instantiating, if not used, you can ignore these ports. 
+-- when instantiating, if not used, you can ignore these ports.
 DDR_din_r		: 	std_logic;
 DDR_din_f   	: 	std_logic;
 DDR_sin_r   	: 	std_logic;

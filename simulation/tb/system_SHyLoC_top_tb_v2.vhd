@@ -410,6 +410,8 @@ begin
         variable file_status   : file_open_status;
         variable route_addr    : std_logic_vector(8 downto 0);
         constant spw_port      : integer := 1;                       -- Use SpW port 1
+        variable compress_cnt    : integer := 0;                       -- compress counter
+        constant read_cycle      : integer := 1;                       -- compress times
 
     begin
         if rising_edge(clk) then
@@ -419,8 +421,9 @@ begin
                 -- Reset state and variables
                 datatx_state <= IDLE;
                 sample_count := (others => '0');
-                codecs(spw_port).Tx_data <= (others => '0');
+    --            codecs(spw_port).Tx_data <= (others => '0');
                 codecs(spw_port).Tx_OR <= '0';
+                compress_cnt := 0;
             else 
             -- State machine
                 case datatx_state is
@@ -429,10 +432,15 @@ begin
                     total_samples := to_unsigned(work.ccsds123_tb_parameters.Nx_tb * 
                                               work.ccsds123_tb_parameters.Ny_tb * 
                                               work.ccsds123_tb_parameters.Nz_tb*2, 32);
-                    route_addr := '0' & std_logic_vector(to_unsigned(5, 8)); -- Assume router port 5
+                    route_addr := '0' & std_logic_vector(to_unsigned(36, 8)); -- Assume router port 5
                     codecs(spw_port).Tx_OR <= '0';
-                    datatx_state <= WAIT_CONNECTION;
-                    report "Initializing SpW transmission to router port 5" severity note;
+                    if compress_cnt < read_cycle then
+                        datatx_state <= WAIT_CONNECTION;
+                        report "Initializing SpW transmission to router port 5" severity note;
+                    else
+                        report "All compressions completed" severity note;
+                        datatx_state <= IDLE;
+                    end if;
 
                 when WAIT_CONNECTION =>
                     -- Wait for SpW link to be established
@@ -454,108 +462,20 @@ begin
                     end if;
                     
                     when SEND_ADDR =>
-                        -- Send the router address
-                        codecs(spw_port).Tx_data <= route_addr;
-                        if codecs(spw_port).Tx_IR = '1' then
-                          codecs(spw_port).Tx_OR <= '1';
-                        end if;
-                        if codecs(spw_port).Tx_IR = '1' and codecs(spw_port).Tx_OR = '1'then
-                          codecs(spw_port).Tx_OR <= '0';
-                          report "Sent routing address: " & to_string(route_addr) severity note;
-                          datatx_state <= READ_FILE;
-                        end if;
-/*                
-                    when READ_AND_SEND =>
-                        -- Check termination conditions
-                        if r_shyloc.Finished = '1' or r_shyloc.ForceStop = '1' then
-                            report "Early termination requested" severity note;
-                            datatx_state <= SEND_EOP;
-                        elsif sample_count >= total_samples then
-                            report "All samples processed: " & integer'image(to_integer(sample_count)) severity note;
-                            datatx_state <= SEND_EOP;
-                        -- Read and send next sample when ready
-                        elsif r_shyloc.Ready = '1' and r_shyloc.AwaitingConfig = '0' then
+
+                        if r_shyloc.Ready = '1' then
+                            -- Send the router address
+                            codecs(spw_port).Tx_data <= route_addr;
                             if codecs(spw_port).Tx_IR = '1' then
-                                codecs(spw_port).Tx_OR <= '1';
+                            codecs(spw_port).Tx_OR <= '1';
                             end if;
-                            if codecs(spw_port).Tx_IR = '1' and codecs(spw_port).Tx_OR = '1'then      
-                                if (work.ccsds123_tb_parameters.D_G_tb <= 8) then               
-                                    -- Read data from file based on data width
-                                    read_pixel_data(bin_file, s_in_var, work.ccsds123_tb_parameters.D_G_tb, 0);
-                                    codecs(spw_port).Tx_OR <= '0';
-                                    
-                                    -- Send data through SpW port
-                                    codecs(spw_port).Tx_data <= '0' & s_in_var;
-                 --                   codecs(spw_port).Tx_OR <= '1';
-                                    sample_count := sample_count + 1;
-                                    report "Sent sample " & integer'image(to_integer(sample_count)) & ": " & to_string(s_in_var) severity note;
-                                else
-                                    if byte_value = '0' then
-                                        read_pixel_data(bin_file, s_in_var, work.ccsds123_tb_parameters.D_G_tb, 0);
-                                        codecs(spw_port).Tx_data <= '0' & s_in_var(15 downto 8);
-                                        codecs(spw_port).Tx_OR <= '0';
-                                        byte_value <= '1';
-                                    else 
-                                        codecs(spw_port).Tx41_data <= '0' & s_in_var(7 downto 0);
-                                        codecs(spw_port).Tx_OR <= '0';
-                                        byte_value <= '0';
-                                        sample_count := sample_count + 1;
-                                        report "Sent sample " & integer'image(to_integer(sample_count)) & ": " & to_string(s_in_var) severity note;
-                                    end if;
-                                end if;
+                            if codecs(spw_port).Tx_IR = '1' and codecs(spw_port).Tx_OR = '1'then
+                            codecs(spw_port).Tx_OR <= '0';
+                            report "Sent routing address: " & to_string(route_addr) severity note;
+                            datatx_state <= READ_FILE;
                             end if;
                         end if;
-  
-                    when READ_AND_SEND =>
-                        codecs(spw_port).Tx_OR <= '0';
-                        -- Check termination conditions
-                        if r_shyloc.Finished = '1' or r_shyloc.ForceStop = '1' then
-                            report "Early termination requested" severity note;
-                            datatx_state <= SEND_EOP;
-                        elsif sample_count >= total_samples then
-                            report "All samples processed: " & integer'image(to_integer(sample_count)) severity note;
-                            datatx_state <= SEND_EOP;
-                        -- Read and send next sample when ready
-                        elsif r_shyloc.Ready = '1' and r_shyloc.AwaitingConfig = '0' then
-                            
-                            if codecs(spw_port).Tx_IR = '1' then
-                                codecs(spw_port).Tx_OR <= '1';
-                            end if;   
-                            
-                            if codecs(spw_port).Tx_IR = '1' and codecs(spw_port).Tx_OR = '1' then
-                                if (work.ccsds123_tb_parameters.D_G_tb <= 8) then               
-                                    -- Read data from file based on data width
-                                    read_pixel_data(bin_file, s_in_var, work.ccsds123_tb_parameters.D_G_tb, 0);
-                          --          if codecs(spw_port).Tx_IR = '1' then
-                          --              codecs(spw_port).Tx_OR <= '1';
-                          --          end if;
-                                                                    
-                                    -- Send data through SpW port
-                                    codecs(spw_port).Tx_data <= '0' & s_in_var;
-                    --                   codecs(spw_port).Tx_OR <= '1';
-                                    sample_count := sample_count + 1;
-                                    report "Sent sample " & integer'image(to_integer(sample_count)) & ": " & to_string(s_in_var) severity note;
-                                    
-                                else
-                                    if byte_value = '0' then
-                                        
-                                        read_pixel_data(bin_file, s_in_var, work.ccsds123_tb_parameters.D_G_tb, 0);
-                                        codecs(spw_port).Tx_data <= '0' & s_in_var(15 downto 8);
-                                --        codecs(spw_port).Tx_OR <= '1';
-                                --        codecs(spw_port).Tx_OR <= '0';
-                                        byte_value <= '1';
-                                    else 
-                                        codecs(spw_port).Tx_data <= '0' & s_in_var(7 downto 0);
-                                 --       codecs(spw_port).Tx_OR <= '1';
-                                 --       codecs(spw_port).Tx_OR <= '0';
-                                        byte_value <= '0';
-                                        sample_count := sample_count + 1;
-                                        report "Sent sample " & integer'image(to_integer(sample_count)) & ": " & to_string(s_in_var) severity note;
-                                    end if;
-                                end if;
-                            end if;
-                        end if;    
-      */                      
+                  
                         when READ_FILE =>
                             if r_shyloc.Finished = '1' or r_shyloc.ForceStop = '1' then
                                 report "Early termination requested" severity note;
@@ -614,7 +534,6 @@ begin
                             datatx_state <= CLOSE_FILE;
                         end if;
                     
-
                         when CLOSE_FILE =>
                         -- Close file and return to idle
                         if codecs(spw_port).Tx_OR = '1' then
@@ -623,6 +542,7 @@ begin
                             file_close(bin_file);
                             report "File closed, sent " & to_string(sample_count) & " samples" severity note;
                             datatx_state <= IDLE;
+                            compress_cnt := compress_cnt + 1;
                         end if;
                     end case;
                 end if;
@@ -791,7 +711,7 @@ begin
         r_shyloc.ForceStop <= '0';                                              -- default value
         wait until (codecs(1).Connected = '1' and router_connected(1) = '1');	-- wait for SpW instances to establish connection, make sure Spw link is connected
         report "SpW port_1 Uplink Connected !" severity note;
-        wait for clk_period*10; 
+ --       wait for clk_period*10; 
         reset_n_s <= '1';
 /*
         write_pixel_data(clk, reset_n_s, r_shyloc.ForceStop, r_shyloc.Error, r_shyloc.DataOut_NewValid, 

@@ -152,7 +152,7 @@ begin
 
     gen_fifo_controller: for i in 1 to g_num_ports-1 generate 
         gen_ctrl: if (g_is_fifo(i) = '1') generate
-            router_fifo_ctrl_inst: entity work.router_fifo_spwctrl_16bit(rtl)
+            router_fifo_ctrl_inst: entity work.router_fifo_spwctrl_16bit_v2(rtl)
             generic map (
             g_addr_width	 => g_addr_width,
             g_router_port_addr => g_router_port_addr,             -- fifo data to which port

@@ -8,6 +8,8 @@
 
 ## week report
 
+13.03: question :
+
 # router_fifo_spwctrl_16bit
 
 1. set DUT C:/Users/yinrui/Desktop/Envison_DHU
@@ -37,6 +39,17 @@
 # router_fifo_spwctrl_16bit_v2
 
 purpose: When a logic address is received, the logic address should be removed
+
+because in this SpW network only logic address will be used, therefore, there is no need to consider the path address scenario
+
+
+## rx_channel
+
+define a rx FSM ,type t_rx_states is (strip_L_addr, get_Nbyte)
+
+1. 在strip_L_addr 中因为不需要 将logic address 发送给ShyLoC, 所以不需要将等待rx_ready
+2. 只有logic address 只需2 state， 发现控制位signal 去除第一个logic address
+3. 需要更完整测试，目前测试是可以的
 
 # router_fifo_ctrl_top
 
