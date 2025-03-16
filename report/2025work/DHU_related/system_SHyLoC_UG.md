@@ -12,9 +12,14 @@
 |     rx_cmd_valid     |    out    |        open        |                                                            |
 |      rx_cmd_out      |    out    |        open        |                                                            |
 |     rx_cmd_ready     |    in    |                    |                                                            |
+|     rx_data_out     |          |                    |             reserved for future possible design             |
 |                      |          |                    |                                                            |
 |                      |          |                    |                                                            |
-|                      |          |                    |                                                            |
+
+# system_SHyLoC_top_v2
+
+create version2 to generate 3 SHyLoC compressor
+
 
 # SHyLoC parameter
 

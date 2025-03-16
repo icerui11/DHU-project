@@ -4,11 +4,11 @@
 * [ ]  Time code for SpaceWire
 * [ ]  研究压缩数据流 到memory 后完整性
 * [X]  16bits Shyloc input, Venspec-U data will always be 16 bit
-* [ ]  地址数据需要删除
+* [X]  remove logic address,
 
 ## week report
 
-13.03: question :
+point: FPGA system need generate reset signal after system,additional module to handle it, afterwards, CoreReset_PF can be instantiated
 
 # router_fifo_spwctrl_16bit
 
@@ -42,6 +42,7 @@ purpose: When a logic address is received, the logic address should be removed
 
 because in this SpW network only logic address will be used, therefore, there is no need to consider the path address scenario
 
+* [ ]  for improvement: the control_tx_fsm can be simplified because sending one byte requires 12 cycles, the ramaddr_delay is unnecessary since in theroy it only need 10 cycle to transimit 1 byte spw data
 
 ## rx_channel
 
@@ -59,7 +60,10 @@ define a rx FSM ,type t_rx_states is (strip_L_addr, get_Nbyte)
       1. Timing lag issues: when the fifo_full signal is asserted, there may already be new data in transit.
       2. Data loss risk: if the upstream device cannot respond promptly changes in the Ready signal, data sent when the FIFO is full will be lost
 3. ccsds_ready_ext 用于告诉shyloc dataout 已满，不要发送压缩数据，(asym fifo)
-4.
+
+# router_fifo_ctrl_top_v2
+
+purpose : instantiate 3 SHyLoC compressor, therefore router_fifo_ctrl_top need to define multidimensional data type in package
 
 # system_SHyLoC_top_tb
 
