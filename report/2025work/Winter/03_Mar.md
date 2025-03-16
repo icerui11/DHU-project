@@ -60,10 +60,25 @@ define a rx FSM ,type t_rx_states is (strip_L_addr, get_Nbyte)
       1. Timing lag issues: when the fifo_full signal is asserted, there may already be new data in transit.
       2. Data loss risk: if the upstream device cannot respond promptly changes in the Ready signal, data sent when the FIFO is full will be lost
 3. ccsds_ready_ext 用于告诉shyloc dataout 已满，不要发送压缩数据，(asym fifo)
+4. rx_cmd_out可以保留，用于维护系统完整性
 
 # router_fifo_ctrl_top_v2
 
 purpose : instantiate 3 SHyLoC compressor, therefore router_fifo_ctrl_top need to define multidimensional data type in package
+
+create a create_fifo_map function, is to creates a mapping table
+
+1. type t_fifo_port_map is array (1 to c_num_fifoports) of integer range 1 to g_num_ports-1; like array indices (1 to 3) which represent fifo indices, arrry value represent actual fifo port number, use this function to assign Fifo port 5,6,7 to SHyLoC 1,2,and 3 respectively, selective component instantiation with index remapping
+2. create constant fifo_port_map
+
+### router_pckg.vhd
+
+add a spw fifo port number constant c_num_fifoports
+
+### system_constant_pckg.vhd define the SHyloc unconstrained array
+
+1. ccsds_datain_array
+2. raw_ccsds_data_array
 
 # system_SHyLoC_top_tb
 
