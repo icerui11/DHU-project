@@ -47,5 +47,9 @@ do $DUT/DHU-project/simulation/script/ip_core_router.do
 do $DUT/DHU-project/simulation/script/ip_core_system.do
 vcom -2008 -work work -quiet $DUT/DHU-project/simulation/tb/system_SHyLoC_top_tb_v2.vhd
 vsim -coverage work.system_SHyLoC_top_tb_v2 -vopt -t 1ns -voptargs="+acc"
-coverage report -file $DUT/DHU-project/simulation/coverage/system_SHyLoC_top_tb_v2.covhtml -html -cvg -details -assert -codeAll
+run -all
+# Create the coverage report directory
+set coverage_dir [file dirname "$DUT/DHU-project/simulation/coverage/system_SHyLoC_top_tb_v2.covhtml"]
+file mkdir -p $coverage_dir
+coverage report -output $DUT/DHU-project/simulation/coverage/system_SHyLoC_top_tb_v2.covhtml -html -cvg -details -assert -codeAll
 
