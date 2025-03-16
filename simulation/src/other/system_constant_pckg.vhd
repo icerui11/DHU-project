@@ -71,13 +71,29 @@ package system_constant_pckg is
     
     -- Array type for the CCSDS123 interface record
     type CCSDS123_Interface_Array_Type is array (natural range <>) of CCSDS123_Interface_Type;
-
+/*
     -- Define array types for AHB interface signals
-    type AHB_Slv_In_Array_Type is array (natural range <>) of AHB_Slv_In_Type;
-    type AHB_Slv_Out_Array_Type is array (natural range <>) of AHB_Slv_Out_Type;
-    type AHB_Mst_In_Array_Type is array (natural range <>) of AHB_Mst_In_Type;
-    type AHB_Mst_Out_Array_Type is array (natural range <>) of AHB_Mst_Out_Type;
-    
+    type AHB_Mst_In_Vector  is array (Natural range <> ) of AHB_Mst_In_Type;
+    type AHB_Mst_Out_Vector is array (Natural range <> ) of AHB_Mst_Out_Type;
+    type AHB_Slv_In_Vector  is array (Natural range <> ) of AHB_Slv_In_Type;
+    type AHB_Slv_Out_Vector is array (Natural range <> ) of AHB_Slv_Out_Type;
+    --define in amba package   
+    -- define AHB 3d array signal 
+    type AHB_Mst_In_Vector_3d  is array (Natural range <> ) of AHB_Mst_In_Vector;
+    type AHB_Mst_Out_Vector_3d is array (Natural range <> ) of AHB_Mst_Out_Vector;
+    type AHB_Slv_In_Vector_3d  is array (Natural range <> ) of AHB_Slv_In_Vector;
+    type AHB_Slv_Out_Vector_3d is array (Natural range <> ) of AHB_Slv_Out_Vector;
+    */
+    --all zero constant for AHB vector array signal (only for 3 AHB master/slave)
+    constant C_AHB_MST_IN_VECTOR_ZERO : AHB_Mst_In_Vector(1 to 3) :=
+    (
+      others => (others => C_AHB_MST_IN_ZERO)
+    );
+
+    constant C_AHB_SLV_IN_VECTOR_ZERO : AHB_Slv_In_Vector(1 to 3) :=
+    (
+      others => (others => C_AHB_SLV_IN_ZERO)
+    );
     -- Define array type for DataIn
     type DataIn_Array_Type is array (natural range <>) of 
         std_logic_vector(shyloc_123.ccsds123_parameters.D_GEN-1 downto 0);
@@ -101,6 +117,14 @@ package system_constant_pckg is
         Error              : std_logic;
     end record shyloc_record;
 
+    type ccsds_datain_array is array (natural range <>) of std_logic_vector(shyloc_121.ccsds121_parameters.W_BUFFER_GEN-1 downto 0);   
+    type raw_ccsds_data_array is array (natural range <>) of std_logic_vector(shyloc_123.ccsds123_parameters.D_GEN-1 downto 0);
+    
+    --spw router_fifo_ctrl
+    type rx_cmd_out_array  is array (natural range <>) of std_logic_vector(2 downto 0);             --spw control char output bits
+    type rx_data_out_array is array (natural range <>) of std_logic_vector(7 downto 0);		
+    type fifo_data_array   is array (natural range <>) of std_logic_vector(7 downto 0);             --asym fifo data output to tx_data
+   
 end package system_constant_pckg;
 
 /*
@@ -305,5 +329,40 @@ spw_send_file_data(
     ny           => work.ccsds123_tb_parameters.Ny_tb,                      
     nz           => work.ccsds123_tb_parameters.Nz_tb                        
 );
+
+procedure read_pixel_data(
+  file     bin_file      : character;
+  variable data_out      : out std_logic_vector(work.ccsds123_tb_parameters.D_G_tb-1 downto 0);
+  constant data_width    : in integer;
+  constant endianness    : in integer
+) is
+  variable pixel_file    : character;
+  variable value_high    : natural;
+  variable value_low     : natural;
+begin
+  -- read data depending on data width
+  if data_width <= 8 then
+    -- single byte data
+    read(bin_file, pixel_file);
+    value_high := character'pos(pixel_file);
+    data_out := std_logic_vector(to_unsigned(value_high, data_width));
+  else
+    -- 处理多字节数据并应用正确的字节序
+    read(bin_file, pixel_file);
+    value_high := character'pos(pixel_file);
+    read(bin_file, pixel_file);
+    value_low := character'pos(pixel_file);
+    
+    if endianness = 0 then
+      -- 小端序
+      data_out := std_logic_vector(to_unsigned(value_high, 8)) & 
+                 std_logic_vector(to_unsigned(value_low, data_width-8));
+    else
+      -- 大端序
+      data_out := std_logic_vector(to_unsigned(value_high, data_width-8)) & 
+                 std_logic_vector(to_unsigned(value_low, 8));
+    end if;
+  end if;
+end procedure;
 
 */
