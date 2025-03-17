@@ -2,17 +2,15 @@
 -- File Description  --
 ----------------------------------------------------------------------------------------------------------------------------------
 -- @ File Name				:	system_constant_pckg.vhd
--- @ Engineer				: 	RUI YIN
--- @ Role					:	FPGA  Engineer
--- @ Company				:	IDA TUBS
-
+-- @ Engineer				  : RUI YIN
+-- @ Role					    :	FPGA  Engineer
+-- @ Company				  :	IDA TUBS
 -- @ VHDL Version			:	2008
 -- @ Supported Toolchain	:	Modelsim
--- @ Target Device			:	N/A
-
--- @ Revision #				: 	1
-
--- File Description         :	use for system top-level constant definition
+-- @ Target Device		:	N/A
+-- @ Revision #				: 2
+-- @ Last Revised			:	17.03.2025
+-- File Description   :	use for system top-level constant definition
 --								
 
 -- Document Number			:	TBD
@@ -87,12 +85,12 @@ package system_constant_pckg is
     --all zero constant for AHB vector array signal (only for 3 AHB master/slave)
     constant C_AHB_MST_IN_VECTOR_ZERO : AHB_Mst_In_Vector(1 to 3) :=
     (
-      others => (others => C_AHB_MST_IN_ZERO)
+      others => C_AHB_MST_IN_ZERO
     );
 
     constant C_AHB_SLV_IN_VECTOR_ZERO : AHB_Slv_In_Vector(1 to 3) :=
     (
-      others => (others => C_AHB_SLV_IN_ZERO)
+      others => C_AHB_SLV_IN_ZERO
     );
     -- Define array type for DataIn
     type DataIn_Array_Type is array (natural range <>) of 
