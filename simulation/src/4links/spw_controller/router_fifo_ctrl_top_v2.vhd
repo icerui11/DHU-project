@@ -96,7 +96,7 @@ architecture rtl of router_fifo_ctrl_top_v2 is
     --function declaration
     --------------------------------------------------
     -- Create a mapping from FIFO indices to router port indices
-    type t_fifo_port_map is array (1 to c_num_fifoports) of integer range 1 to g_num_ports-1;
+    type t_fifo_port_map is array (1 to g_num_ports-1) of integer range 1 to c_num_fifoports;
 
     function create_fifo_map return t_fifo_port_map is
         variable map_result : t_fifo_port_map;
@@ -106,7 +106,7 @@ architecture rtl of router_fifo_ctrl_top_v2 is
             if g_is_fifo(i) = '1' then
                 fifo_count := fifo_count + 1;
                 if fifo_count <= c_num_fifoports then
-                    map_result(fifo_count) := i;
+                    map_result(i) := fifo_count;
                 end if;
             end if;
         end loop;
@@ -211,12 +211,12 @@ begin
 
             -- SpW Control Signals
             spw_Connected	 	=>  '1',			                        -- asserted when SpW Link is Connected(in this case, always asserted when fifo port is generated)
-            spw_Rx_ESC_ESC	 	=> 	spw_Rx_ESC_ESC(fifo_port_map(i)),                     	-- SpW ESC_ESC error 
-            spw_ESC_EOP 	 	=> 	spw_Rx_ESC_EOP(fifo_port_map(i)),   		                -- SpW ESC_EOP error 
-            spw_ESC_EEP      	=> 	spw_Rx_ESC_EEP(fifo_port_map(i)),     	                -- SpW ESC_EEP error 
+            spw_Rx_ESC_ESC	 	=> 	spw_Rx_ESC_ESC(fifo_port_map(i)),                     	  -- SpW ESC_ESC error 
+            spw_ESC_EOP 	 	=> 	spw_Rx_ESC_EOP(fifo_port_map(i)),   		              -- SpW ESC_EOP error 
+            spw_ESC_EEP      	=> 	spw_Rx_ESC_EEP(fifo_port_map(i)),     	                  -- SpW ESC_EEP error 
             spw_Parity_error 	=> 	spw_Rx_Parity_error(fifo_port_map(i)),                    -- SpW Parity error
      
-            error_out			=> 	spw_error(i)				                -- assert when error
+            error_out			=> 	spw_error(fifo_port_map(i))				                  -- assert when error
             );
         
             spw_fifo_in(i).connected <= '1';                                -- assert router fifo connected when fifo port is generated

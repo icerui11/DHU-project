@@ -69,7 +69,8 @@ purpose : instantiate 3 SHyLoC compressor, therefore router_fifo_ctrl_top need t
 create a create_fifo_map function, is to creates a mapping table
 
 1. type t_fifo_port_map is array (1 to c_num_fifoports) of integer range 1 to g_num_ports-1; like array indices (1 to 3) which represent fifo indices, arrry value represent actual fifo port number, use this function to assign Fifo port 5,6,7 to SHyLoC 1,2,and 3 respectively, selective component instantiation with index remapping
-2. create constant fifo_port_map
+   1. modified type t_fifo_port_map is array (1 to g_num_ports-1) of integer range 1 to c_num_fifoports; since orignal direction is reverse
+   2. create constant fifo_port_map
 
 ### router_pckg.vhd
 
