@@ -44,6 +44,10 @@ because in this SpW network only logic address will be used, therefore, there is
 
 * [ ]  for improvement: the control_tx_fsm can be simplified because sending one byte requires 12 cycles, the ramaddr_delay is unnecessary since in theroy it only need 10 cycle to transimit 1 byte spw data
 
+## tx_channel
+
+i found that the ramaddr_delay state is unnecessary, after the spw_tx the IR and OR handshake signal are executed, the FSM state can decide to send an EOP based on fifo_empty or transition to the read_mem state to continue sending data
+
 ## rx_channel
 
 define a rx FSM ,type t_rx_states is (strip_L_addr, get_Nbyte)

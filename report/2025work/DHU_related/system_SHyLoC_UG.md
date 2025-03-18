@@ -20,7 +20,6 @@
 
 create version2 to generate 3 SHyLoC compressor
 
-
 # SHyLoC parameter
 
 1. Configured ENDIANESS in the CCSDS121 IP core shall be always set to big endian (1).
@@ -46,6 +45,18 @@ additionally, remove the sorting caused by endian ordering in control_rx, becaus
 
 * spw_Rx_IR output: map to router spw_fifo_in.tx_ready
 * spw_Rx_OR input
+
+# Sim do.file hierarchical
+
+system_SHyLoC_top_tb_v2
+==>router_fifo_ctrl_top
+==>generate 1 router_fifo_spwctrl_16bit_v2
+==>and 1 asym_FIFO
+==>1 ShyLoc_top_Wrapper
+==> gen_dut_tx 4 spw_wrap_top_level_RTG4
+do $DUT/DHU-project/simulation/script/system_SHyLoC_top_test.do
+
+router_fifo_ctrl_top
 
 # SpaceWire Router
 
