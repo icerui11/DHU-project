@@ -226,7 +226,7 @@ begin
             RESET_TYPE  => 1,         --! Reset type (Synchronous or asynchronous).
             W_Size      => 32,        --! Bit width of the stored values.
             R_Size      => 8,         --! Bit width of the read values.
-            NE          => 256,        --! Number of elements of the FIFO.
+            NE          => 64,        --! Number of elements of the FIFO.
             W_ADDR      => 8,         --! Bit width of the address.
             TECH        => 0)         --! Parameter used to change technology; (0) uses inferred memories.
         port map( 

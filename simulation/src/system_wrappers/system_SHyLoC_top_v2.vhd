@@ -91,7 +91,7 @@ component OSC_C0
         );
 end component;
 
-component router_fifo_ctrl_top
+component router_fifo_ctrl_top_v2
 generic (
     g_num_ports         : natural range 1 to 32     := c_num_ports;         -- number of ports
     g_is_fifo           : t_dword                   := c_fifo_ports;        -- fifo ports
@@ -139,18 +139,18 @@ component ShyLoc_top_Wrapper is
         Rst_N            : in  std_logic;                    --! Reset signal. Active low
         
         -- Amba Interface
-        AHBSlave121_In   : in  AHB_Slv_In_Vector;             --! AHB slave input signals
+        AHBSlave121_In   : in  AHB_Slv_In_Type;             --! AHB slave input signals
         Clk_AHB          : in  std_logic;                    --! AHB clock
         Reset_AHB        : in  std_logic;                    --! AHB reset
-        AHBSlave121_Out  : out AHB_Slv_Out_Vector;            --! AHB slave output signals
+        AHBSlave121_Out  : out AHB_Slv_Out_Type;            --! AHB slave output signals
         
         -- AHB 123 Slave interface
-        AHBSlave123_In   : in  AHB_Slv_In_Vector;             --! AHB slave input signals
-        AHBSlave123_Out  : out AHB_Slv_Out_Vector;            --! AHB slave output signals
+        AHBSlave123_In   : in  AHB_Slv_In_Type;             --! AHB slave input signals
+        AHBSlave123_Out  : out AHB_Slv_Out_Type;            --! AHB slave output signals
         
         -- AHB 123 Master interface
-        AHBMaster123_In  : in  AHB_Mst_In_Vector;             --! AHB slave input signals
-        AHBMaster123_Out : out AHB_Mst_Out_Vector;            --! AHB slave output signals
+        AHBMaster123_In  : in  AHB_Mst_In_Type;             --! AHB slave input signals
+        AHBMaster123_Out : out AHB_Mst_Out_Type;            --! AHB slave output signals
         
         -- Data Input Interface
         DataIn_shyloc    : in  std_logic_vector(shyloc_123.ccsds123_parameters.D_GEN-1 downto 0);  --from the input interface
@@ -213,7 +213,7 @@ end component;
     -- Data Interface signals
     signal data_out_shyloc    : ccsds_datain_array(1 to c_num_fifoports);                               -- 32-bit data output from 121
     signal data_out_newvalid  : std_logic_vector(1 to c_num_fifoports);
-    signal raw_ccsds_data     : std_logic_vector(shyloc_123.ccsds123_parameters.D_GEN-1 downto 0);      -- transmit to ccsds 123 encoder
+    signal raw_ccsds_data     : raw_ccsds_data_array(1 to c_num_fifoports);      -- transmit to ccsds 123 encoder
     signal ccsds_datanewValid : std_logic_vector(1 to c_num_fifoports);	                                                            -- enable ccsds data input 
     -- Control signals
     signal force_stop         : std_logic_vector(1 to c_num_fifoports);
@@ -267,39 +267,39 @@ ShyLoc_top_inst : ShyLoc_top_Wrapper
         Rst_N             => reset_n_s,              -- Using the top-level reset
         
         -- Amba Interface
-        AHBSlave121_In    => C_AHB_SLV_IN_VECTOR_ZERO,  --declared in router_package.vhd
+        AHBSlave121_In    => C_AHB_SLV_IN_ZERO,  --declared in router_package.vhd
         Clk_AHB           => clk_AHB,            -- Using the AHB clock from FCCC
         Reset_AHB         => rst_AHB_pad,          
         AHBSlave121_Out   => open,
         
         -- AHB 123 Interfaces
-        AHBSlave123_In    => C_AHB_SLV_IN_VECTOR_ZERO,
+        AHBSlave123_In    => C_AHB_SLV_IN_ZERO,
         AHBSlave123_Out   => open,
-        AHBMaster123_In   => C_AHB_MST_IN_VECTOR_ZERO,
+        AHBMaster123_In   => C_AHB_MST_IN_ZERO,
         AHBMaster123_Out  => open,
         
         -- Data Input Interface
-        DataIn_shyloc     => raw_ccsds_data,
-        DataIn_NewValid   => ccsds_datanewValid,
+        DataIn_shyloc     => raw_ccsds_data(i),
+        DataIn_NewValid   => ccsds_datanewValid(i),
         
         -- Data Output Interface CCSDS121
-        DataOut           => data_out_shyloc,
-        DataOut_NewValid  => data_out_newvalid,
+        DataOut           => data_out_shyloc(i),
+        DataOut_NewValid  => data_out_newvalid(i),
 
-        Ready_Ext         => ccsds_ready_ext,           --input, external receiver not ready such external fifo is full
+        Ready_Ext         => ccsds_ready_ext(i),           --input, external receiver not ready such external fifo is full
         
         -- CCSDS123 IP Core Interface
-        ForceStop         => '0',
-        AwaitingConfig    => awaiting_config,
-        Ready             => ready,                     --output, configuration received and IP ready for new samples
-        FIFO_Full         => fifo_full,
-        EOP               => eop,
-        Finished          => finished,
-        Error             => error
+        ForceStop         => '0',              --input, force the stop of the compression
+        AwaitingConfig    => awaiting_config(i),
+        Ready             => ready(i),                     --output, configuration received and IP ready for new samples
+        FIFO_Full         => fifo_full(i),
+        EOP               => eop(i),
+        Finished          => finished(i),
+        Error             => error(i)
     );
 end generate gen_SHyLoC;
 
-    router_fifo_ctrl_inst : router_fifo_ctrl_top
+    router_fifo_ctrl_inst : router_fifo_ctrl_top_v2
     -- Generic map section defines the configuration parameters
     generic map (
         g_num_ports     => c_num_ports,         -- Number of SpaceWire ports
@@ -319,10 +319,10 @@ end generate gen_SHyLoC;
         -- Receive Command Interface
         rx_cmd_out      => open,                 -- Control character output
         rx_cmd_valid    => open,                 -- Command valid signal
-        rx_cmd_ready    => '0',                  -- Command ready signal
+        rx_cmd_ready    => (others => '0'),      -- Command ready signal
 
         -- Receive Data Interface
-        rx_data_out     => rx_data_out,        -- Received raw data and travel to CCSDS
+        rx_data_out     => open,               -- Received raw data and travel to CCSDS
         rx_data_valid   => rx_data_valid,      -- Data valid signal
         rx_data_ready   => ready,              -- from SHyLoC 
 
@@ -342,7 +342,7 @@ end generate gen_SHyLoC;
 
         -- Status Signals
         spw_error        => open,          -- SpaceWire error flag
-        router_connected => open    -- Port connection status
+        router_connected => open           -- Port connection status
     );
 
 ----------------------------------------------------------------------
@@ -357,12 +357,12 @@ Debounce_inst : Debounce_Single_Input
         rst_n        => rst_n_pad,            -- Connect to top-level reset input
         rst_n_spw    => rst_n_spw_pad,        -- Connect to SpaceWire reset input
         locked       => locked,               -- Connect to FCCC locked signal
-        spw_fmc_en   => spw_fmc_en,          -- Connect directly to top-level output
-        spw_fmc_en_2 => spw_fmc_en_2,        -- Connect directly to top-level output
-        spw_fmc_en_3 => spw_fmc_en_3,        -- Connect directly to top-level output
-        spw_fmc_en_4 => spw_fmc_en_4,        -- Connect directly to top-level output
+        spw_fmc_en   => spw_fmc_en,           -- Connect directly to top-level output
+        spw_fmc_en_2 => spw_fmc_en_2,         -- Connect directly to top-level output
+        spw_fmc_en_3 => spw_fmc_en_3,         -- Connect directly to top-level output
+        spw_fmc_en_4 => spw_fmc_en_4,         -- Connect directly to top-level output
         reset_n_spw  => reset_n_spw_s,        -- Connect to internal signal
-        rst_spw      => open,           -- Connect to internal signal
+        rst_spw      => open,                 -- Connect to internal signal
         reset_n      => reset_n_s             -- Connect to internal signal
     );
 

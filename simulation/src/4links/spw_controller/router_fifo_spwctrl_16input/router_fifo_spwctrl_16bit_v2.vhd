@@ -102,7 +102,7 @@ architecture rtl of router_fifo_spwctrl_16bit_v2 is
 	----------------------------------------------------------------------------------------------------------------------------
 	-- Type Declarations --
 	----------------------------------------------------------------------------------------------------------------------------
-	type t_states is (ready, addr_send, read_mem, spw_tx, ramaddr_delay, eop_tx);	-- declare state machine states. for tx channel
+	type t_states is (ready, addr_send, read_mem, spw_tx, eop_tx);	-- declare state machine states. for tx channel
 
 	type t_rx_states is (strip_L_addr, get_Nbyte);               -- declare rx state machine for strip off logic address
 	
@@ -188,20 +188,14 @@ begin
 							spw_Tx_OR <= '1';												-- assert Tx data output ready. 
 						end if;							
 						if(spw_Tx_IR = '1' and spw_Tx_OR = '1') then						-- IR/OR handshake valid on spw Tx data ?
-							spw_Tx_OR 		<= '0';											-- de-assert Tx data output ready
-							s_state			<= ramaddr_delay;									-- go to ramaddr delay state
+							spw_Tx_OR <= '0';											    -- de-assert Tx data output ready
+					        if fifo_empty = '1' then
+								s_ram_reg  <= c_spw_eop;                                    -- load EOP character x02 into buffer
+								s_state    <= eop_tx;										-- go to transmit EOP state.
+							else
+							    s_state	   <= read_mem;									    -- go to ramaddr delay state
+							end if;
 						end if;	
-	                                                                                		                                                                                                                                                                     
-					when ramaddr_delay =>														-- ramaddr delay state						
-						s_time_counter <= (s_time_counter + 1) mod g_count_max;				-- increment time counter... transmit 8 bit data
-						if(s_time_counter = g_count_max-1) then								-- time counter max ?
-       --                   write_done_r <= '1';	
-                          s_state <= read_mem;											-- go to read_mem state.                       
-                        end if;					
-						if fifo_empty = '1' then	                               -- address counter rolled over and max count reached ?	
-							s_ram_reg 	<= c_spw_eop;                                       -- load EOP character x02 into buffer
-							s_state 	<= eop_tx;											-- go to transmit EOP state.
-						end if;
 					
 					when eop_tx =>															-- transmit EOP state. 				
 						spw_Tx_Con		<= '1';
@@ -209,8 +203,7 @@ begin
 						
 						if(spw_Tx_IR = '1') then											-- spw ready for data ?
 							spw_Tx_OR <= '1';												-- assert Tx data output ready. 
-						end if;					
-				
+						end if;								
 						if(spw_Tx_IR = '1' and spw_Tx_OR = '1') then						-- IR/OR handshake valid on spw Tx data ?
 							spw_Tx_OR 		<= '0';											-- de-assert Tx data output ready
 							spw_Tx_Con		<= '0';
