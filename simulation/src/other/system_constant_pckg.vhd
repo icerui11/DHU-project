@@ -115,6 +115,8 @@ package system_constant_pckg is
         Error              : std_logic;
     end record shyloc_record;
 
+    type shyloc_record_array is array (natural range <>) of shyloc_record;
+
     type ccsds_datain_array is array (natural range <>) of std_logic_vector(shyloc_121.ccsds121_parameters.W_BUFFER_GEN-1 downto 0);   
     type raw_ccsds_data_array is array (natural range <>) of std_logic_vector(shyloc_123.ccsds123_parameters.D_GEN-1 downto 0);
     
