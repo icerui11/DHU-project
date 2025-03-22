@@ -16,6 +16,7 @@ point: FPGA system need generate reset signal after system,additional module to 
    do $DUT/DHU-project/simulation/script/router_fifo_ctrl.do
 
    do $DUT/DHU-project/simulation/script/system_SHyLoC_top_test.do
+   system_SHyLoC_top_tb_v2
 2. address_send state need to strip off the logic address (greater than 31)
 3. compressor need 16 bits input data, spw transmit 8 bits data. SHyLoC receive the raw data from Router spw_fifo_out.tx_data. In the router_fifo_spwctrl module, rx_data should be assembled into a 16-bit CCSDS raw data
 4. modify router_fifo_spwctrl_16bit in router_fifo_ctrl_top
@@ -84,6 +85,25 @@ add a spw fifo port number constant c_num_fifoports
 
 1. ccsds_datain_array
 2. raw_ccsds_data_array
+
+# system_SHyLoC_top_v2_tb
+
+DUT: system_SHyLoC_top_v2(rtl)
+
+do $DUT/DHU-project/simulation/script/pre_syn_top_do/system_SHyLoC_top_v2_tb.do
+
+* vmap SmartFusion2 "C:/Microchip/Libero_SoC_v2024.1/Designer/lib/modelsimpro/precompiled/vlog/smartfusion2"
+
+need access to internal signals that aren't exposed at the top level.
+
+Using signal Aliases with Hierarchical paths
+
+* current version 1.0 only use gen_SHyLoC(1) to compress data
+* 应该重新设计tb, 因为是顶层模块验证，如果使用submodule 的信号作为仿真控制信号，则失去了测试顶层的意义
+
+## external name issue
+
+external name must denote an entire object, not a slice or indexed name of an object. when using external name syntax <<>>, you can only reference complete objects, not specific elements of arrrays or slices of signals
 
 # system_SHyLoC_top_tb
 
