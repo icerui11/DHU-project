@@ -33,4 +33,4 @@ vcom -work work -2008 -quiet $DUT/DHU-project/simulation/src/4links/router_rtl/r
 vcom -work work -2008 -quiet -nocoverfec -cover sbcf3 $DUT/SpW_router/reg_bank_inf_asym2.vhd
 vcom -work work -2008 -quiet -nocoverfec -cover sbcf3 $DUT/SpW_router/asym_FIFO.vhd
 vcom -work work -2008 -quiet -nocoverfec -cover sbcf3 $DUT/DHU-project/simulation/src/4links/spw_controller/router_fifo_spwctrl_16input/router_fifo_spwctrl_16bit_v2.vhd
-vcom -work work -2008 -quiet -nocoverfec -cover sbcf3 $DUT/DHU-project/simulation/src/4links/spw_controller/router_fifo_ctrl_top.vhd
+vcom -work work -2008 -quiet -nocoverfec -cover sbcf3 $DUT/DHU-project/simulation/src/4links/spw_controller/router_fifo_ctrl_top_v2.vhd
