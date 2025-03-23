@@ -157,7 +157,7 @@ component ShyLoc_top_Wrapper is
         DataIn_NewValid  : in  std_logic;                    --! Flag to validate input signals
         
         -- Data Output Interface CCSDS121
-        DataOut          : out std_logic_vector(shyloc_121.ccsds121_parameters.W_BUFFER_GEN-1 downto 0);
+        DataOut          : out std_logic_vector(shyloc_121.ccsds121_parameters.W_BUFFER_GEN-1 downto 0);            
         DataOut_NewValid : out std_logic;                    --! Flag to validate output bit stream
         Ready_Ext        : in  std_logic;                    --! External receiver not ready
         

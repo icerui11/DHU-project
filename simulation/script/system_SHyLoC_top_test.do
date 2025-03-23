@@ -32,6 +32,7 @@ if $lib_exists==1 {vdel -all -lib router}
 vlib router
 if $lib_exists==1 {vdel -all -lib rmap}
 vlib rmap
+vmap SmartFusion2 "C:/Microchip/Libero_SoC_v2024.1/Designer/lib/modelsimpro/precompiled/vlog/smartfusion2"
 vcom -work shyloc_123 -93 -explicit  $SRC/modelsim/tb_stimuli/30_Test/ccsds123_parameters.vhd
 vcom -work shyloc_121 -93 -explicit  $SRC/modelsim/tb_stimuli/30_Test/ccsds121_parameters.vhd
 do $SRC/modelsim/tb_scripts/ip_core.do
@@ -45,8 +46,10 @@ do $DUT/DHU-project/simulation/script/ip_core_spw.do
 do $DUT/DHU-project/simulation/script/ip_core_rmap.do
 do $DUT/DHU-project/simulation/script/ip_core_router.do
 do $DUT/DHU-project/simulation/script/ip_core_system.do
-vcom -2008 -work work -quiet $DUT/DHU-project/simulation/tb/system_SHyLoC_top_tb_v2.vhd
+vcom -2008 -work work -quiet $DUT/DHU-project/simulation/tb/router_controller_top_tb/system_SHyLoC_top_tb_v2.vhd
 vsim -coverage work.system_SHyLoC_top_tb_v2 -vopt -t 1ns -voptargs="+acc"
+#wave file
+do $DUT/DHU-project/simulation/sim_signal/system_SHyLoC_top_tb_v2_signalwave.md 
 run -all
 # Create the coverage report directory
 set coverage_dir [file dirname "$DUT/DHU-project/simulation/coverage/system_SHyLoC_top_tb_v2.covhtml"]
