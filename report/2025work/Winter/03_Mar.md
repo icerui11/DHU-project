@@ -135,3 +135,26 @@ write_pixel_data
 
 1. s_in_var: since the datainput format is not fix and it is most likely 16bits bandwidth, for convenient processing handle it by parameterizing the data type
 2. read_and_send state, because spw send only 8 bits data, it need to adapt it according to SHyLoC data format
+
+## system_SHyLoC_top_tb_v2
+
+this version is only suitable for one SHyloC compressor
+
+# system_3SHyLoC_tb
+
+this tb consist of multiple (3) SHyLoC compressor
+do $DUT/DHU-project/simulation/script/pre_syn_submodul/system_3SHyLoC_test.do
+
+problem:         rx_data_ready      => r_shyloc(1 to c_num_fifoports).Ready,
+
+VHDL does not support slice access to fields of record arrarys. even though r_shyloc is an array with range (1 to c_num_fifoports), you cannot directly use syntax like r_shyloc(1 to c_num_fifoports). ready to reference the Ready field in records
+
+solution: Use intermediate signal arrays
+
+理解record 和 array 的不同：
+
+two distinct composite types, each with its own rules for accessing elements and fields.
+
+Slicing is defined for array types to access a contiguous subset of elements, but records are not designed to be "sliced" because they are meant to group different signals or subfields under one composite type
+
+so add intermediate signal and according to c_num_fifoports generate corresponding signals, here need to take care signal directions

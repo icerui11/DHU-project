@@ -1,11 +1,12 @@
 ----------------------------------------------------------------------------------------------------------------------------------
 -- File Description  -- Three SHyLoC compressors are connected to the SPW router, and the compressors must be connected to the SpW FIFO ports.
 -- SHyLoC raw input data should be 16 bits wide. When a logic address is received, the logic address should be removed
+-- remove unnecessary tx state to improve the bitrate of tx 
 ----------------------------------------------------------------------------------------------------------------------------------
 -- @ File Name				:	router_fifo_spwctrl_16bit_v2.vhd
 -- @ Engineer				:	Rui Yin
--- @ Date					: 	12.03.2024
--- @ version				:	1.0
+-- @ Date					: 	19.03.2024
+-- @ version				:	2.0
 -- @ VHDL Version			:   2008
 -- @ Supported Toolchain	:	libero 12.0
 -- @ Target Device			: 	m2s150t
