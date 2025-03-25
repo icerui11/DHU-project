@@ -27,3 +27,24 @@ spw router shall only forward the timecode
 GR712RC的前两个SpaceWire节点(GRSPW2-0和GRSPW2-1)支持RMAP(RMAP Target), 我认为我们可以通过FPGA内的router 发送RMAP 读请求，目标地址应该是APB base address(0x80100800 for GRSPW2-0 or 0x80100900 for GRSPW2-1 ) +address offset 0x14 Time register. 并通过RMAP回复返回时间值. FPGA接收到RMAP回复包含时间码值,提取时间码值并写入路由器的时间码寄存器，最后路由器将时间码广播到所有活跃端口。 但这种方案最大的缺点是RMAP 将作为N-Char 传输，并没有特殊优先级，而Time-code是特殊的的L-char. 所以通过RMAP会导致额外的延迟.
 
 所以我建议还是使用软件方法读取time register的值来分发timecode
+
+The SpaceWire standard does not support true real-time capabilities
+
+origianl SpaceWire standard employs an event-triggered communication paradigm
+
+* SpaceWire uses wormhole routing, with non-deterministic packet delays across the network
+
+# Timecode processing in SpaceWire Routers
+
+Router uses an internal time-code register to manage time synchronization across a SpaceWire network
+
+router can operate in two roles:
+
+## time-code master
+
+in a typical SpW network, a single Timecode Master is sufficient for the entire network, even when multiple routers are present
+
+### uniqueness of time synchronization
+
+* time is a global concept, and all devices in the network should follow a single time reference source
+* multiple Timecode Master could generating conflicting time codes, making it impossible for devices to determine which time is correct

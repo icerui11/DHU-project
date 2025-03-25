@@ -28,7 +28,18 @@ provide a means of synchronising units across a SpaceWire system with resonably 
 
 The time information can be provided as "ticks" or as an incrementing value which may be synchronized to spacecraft time
 
+
+# Time-Code Latency
+
+The accuracy with which system time can be distributed is dependent upon the number of links over which it is distributed and the operating rate of each of those links. A delay of at least 14 bit-periods (ESC + data character = 4 + 10 bits) is encountered for each link that the Time-Code traverses, due to the time taken for each link-interface on the way to receive a Time-Code. This gives rise to a time-skew across a network of Tskew = 14.S/A where S is the number of SpaceWire links traversed and A is the average link operating-rate. Jitter is also introduced at each link interface due to the variation in time spent waiting for the transmitter to finish transmitting the current character or control code. At each link interface a delay of 0 to 10 bit-periods can be encountered. Across a network, this gives rise to a total jitter of Tjitter = 10.S/A. For an average rate of 100 Mbit/s and 10 links traversed, the time skew is 1.4 µs and the jitter 1.0 µs. The skew and jitter may be higher than indicated above depending on the implementation of the link-interface. A time accuracy across a network of significantly better than 10 µs may be difficult to achieve, using the standard time-code mechanism.
+
+# CCU
+
+Venspec-M expects a time update (service9 : Time management) once after the boot message tm packet is sent to the CCU
+
 # 4link IP
+
+in the SpaceWire protocol,the Time-code is not classified as a normal data character(N-Char),instead, it is categorized as a link control character(L-Char)
 
 the value of the last received timecode can be read from port 0 using the relevant status register.
 
