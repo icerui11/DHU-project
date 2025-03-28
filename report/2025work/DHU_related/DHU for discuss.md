@@ -40,18 +40,20 @@ question from Pablo mail:
 A:
 
 1. 这里的compressing in 2D 指的是 只使用CCSDS121 进行压缩吗，
-   1. 根据https://venspec.atlassian.net/wiki/x/SY5D （DHU Interface to VenSpec-U）VenSpec-U 在扫描时是2D 方式扫描，但是VenSpec-U 输出给DHU 应该是处理成BIP 格式也就是 spectral 沿x 轴传输数据，因为
+   1. 根据https://venspec.atlassian.net/wiki/x/SY5D （DHU Interface to VenSpec-U）VenSpec-U 在扫描时是2D 方式扫描，但是VenSpec-U 单次采集的数据应该是x 轴是special line
 
 ![1743087639697](images/DHUfordiscuss/1743087639697.png)
 
-这是CCU-Channels SWICD 的示意图，但这应该只是VenSpec -U 的 工作方式，如果是按照BIP格式输出的话应该是如下图所示
+这是CCU-Channels SWICD 的示意图，但这应该只是CCSDS123 压缩方式示意图，并不应该是Venspec-U 的采集方向
 
 ![1743090458636](images/DHUfordiscuss/1743090458636.png)
 
-因为使用CCSDS123 作为predictor 时 需要计算 weighted sum of samples in the spatial vicinity of the current one, 也就意味着需要上一行的所有数据SHyLoC 才能开始压缩
 
-如果VenSpec-u 需要缓存的image 太大， Compressor 也可以调整成BIL 格式对Venspec-U 图像压缩，这样sensor 就可以每次acquisition 传输给SHyLoC 进行压缩，所以DHU 中的两个SHyLoC 就需要修改成BIL 格式压缩
+![1743166163583](images/DHUfordiscuss/1743166163583.png)
 
+如这图所示X-axis 应该表示cross-track spatial dimension,
+
+VenSpec 的采集方式是按照BIL 采集数据，根据2200 DHU Interface to VenSpec-U ， VenSpec 采集的数据应该可以处理后给CCU 输出按照BIP 格式输出，也就是spectral firt. 但是我看见Pablo 在邮件中说 pixel imformation in BIL format, 我不知道这是否代表对DHU 压缩核处理VenSpec-U 的数据格式要求发生了改变？如果改变我们需要将其中两个压缩核调整成压缩BIL 格式。 此外，因为CCSDS123 在进行3D 压缩时 Throughput BIL只有BIP 格式 大约11-18%（根据图像会有些不同），如果我们需要使用BIL 格式压缩VenSpec-U 数据我们需要对这点进行考虑。
 
 ### Shyloc
 
@@ -61,18 +63,30 @@ As analternative to the BIP architecture, BIP-MEM ar chitecture offers the user 
 
 ![1743094831977](images/DHUfordiscuss/1743094831977.png)
 
+When compressing in 2D (single frame) when does the compression start? After the first spectrum (i.e. after receiving all the colors corresponding to a spatial location) or after the end of the frame (i.e. when all the colors for all the spatial locations have been received)? How will the GR712 be notified that the compression of the frame is done so that it can be processed further?
+
+对于CCSDS123 不同的数据排列类型，compressor处理方式也是不同的：
 
 
+* 在BIP模式下：处理完第一个像素的前P个波段后，压缩就可以开始
+  * 一般P 定义为3，因为超过3对压缩几乎没有影响（但p值过大会消耗过多的DSP）
+* 在BIL模式下：处理完第一行中足够的像素后，压缩就可以开始
 
+Same questions for 3D compression: can the compression start after the first spectrum or does it have to wait to the first full frame? Does the compression core have to know in advance how many frames are coming or does it run in "streaming mode" where it can take as many frames as you through at it? 关于这个问题我认为ccsds 是当压缩完一个cube后会根据配置的方式，如果不调整parameter，每次compressor完成一个cube（x ,y,z） 压缩后会进行配置，配置完成后会发送ready 信号就会接收Raw image, compressor会计算接收了多少个数据（x乘y乘z）, 如果有data 没有传输给compressor 而compressor没有完成此次压缩的话 compressor会处于等待状态，除非收到全部的input data，
 
+**BIP (Band Interleaved by Pixel)**:
 
+* Processes all spectral bands for one pixel before moving to the next pixel
+* Allows for maximum throughput (one sample per clock cycle) as there are fewer data dependencies between consecutive pixels
+* Enables pipeline implementation for hardware acceleration
+* Memory requirements include storing adjacent samples for all bands
 
+**BIL (Band Interleaved by Line)**:
 
+* Processes a complete line in one spectral band before moving to the next band
+* Creates more data dependencies that limit parallelism
+* Needs more complex scheduling to maintain throughput
+* Requires storing local differences for a line of pixels
+* Common for pushbroom sensors in satellite applications
 
-
-
-
-
-
-
-When compressing in 2D (single frame) when does the compression start? After the first spectrum (i.e. after receiving all the colors corresponding to a spatial location) or after the end of the frame (i.e. when all the colors for all the spatial locations have been received)? How will the GR712 be notified that the compression of the frame is done so that it can be processed further? 这里的compressing in 2D 应该如何理解 是指的只使用CCSDS121进行压缩还是SHyLoC ccsds121 and 123一起进行压缩？Same questions for 3D compression: can the compression start after the first spectrum or does it have to wait to the first full frame? Does the compression core have to know in advance how many frames are coming or does it run in "streaming mode" where it can take as many frames as you through at it? 关于这个问题我认为ccsds 是当压缩完一个cube后会根据配置的方式，如果不调整parameter，每次compressor完成一个cube（x ,y,z） 压缩后会进行配置，配置完成后会发送ready 信号就会接收Raw image, compressor会计算接收了多少个数据（x乘y乘z）, 如果有data 没有传输给compressor 而compressor没有完成此次压缩的话 compressor会处于等待状态，除非收到全部的input data，
+Different architectures have been developed for each ordering to optimize performance. BIP generally achieves the highest throughput but may require more memory resources, while BIL typically aligns better with how data is acquired by many satellite sensors.
