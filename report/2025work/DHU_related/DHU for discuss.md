@@ -28,6 +28,23 @@ note: The header of the science packets to be compressed have to have a fixed le
    4. **The key issue**: The compression core will discard these first two fields (D0 and D1) before compression. This means that the data ID information won't be part of the compressed data.
 5. 我在考虑compressor 的runtime configuration功能，我的设想是processor在每次传输后 通过spw 发送configuration data， 但是SHyLoC 通过AHB接收配置信息，
 
+##question about DHU datarte especially for sun calibration mode
+
+@VESP-U R0-CCU-0014
+
+During Sun calibration mode with Diffusers, VenSpec-U will generate up to 70 acquisitions.
+
+Worst case (incl. 20% margin): the 70 acq. will be sent in 7s minimum:
+
+- Science data (both channels on a single acq.): Bursts of 7670 kbit every 100ms
+
+This results in a maximum data rate of 77 Mbps
+
+但是根据 VenSpec Data Budget Summary 显示actually used max data rate 为65 Mbit/s，我不知道这是怎么来的
+
+
+所以我的
+
 ### from Pablo
 
 Compression can be configured for 2D (frames) or 3D (cubes = several frames). In either case, pixels from two different elements shall not be sent in the same packet. For instance, if a frame is 512 bytes (very small) one can compress a cube of 4 frames by sending a packet of 2048 bytes. However, if you choose to compress the frames separately, they shall be in 4 separate packets of 512 bytes each.
@@ -48,6 +65,11 @@ A:
 
 ![1743090458636](images/DHUfordiscuss/1743090458636.png)
 
+Additionally, for the SHyLoC compressor, there is no 2D compression mode. When SHyLoC uses CCSDS 121 as the predictor, it performs 1D compression, and when it uses CCSDS 123 as the predictor, it performs 3D compression.
+
+具体来说，对于CCSDS123 在预测时如示意图所示，如果配置为full prediction 在计算local differences 会使用spectial 方向的4个sample 和 spectral 方向上的p band的值， 即使是reduced prediction 不计算directional local difference(spectial direction) 但在计算Local sum 时也会根据配置参数计算 top of current sample or using 4 neighbouring sample的值。 所以CCSDS123不存在2 D 压缩，当然例外是处理第一行的数据不存在 top of current sample的值，所以只使用left of current sample的值。所以CCSDS123 不存在2d compression的说法
+
+Specifically, for CCSDS123 during prediction as shown in the diagram, if configured for full prediction, it will use 4 samples in the spatial direction and P band values in the spectral direction when calculating local differences. Even with reduced prediction that doesn't calculate directional local differences (spatial direction), when calculating the Local sum, it will still compute values based on configuration parameters using either the top of current sample or using 4 neighboring samples. Therefore, CCSDS123 doesn't have 2D compression. The only exception is when processing the first row of data where there's no 'top of current sample' value, so it only uses the 'left of current sample' value. Therefore, the concept of 2D compression doesn't exist in CCSDS123
 
 ![1743166163583](images/DHUfordiscuss/1743166163583.png)
 
@@ -65,7 +87,7 @@ As analternative to the BIP architecture, BIP-MEM ar chitecture offers the user 
 
 When compressing in 2D (single frame) when does the compression start? After the first spectrum (i.e. after receiving all the colors corresponding to a spatial location) or after the end of the frame (i.e. when all the colors for all the spatial locations have been received)? How will the GR712 be notified that the compression of the frame is done so that it can be processed further?
 
-A: 
+A:
 
 对于BIP 压缩，基本可以理解成当CCSDS123 获得前p个波段的数据就可以进行压缩，对于压缩算法计算局部和 时所需要的邻居像素，只用提取储存在FIFO中的数据就可以了，所以使用BIP压缩，compressor 可以更多的并行处理，基本等于每一个周期可以处理一个样本。
 
@@ -81,14 +103,11 @@ How will the GR712 be notified that the compression of the frame is done so that
 
 另一种是run-time 配置，这是compressor需要通过AHB bus 接收配置参数，只有接收参数成功并且配置参数在定义的范围内 compressor才能配置成功，compressor 配置成功后，就可以开始压缩。
 
-所以在这里我也需要确认compressor是选用 run-time configuration 还是compile-time configuration. 如果压缩参数是预定义好的不需要进行调整的话使用compile-time configuration 因为选用run-time configuration ，我们需要明确compressor 配置方式和要求（比如在FPGA 的ahbram 中，prarameter也可以通过GR712 修改 configuration parameter）
+所以在这里我也需要确认compressor是选用 run-time configuration 还是compile-time configuration. 如果压缩参数是预定义好的不需要进行调整的话使用compile-time configuration 因为选用run-time configuration ，我们需要使用一个ahb master 配置 SHyLoC compressor, 我们需要明确compressor 配置方式和要求, 比如可以在FPGA 设计一个ahbram ，configuration parameter 可以储存在这个ahbram中，prarameter可以通过GR712 修改 configuration parameter 或者根据venspec channal 的packet 配置 compressor.
 
-
-
-
+Therefore, I also need to confirm here whether the compressor uses run-time configuration or compile-time configuration. If the compression parameters are predefined and don't need adjustment, compile-time configuration would be appropriate. Because if using run-time configuration, we need to use an AHB master to configure the SHyLoC compressor, and we need to clarify the compressor configuration method and requirements. For example, we could design an AHBRAM in the FPGA where configuration parameters could be stored, and parameters could be modified through the GR712 processor or configured based on packets from VenSpec channels.
 
 对于CCSDS123 不同的数据排列类型，compressor处理方式也是不同的：
-
 
 * 在BIP模式下：处理完第一个像素的前P个波段后，压缩就可以开始
   * 一般P 定义为3，因为超过3对压缩几乎没有影响（但p值过大会消耗过多的DSP）
@@ -98,9 +117,7 @@ Same questions for 3D compression: can the compression start after the first spe
 
 另外对于SHyLoC compressor 并不存在2D compression, SHyLoC 使用CCSDS121作为predictor时 是1D 压缩，使用CCSDS123 作为predictor时 是3D 压缩。
 
-
 CCSDS121 1d 压缩的机制是什么？以及CCSDS121 作为CCSDS123 的block encoder的好处是什么？为什么不使用CCSDS123 的sample encoder
-
 
 ## CCSDS 121 1D compression mechanism:
 
@@ -127,12 +144,23 @@ The main reason why someone might choose the block-adaptive encoder over the sam
 
 The sample-adaptive encoder provided in CCSDS 123 is simpler and may have lower computational requirements, but it cannot achieve bit rates below 1 bpp, which can be a limitation for high compression requirements.
 
-
 关于CCU-Channels SWICD 11.3. compression implementation ,"Although the data ID will be tracked by correlating the APID of the header with the compression core that is processing it, since D0 and D1 will be discarded by the compression, it might be advisable to put the data ID somewhere among the pixels so that it gets compressed together. The two best candidates are the first pixel of each frame or the first pixel of each line. One solution that will certainly not work is to put it at the beginning of each packet, because then these fake pixels will be scattered all over the frame."  我想知道如果加入这个D0和D1 进 actual pixel, 那么一个cube data set 将这会改变fixed predefined data format 吗？ 我需要明确这一点。
+
+另外在对于
+
+如果不将D0，D1放入对于Data Set ID and Packet Sequence number这些数据是否是在进入FPGA时被去掉？如果是的话，我需要明确这些header 是多少bit--应该不用SWICD 有说明。
+
+Regarding CCU-Channels SWICD 11.3 compression implementation, "Although the data ID will be tracked by correlating the APID of the header with the compression core that is processing it, since D0 and D1 will be discarded by the compression, it might be advisable to put the data ID somewhere among the pixels so that it gets compressed together. The two best candidates are the first pixel of each frame or the first pixel of each line. One solution that will certainly not work is to put it at the beginning of each packet, because then these fake pixels will be scattered all over the frame." I want to know if adding this D0 and D1 into actual pixels will change the fixed predefined data format of a cube data set? I need to clarify this point. Additionally, for APID, Service Type and Subtype, are these data removed when entering the FPGA? If so, I need to know how many bits these headers are. Then I can modify the design to remove these headers before the packet enters the compressor.
 
 另外在service(213,2) and (213,3) 时，关于SWICD 说明的“It shall be noted that APID, Service Type and Subtype, Data Set ID and Packet Sequence number(as well as the 16 bit of the CRC at the end) will be ignored by the compression core, but they will be carefully observed by the processor whenever data is to be sent uncompressed (by sending it to SpW 192 instead of 220).” 这是否说明compression core可以直接忽略这些信息（==APID, Service Type and Subtype, Data Set ID and Packet Sequence number==）不需要在FPGA内去掉这些信息即可，对吗？
 
 ![1743278599828](images/DHUfordiscuss/1743278599828.png)
+
+Q2:
+
+另一点是关于压缩数据时发生有数据丢包的情况，从而导致Compressor 没有收到足够数量的数据（$ Nx \times Ny \times Nz$）那这时如果下一个Hyperspectrum压缩数据 进入接着压缩会造成数据混乱。所以我想知道有没有必要在DHU FPGA设计这样一个逻辑：当收到一个packet 的service 为（213，1）时表示这个packet是header data，就代表下一次的image 压缩开始了，这时设计一个逻辑给Compressor 输出一个Forcestop signal,使得compressor 强制进入新的压缩状态，避免了当一个新的image 需要压缩，而上一次压缩由于丢包造成未完成压缩的情况。所以相当于每次compressor在接收 header data时都将执行一次forcestop 命令。
+
+Another point concerns the situation when packet loss occurs during data compression, resulting in the Compressor not receiving sufficient data (\$ Nx \\times Ny \\times Nz\$). If the next hyperspectrum dataset then enters for compression, this could cause data corruption. Therefore, I'm wondering if it's necessary to design logic in the DHU FPGA like this: when a packet with service type (213, 1) is received, indicating this packet is header data and representing the start of the next image compression, the design would generate a ForceStop signal to the Compressor, forcing it to enter a new compression state. This would prevent situations where a new image needs compression while the previous compression remains incomplete due to packet loss. Essentially, the compressor would execute a ForceStop command every time it receives header data.
 
 **BIP (Band Interleaved by Pixel)**:
 
