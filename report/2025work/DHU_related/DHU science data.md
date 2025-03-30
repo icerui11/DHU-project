@@ -23,7 +23,7 @@ Additionally, since CCSDS123 achieves only about 11% throughput in BIL format co
 
 ![1743174697336](images/DHUsciencedata/1743174697336.png)
 
-This is the data from the paper "SHyLoC 2.0: Versatile Hardware Solution for On-Board Data and Hyperspectral," and the data source was obtained solely by using CCSDS123.
+This is the data from the paper "SHyLoC 2.0: Versatile Hardware Solution for On-Board Data and Hyperspectral," and the result was obtained solely by using CCSDS123.
 
 # Answer for Quetion 1
 
@@ -50,8 +50,28 @@ The compressor offers two configuration methods:
 
 ![1743271716831](images/DHUsciencedata/1743271716831.png)
 
+### need to determine configuration method
+
+Therefore, I also need to confirm here whether the compressor uses run-time configuration or compile-time configuration. If the compression parameters are predefined and don't need adjustment, compile-time configuration would be appropriate. Because if using run-time configuration, we need to use an AHB master to configure the SHyLoC compressor, and we need to clarify the compressor configuration method and requirements. For example, we could design an AHBRAM in the FPGA where configuration parameters could be stored, and parameters could be modified through the GR712 processor or configured based on packets from VenSpec channels.
+
 ## Regarding 3D compression:
 
 For CCSDS123 predictor, after compressing one cube, the compressor will proceed according to its configuration. If the parameters are not adjusted, each time the compressor finishes compressing a cube (x, y, z), it will reconfigure itself, and after configuration is complete, it will send a ready signal to receive a new raw image. The compressor keeps track until it has received all (Nx × Ny × Nz) data elements. If not all data has been transmitted to the compressor and the compression process is not complete, the compressor will remain in a waiting state until it receives all input data.
 
 Additionally, for the SHyLoC compressor, there is no 2D compression mode. When SHyLoC uses CCSDS 121 as the predictor, it performs 1D compression, and when it uses CCSDS 123 as the predictor, it performs 3D compression.
+
+### CCSDS123 prediction method
+
+Specifically, for CCSDS123 during prediction as shown in the diagram, if configured for full prediction, it will use 4 samples in the spatial direction and P band values in the spectral direction when calculating local differences. Even with reduced prediction that doesn't calculate directional local differences (spatial direction), when calculating the Local sum, it will still compute values based on configuration parameters using either the top of current sample or using 4 neighboring samples. Therefore, CCSDS123 doesn't have 2D compression. The only exception is when processing the first row of data where there's no 'top of current sample' value, so it only uses the 'left of current sample' value. Therefore, the concept of 2D compression doesn't exist in CCSDS123.
+
+![1743353787584](images/DHUsciencedata/1743353787584.png)
+
+
+
+## question about D0(data ID) and D1(Data sequence)
+
+Regarding CCU-Channels SWICD 11.3 compression implementation, "Although the data ID will be tracked by correlating the APID of the header with the compression core that is processing it, since D0 and D1 will be discarded by the compression, it might be advisable to put the data ID somewhere among the pixels so that it gets compressed together. The two best candidates are the first pixel of each frame or the first pixel of each line. One solution that will certainly not work is to put it at the beginning of each packet, because then these fake pixels will be scattered all over the frame." I want to know if adding this D0 and D1 into actual pixels will change the fixed predefined data format of a cube data set? I need to clarify this point.
+
+## handling compression interruption due to Packet loss
+
+Another point concerns the situation when packet loss occurs during data compression, resulting in the Compressor not receiving sufficient data （$ Nx \times Ny \times Nz$）If the next hyperspectrum dataset then enters for compression, this could cause data corruption. Therefore, I'm wondering if it's necessary to design logic in the DHU FPGA like this: when a packet with service type (213, 1) is received, indicating this packet is header data and representing the start of the next image compression, the design would generate a ForceStop signal to the Compressor, forcing it to enter a new compression state. This would prevent situations where a new image needs compression while the previous compression remains incomplete due to packet loss. Essentially, the compressor would execute a ForceStop command every time it receives header data.
