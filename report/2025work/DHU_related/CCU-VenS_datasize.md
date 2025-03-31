@@ -53,6 +53,11 @@ The CCU shall pick up the compression cores parameters from the V-U configuratio
 
 This is to ensure that the compression cores are configured before V-U sends science data.
 
+
+# VenSpec calibration operation
+
+![1743411480029](images/CCU-VenS_datasize/1743411480029.png)
+
 # Venspec-u intro
 
 VenSpec-U is an imaging spectrometer operating in the ultraviolet, designed to observe the atmosphere of Venus.

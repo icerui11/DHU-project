@@ -5,6 +5,8 @@
 * [ ]  研究压缩数据流 到memory 后完整性
 * [X]  16bits Shyloc input, Venspec-U data will always be 16 bit
 * [X]  remove logic address,
+* [X]  improve the router_fifo_ctrl transmission efficiency
+* [X]  instantiate 3SHyLoC compressor : system_SHyLoC_top_v2
 
 ## week report
 
@@ -43,7 +45,7 @@ purpose: When a logic address is received, the logic address should be removed
 
 because in this SpW network only logic address will be used, therefore, there is no need to consider the path address scenario
 
-* [ ]  for improvement: the control_tx_fsm can be simplified because sending one byte requires 12 cycles, the ramaddr_delay is unnecessary since in theroy it only need 10 cycle to transimit 1 byte spw data
+* [X]  for improvement: the control_tx_fsm can be simplified because sending one byte requires 12 cycles, the ramaddr_delay is unnecessary since in theroy it only need 10 cycle to transimit 1 byte spw data
 
 ## tx_channel
 
@@ -158,3 +160,11 @@ two distinct composite types, each with its own rules for accessing elements and
 Slicing is defined for array types to access a contiguous subset of elements, but records are not designed to be "sliced" because they are meant to group different signals or subfields under one composite type
 
 so add intermediate signal and according to c_num_fifoports generate corresponding signals, here need to take care signal directions
+
+# system_SHyLoC_top_v2
+
+Place and Route: 注意在constraint manager 查看约束文件是否执行正确
+
+check -Pin Report - Date: Sun Mar 23 20:20:54 2025 Pinchecksum
+
+this version can accept spw link raw data in three SHyLoC compressed, and output to SpW port1 , but SHyLoC parameter are use same parameter
