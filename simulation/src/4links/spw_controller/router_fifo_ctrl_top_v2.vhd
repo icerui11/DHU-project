@@ -250,4 +250,6 @@ begin
           
         end generate gen_ctrl; 
     end generate gen_fifo_controller;
+
+    
 end rtl;

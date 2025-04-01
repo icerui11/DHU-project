@@ -136,7 +136,7 @@ begin
 			if(rst_in = '1') then							-- Synchronous reset condition. 
 				s_time_counter	<= 0;
 				spw_Tx_Con 		<= '0';
-				spw_Tx_data		<= (others => '0');
+	--			spw_Tx_data		<= (others => '0');
 				spw_Tx_OR		<= '0';
 				s_state 		<= ready;
 			else
