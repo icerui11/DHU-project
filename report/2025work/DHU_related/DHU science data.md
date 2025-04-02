@@ -3,6 +3,8 @@
 ![1743169582385](images/DHUsciencedata/1743169582385.png)
 
 This is the image acquisition schematic from the CCU-Channels SWICD, but it should only be an illustration of the CCSDS123 compression method and not represent the data acquisition direction of the Venspec-U. As shown in the Venspec-U schematic, the spatial axis should be the x-axis, not the y-axis, with the y-axis being along-track. So the image acquisition schematic in the CCU-Channels SWICD is drawn incorrectly.
+<mark>Good point, but this is only a change X to Y and doesn't effect anything?</mark>
+A: This comment is solely to ensure that the row and column data provided by the Venspec channel aren’t misinterpreted due to any ambiguity. The compressor determines the number of input data required for an image based strictly on the image size, and it doesn’t verify whether the data is correctly ordered.
 
 ![1743170703896](images/DHUsciencedata/1743170703896.png)
 
@@ -37,9 +39,18 @@ For BIL compression, there are more data dependencies when calculating both loca
 
 In summary, when using BIP order compression, data is transmitted along the spectral direction, and compression can begin after receiving just P bands (which can be set to 3). With BIL, due to requirements for calculating local differences and because BIL transmits along the X-axis, it must wait for data from P bands to be fully transmitted before calculating subsequent prediction residuals. This is why BIL compression has lower throughput than BIP. However, CCSDS123 using BIL mode doesn't need to receive all spectral bands before starting compression (only P or P+3 bands). When using BIP mode, each pixel contains all spectral information. The CCSDS123 compressor doesn't need to wait for the entire frame to be received, just enough bands to perform the prediction calculations.
 
+#### Only BIP will be used, so compression starts after reception of the first P bands, i.e. after the first P lines?
+
+A: 
+
 ## Regarding GR712 notification:
 
 If the compressor has finished compressing all data, a Finished signal will be asserted. Then the compressor will configure according to the configuration mode, and once configuration is complete, it can proceed with the next compression. However, the current design doesn't consider notifying the GR712 about completion.
+
+<mark>We don't need continuous compression. So, when one configuration is complete we have to notify the processor. Anything available? Further down you mentioned 'after configuration is complete, it will send a ready signal to receive a new raw image', can't this be used?</mark>
+A: Yes, when the Compressor configuration is complete, it can notify the GR712. Two signals can be used together: the AwaitingConfig signal and the Ready signal. The Ready signal alone is insufficient because if the compressor FIFO is full, the Ready signal will also be deasserted.
+
+So the better option is that, when `AwaitingConfig` transitions from high to low AND `Ready` is asserted, this indicates the compressor has been successfully configured and is ready to receive data.
 
 The current design of the compressor in the FPGA is: Using compile-time configuration, the compressor continuously compresses Hyperspectral images (of fixed size `Nx × Ny × Nz`) without requiring intervention from the GR712.
 

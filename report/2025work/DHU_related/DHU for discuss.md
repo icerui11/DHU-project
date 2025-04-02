@@ -44,6 +44,11 @@ This results in a maximum data rate of 77 Mbps
 
 所以我的
 
+## 分段传输和完整传输
+
+但我明白一点的是，比如我压缩一个16x16x6 的图像，如果一次只传输一半，分成两次传输压缩，那我前一半不是中间结束部分的数据由于没有接收到后一半的数据导致信息不完整, 不会导致分两次传输的压缩结果和一次压缩传输压缩结果不一致吗？还是说无损算法可以恢复出来。给我解释这个问题
+
+
 ### from Pablo
 
 Compression can be configured for 2D (frames) or 3D (cubes = several frames). In either case, pixels from two different elements shall not be sent in the same packet. For instance, if a frame is 512 bytes (very small) one can compress a cube of 4 frames by sending a packet of 2048 bytes. However, if you choose to compress the frames separately, they shall be in 4 separate packets of 512 bytes each.
@@ -93,6 +98,29 @@ A:
 对于BIL 压缩，在计算局部和 和 计算局部差值时都有更多的数据依赖，无论是使用reduced prediction(只使用前P个波段的中心局部差值 `𝑑𝑥,𝑦,𝑧`进行预测) 还是full prediction (使用中心局部差值(central local differences) `𝑑𝑥,𝑦,𝑧`和方向局部差值(directional local differences) `𝑑𝑥,𝑦,𝑧^NW`、`𝑑𝑥,𝑦,𝑧^N`、`𝑑𝑥,𝑦,𝑧^W`进行预测) 计算局部和需要等待 $P \times Nx $ 数据才能开始压缩。
 
 所有总结来说，使用BIP order 压缩时，数据是按spectrum 方向传输，只需收到p个波段（可以设置为3）就可以开始压缩了，而使用BIL ，由于计算 local differeces 原因，而BIL 是X-axis 传输，所以须等待P 波段 数据传输完成才能计算后续prediction residual. 这也就是BIL 压缩 Throughput 比BIP低的原因。 但是ccsds123使用BIL mode 压缩时 也都不需要receive all the spectrum 就可以开始压缩了（只需要P or P+3 个 band）. 在使用BIP-mode 时每一个pixel都含有了所有的spectrum。
+
+## Only BIP will be used, so compression starts after reception of the first P bands, i.e. after the first P lines?
+
+A:Only BIP will be used, so compression starts after reception of the first P bands, i.e. after the first P lines? 针对这个问题将以下回答翻译成英文，并对我的回答给出建议 看我的理解对不对： 这里其实我们还忽略了一点，就是我们使用的SHyLoC compressor 使用CCSDS121 作为block encoder的话， 压缩开始还和block size有关，allowed value [8,16,32,64] ，也就是ccsds121 等待累积满J个样本后，才能开始编码压缩。所以这里说的收到前P band 是 CCSDS123 在预处理的步骤，而且我认为考虑when compression start的话 研究 p band 主要针对的是 preprocessor ccsds123 ，对压缩开始意义不大。 这里起决定意义的是CCSDS121 的block size。 无论是采用CCSDS121 作为1D 压缩 还是CCSDS123+CCSDS121
+
+
+1. For the CCSDS 123 preprocessor (predictor):
+   * For the very first pixel at position (0,0,0), prediction uses default values since there are no preceding samples.
+   * For subsequent bands of the first pixel, prediction can use information from previously processed bands of the same pixel, up to P previous bands.
+   * The process doesn't need to wait for P complete bands before starting; it begins immediately but with limited historical data for early samples.
+2. For the CCSDS 121 block-adaptive encoder:
+   * the block size J (with allowed values of 8, 16, 32, or 64) affects when coding can begin.
+   * The encoder must accumulate J mapped prediction residuals before selecting the optimal encoding option and producing output.
+   * In a combined CCSDS 123 + CCSDS 121 system, the CCSDS 123 preprocessor can start producing mapped residuals immediately, but the CCSDS 121 encoder must wait until it has accumulated J samples.
+
+So in summary, for BIP order:
+
+* The CCSDS 123 prediction starts immediately, though with limited context for early samples
+* The P parameter affects prediction quality rather than when compression starts
+* The CCSDS 121 block size J determines when encoded output begins to be produced
+
+The key factor that determines when compressed output becomes available is primarily the block size J of the CCSDS 121 encoder rather than the P parameter of the CCSDS 123 predictor.
+
 
 How will the GR712 be notified that the compression of the frame is done so that it can be processed further? 对于这个问题：
 
@@ -165,10 +193,9 @@ Q3
 
 ![1743414687646](images/DHUfordiscuss/1743414687646.png)
 
-首先这里的问题是为什么对于Calibration data 
+首先这里的问题是为什么对于Calibration data
 
 ![1743413672889](images/DHUfordiscuss/1743413672889.png)
-
 
 我想知道这个VenSpec Data Budget Summary 中计算Instrument data rate with maturity margin 是否包含了使用spacewire 传输的开销，如果没有的话还需加上8b/10b 的开销。 并且在sun calibration Venspec-U 和Venspec-H 同时进行，并且我注意到对CCU 对calibration data 的compression factor为1，那这时Venspec-U 传输给DHU的datarate 就是$ 76.692Mbit/s \times 10b\div8b = 95.865Mbit/s  $ Venspec-H Sun calibration最大datarate 为 $14.354Mbit/s \times 10b \div 8b =17.9425Mbit/s$ 。那这时部分数据需要存储在SDRAM中才能完成传输，当GR712和FPGA之间的spw link 可以传输缓存在SDRAM中的数据数据时，这时需要控制指令通过memory controller提取临时存储在SDRAM中的数据，那这个命令应该由GR712生成，还是由FPGA 自己生成，因为如果calibration data未经压缩的话储存在SDRAM也是固定长度，GR712就可以发布指令读取特定地址的数据，完成数据的传输。
 
