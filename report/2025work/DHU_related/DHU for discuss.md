@@ -48,7 +48,6 @@ This results in a maximum data rate of 77 Mbps
 
 但我明白一点的是，比如我压缩一个16x16x6 的图像，如果一次只传输一半，分成两次传输压缩，那我前一半不是中间结束部分的数据由于没有接收到后一半的数据导致信息不完整, 不会导致分两次传输的压缩结果和一次压缩传输压缩结果不一致吗？还是说无损算法可以恢复出来。给我解释这个问题
 
-
 ### from Pablo
 
 Compression can be configured for 2D (frames) or 3D (cubes = several frames). In either case, pixels from two different elements shall not be sent in the same packet. For instance, if a frame is 512 bytes (very small) one can compress a cube of 4 frames by sending a packet of 2048 bytes. However, if you choose to compress the frames separately, they shall be in 4 separate packets of 512 bytes each.
@@ -101,8 +100,21 @@ A:
 
 ## Only BIP will be used, so compression starts after reception of the first P bands, i.e. after the first P lines?
 
-A:Only BIP will be used, so compression starts after reception of the first P bands, i.e. after the first P lines? 针对这个问题将以下回答翻译成英文，并对我的回答给出建议 看我的理解对不对： 这里其实我们还忽略了一点，就是我们使用的SHyLoC compressor 使用CCSDS121 作为block encoder的话， 压缩开始还和block size有关，allowed value [8,16,32,64] ，也就是ccsds121 等待累积满J个样本后，才能开始编码压缩。所以这里说的收到前P band 是 CCSDS123 在预处理的步骤，而且我认为考虑when compression start的话 研究 p band 主要针对的是 preprocessor ccsds123 ，对压缩开始意义不大。 这里起决定意义的是CCSDS121 的block size。 无论是采用CCSDS121 作为1D 压缩 还是CCSDS123+CCSDS121
+A:Only BIP will be used, so compression starts after reception of the first P bands, i.e. after the first P lines? 针对这个问题将以下回答翻译成英文，并对我的回答给出建议 看我的理解对不对：这里我想更详细的表述：SHyloc应该被分为两个阶段来研究：prediction and encoder. 之前我所讨论的主要是预测 阶段， 这里其实我忽略了一点，就是我们使用的SHyLoC compressor 使用CCSDS121 作为block encoder的话， 压缩开始还和block size有关，allowed value [8,16,32,64] ，也就是ccsds121 等待累积满J个样本后，才能开始编码压缩。所以在这里起决定意义的是CCSDS121 的block size。 无论是采用CCSDS121 作为1D 压缩 还是CCSDS123+CCSDS121. 而且我认为考虑when compression start的话 研究 p band 主要针对的是 ccsds123 作为preprocessor 预测阶段 ，对压缩开始意义不大。 这里起决定意义的是CCSDS121 的block size。 无论是采用CCSDS121 作为1D 压缩 还是CCSDS123+CCSDS121。但是我发现我们在压缩BIP的Hyperspectral image时 使用sample encoder能获得更高的compression ratio,
 
+所以我总结的是当使用3d compression , 也就是 CCSDS123 作为 predictor，这里有两个encoder选择：分别是CCSDS123 sample encoder or CCSDS121作为 block encoder. 但是考虑到BIP 使用sample encoder能获得更高的的压缩比，所以在3d 压缩 encoder 我们会选择ccsds123 作为sample encoder。 这时理论上收到每一个pixel开始压缩，比如spetial(0,0) 的前p or P+3 band（根据配置参数）,开始 prediction 阶段，sample encoder开始对每一个sample编码，，CCSDS-123 能够在收到足够多的初始波段数据后立即开始压缩过程，而不需要等待整个帧的完成，也不需要预先知道要处理的帧数量。
+
+There are more detailed explanation: SHyLoC should be studied in two stages: prediction and encoding. Previously, I mainly discussed the prediction stage, but I overlooked something important - when using the CCSDS121 as a block encoder in our SHyLoC compressor, compression start also depends on the block size, with allowed values [8, 16, 32, 64]. This means CCSDS121 waits until J samples have accumulated before it can begin encoding compression. So the determining factor here is the CCSDS121 block size, whether using CCSDS121 for 1D compression or CCSDS123+CCSDS121 together.
+
+I believe that when considering when compression starts, studying P bands is mainly relevant to the prediction stage of CCSDS123 as a preprocessor, and not very significant for when compression actually begins. The determining factor is the CCSDS121 block size, whether using CCSDS121 for 1D compression or CCSDS123+CCSDS121 for 3D compression.
+
+However, I've discovered that when compressing BIP Hyperspectral images, using a sample encoder (which is from CCSDS123)achieves a higher compression ratio. So my conclusion is that for 3D compression (CCSDS123 as predictor), there are two encoder options: CCSDS123 sample encoder or CCSDS121 as block encoder. Considering that BIP achieves higher compression ratios with the sample encoder, for 3D compression encoding we would choose CCSDS123 as the sample encoder instead of CCSDS121 as block encoder.
+
+In this case, theoretically compression begins with each received pixel, for example after receiving the first P or P+3 bands (depending on configuration parameters) of spatial position (0,0), the prediction stage begins, and the sample encoder starts encoding each sample. Therefore, we can consider that CCSDS123 starts compression as soon as data is available. CCSDS-123 can begin the compression process immediately after receiving enough initial band data, without needing to wait for the entire frame to complete or knowing in advance how many frames will be processed.
+
+So the CCSDS123 can run in streaming mode
+
+对于1D compression, 也就是 CCSDS121，这时会每收到J(block size) 然后进行处理开始压缩.
 
 1. For the CCSDS 123 preprocessor (predictor):
    * For the very first pixel at position (0,0,0), prediction uses default values since there are no preceding samples.
@@ -121,7 +133,6 @@ So in summary, for BIP order:
 
 The key factor that determines when compressed output becomes available is primarily the block size J of the CCSDS 121 encoder rather than the P parameter of the CCSDS 123 predictor.
 
-
 How will the GR712 be notified that the compression of the frame is done so that it can be processed further? 对于这个问题：
 
 如果compressor 压缩完了所有数据，Finished signal 会asserted。然后compressor 会根据配置模式进行配置，配置完成了就可以进行下一次压缩。但是目前的设计还没有考虑到通知GR712 压缩完成。目前FPGA内compressor 的设计是：使用compile time configuration, compressor 会持续不断地进行压缩 Hyperspectral image(大小固定为$ Nx \times Ny \times Nz$ ) 每一次的压缩不需要GR712的干预。
@@ -133,6 +144,12 @@ How will the GR712 be notified that the compression of the frame is done so that
 所以在这里我也需要确认compressor是选用 run-time configuration 还是compile-time configuration. 如果压缩参数是预定义好的不需要进行调整的话使用compile-time configuration 因为选用run-time configuration ，我们需要使用一个ahb master 配置 SHyLoC compressor, 我们需要明确compressor 配置方式和要求, 比如可以在FPGA 设计一个ahbram ，configuration parameter 可以储存在这个ahbram中，prarameter可以通过GR712 修改 configuration parameter 或者根据venspec channal 的packet 配置 compressor.
 
 Therefore, I also need to confirm here whether the compressor uses run-time configuration or compile-time configuration. If the compression parameters are predefined and don't need adjustment, compile-time configuration would be appropriate. Because if using run-time configuration, we need to use an AHB master to configure the SHyLoC compressor, and we need to clarify the compressor configuration method and requirements. For example, we could design an AHBRAM in the FPGA where configuration parameters could be stored, and parameters could be modified through the GR712 processor or configured based on packets from VenSpec channels.
+
+我个人更偏向通过AHB i/o配置，因为这是更容易的选项，因为使用spacewire channel 0 会涉及在spw router 中添加新的status register，应该会需要更复杂的测试，我看见Pre-EM User-manual 应该是有8bit 的bus可以用于GR712 和 FPGA通信， 另外一点是我可以通过GR712 将 configuration register的值储存在MRAM 中通过GR712 FTMC控制，我看见我们的设计应该FPGA也就是可以通过Memcontroller读取 CFG的值（configuration register）完成run-time configuration 配置，这种方式可行吗
+
+I personally perfer configuring via AHB I/O since it's the easier option. Using SpaceWire channel 0 would involve adding a new status register to the SPW router and likely require more complex testing. I saw in the Pre-EM User Manual that there is an 8-bit bus available for communication between the GR712 and the FPGA.
+
+Additionally, we can store the value of the configuration register in the MRAM through the GR712’s FTMC control. According to our design, the FPGA should be able to read the configuration register (CFG) via the memory controller to complete the run-time configuration. Do you think this approach is feasible?
 
 对于CCSDS123 不同的数据排列类型，compressor处理方式也是不同的：
 
@@ -166,6 +183,8 @@ CCSDS 121 is a lossless data compression standard that uses a simple unit-delay 
 2. **Lower Bit Rate Capability**: The CCSDS 121 block-adaptive encoder can achieve bit rates lower than 1 bit per pixel (bpp), while the CCSDS 123 sample-adaptive encoder has a theoretical minimum limit of 1 bpp.
 3. **Zero-Block Handling**: The block-adaptive encoder has a specific option for blocks of all zeros, which can significantly improve compression for sparse data with many zero values.
 4. **Flexibility**: The block-adaptive encoder provides multiple coding options that can be selected based on the data characteristics, potentially leading to better compression performance across a wider range of data types.
+
+但是数据显示使用sample encode 压缩率会更好
 
 The main reason why someone might choose the block-adaptive encoder over the sample-adaptive encoder is the potential for higher compression ratios, especially for data with varying statistical properties or with many blocks of zeros. However, this comes at the cost of increased computational complexity since multiple encoding options need to be evaluated for each block.
 
@@ -217,3 +236,19 @@ I would like to know if the 'Instrument data rate with maturity margin' in the V
 * Common for pushbroom sensors in satellite applications
 
 Different architectures have been developed for each ordering to optimize performance. BIP generally achieves the highest throughput but may require more memory resources, while BIL typically aligns better with how data is acquired by many satellite sensors.
+
+### response for email:
+
+Hi Björn,
+
+I've reviewed the document section between "11. Compression" and "12. Time Synchronization" in detail.
+
+Regarding the time synchronization approach, I can confirm this should not pose any problems for the DHU hardware. The FPGA will only need to route TC and TM messages as specified, and we simply need to verify the FPGA router's timecode forwarding functionality in our upcoming tests. 
+
+For the channel dataset, having the basic spatial and spectral dimensions along with the bitwidth data is sufficient.
+
+My main question remains regarding D0 and D1 (data ID and sequence). I agree with the SWICD's point that these values cannot simply be placed at the beginning of each packet. As I mentioned in my MD document comments, when adding these D0 and D1 values to the science data for compression, we need to ensure that the product of the three-dimensional data accurately matches the input data quantity. 
+
+I've updated the MD document with additional comments and questions that we should discuss in our next disccussion.
+
+Best regards,

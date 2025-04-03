@@ -34,6 +34,20 @@ origianl SpaceWire standard employs an event-triggered communication paradigm
 
 * SpaceWire uses wormhole routing, with non-deterministic packet delays across the network
 
+
+# CCU-Channels SWICD 12. time synchronization
+
+
+==The interface agreements are as follows==:
+
+* The CCU shall produce SpW time codes to the channels at a typical rate of 1 Hz, to keep them in sync with the spacecraft clock with a precision not worse than 1 ms, in spite of the fact that the spacecraft side and the VenSpec SpW networks are physically disconnected. A systematic delay (e.g. due to software-based propagation of the time codes across networks) is acceptable as long as it stays below 1 ms and, most importantly, does not increase over time.==
+* ==The CCU shall also produce time distribution messages (Service 9 telecommands). These messages indicate what the time will be at the reception of the next SpW time code, so that the channels shall update their internal clocks to that value instead of simply incrementing the seconds by one.==
+* Service 9 telecommands will be send in advance (100-300ms TBC) of the time code. If the S9 comes too early or too close to the time code, the channels shall disregard it.
+* The frequency of the Service 9 TCs shall be adjustable per channel, including a total suppression.
+* At a minimum, the CCU shall send to each channel one Service 9 TC after it has successfully booted, so that the channel can be synchronized.
+* The channels shall respond to the Service 9 TCs as they do to any other PUS TC, issuing the requested response (Service 1 TM) in the corresponding acknowledge flags. When the repeated sending of Service 9 TCs is enabled, it will be used as heartbeat to confirm that the channel is still responding even in the absence of other SpW traffic.
+*
+
 # Timecode processing in SpaceWire Routers
 
 Router uses an internal time-code register to manage time synchronization across a SpaceWire network
