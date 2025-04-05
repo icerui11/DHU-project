@@ -198,7 +198,7 @@ begin
     
     --! Instantiate the SHyLoC_subtop component
     gen_SHyLoC: for i in 1 to c_num_fifoports generate
-    ShyLoc_top_inst : entity work.ShyLoc_top_Wrapper(arch)
+    ShyLoc_top_inst : entity work.SHyLoC_toplevel_v2(arch)
     port map(
         -- System Interface
         Clk_S             => clk,                    

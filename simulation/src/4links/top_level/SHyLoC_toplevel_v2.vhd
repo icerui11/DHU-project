@@ -146,20 +146,21 @@ begin
             DataIn_NewValid     => DataIn_NewValid, 
             DataIn              => DataIn_shyloc, 
             NBitsIn             => (others => '0'),  -- Not used in this mode
-            DataOut             => DataOut_1D, 
-            DataOut_NewValid    => DataOut_NewValid_1D,
+            DataOut             => DataOut, 
+            DataOut_NewValid    => DataOut_NewValid,
             ForceStop           => ForceStop,
             IsHeaderIn          => '0',              -- Not used in this mode
-            AwaitingConfig      => AwaitingConfig_1D,
-            Ready               => Ready_1D,
-            FIFO_Full           => FIFO_Full_1D,
-            EOP                 => EOP_1D,
-            Finished            => Finished_1D,
-            Error               => Error_1D,
+            AwaitingConfig      => AwaitingConfig,
+            Ready               => Ready,
+            FIFO_Full           => FIFO_Full,
+            EOP                 => EOP,
+            Finished            => Finished,
+            Error               => Error,
             Ready_Ext           => Ready_Ext
         );
         
         -- Connect outputs to top-level ports
+/*
         DataOut <= DataOut_1D;
         DataOut_NewValid <= DataOut_NewValid_1D;
         AwaitingConfig <= AwaitingConfig_1D;
@@ -168,42 +169,42 @@ begin
         EOP <= EOP_1D;
         Finished <= Finished_1D;
         Error <= Error_1D;
-        
+ */       
         -- Default outputs for AHB123 interfaces not used in this mode
-        AHBSlave123_Out <= AHB_SLV_OUT_DEFAULT;
-        AHBMaster123_Out <= AHB_MST_OUT_DEFAULT;
+ --       AHBSlave123_Out <= AHB_SLV_OUT_DEFAULT;
+ --       AHBMaster123_Out <= AHB_MST_OUT_DEFAULT;
     end generate GEN_1D_MODE;
     
     -- 3D mode: CCSDS123 with internal sample-adaptive encoder
     GEN_3D_INTERNAL_MODE: if MODE_3D_sample generate
         ccsds123_only: entity shyloc_123.ccsds123_top(arch)
         port map (
-            clk_s               => clk_s, 
-            rst_n               => rst_n, 
-            clk_ahb             => Clk_ahb, 
-            rst_ahb             => Reset_AHB,
+            Clk_S               => Clk_S, 
+            Rst_N               => rst_n, 
+            Clk_AHB             => Clk_AHB,
+            Rst_AHB             => Reset_AHB,
             DataIn              => DataIn_shyloc,
             DataIn_NewValid     => DataIn_NewValid,
-            AwaitingConfig      => AwaitingConfig_3D_Int,
-            Ready               => Ready_3D_Int,
-            FIFO_Full           => FIFO_Full_3D_Int,
-            EOP                 => EOP_3D_Int,
-            Finished            => Finished_3D_Int,
+            AwaitingConfig      => AwaitingConfig,
+            Ready               => Ready,
+            FIFO_Full           => FIFO_Full,
+            EOP                 => EOP,
+            Finished            => Finished,
             ForceStop           => ForceStop,
-            Error               => Error_3D_Int,
+            error               => Error,
             AHBSlave123_In      => AHBSlave123_In, 
             AHBSlave123_Out     => AHBSlave123_Out,   
             AHBMaster123_In     => AHBMaster123_In, 
             AHBMaster123_Out    => AHBMaster123_Out,
-            DataOut             => DataOut_3D_Int,
-            DataOut_NewValid    => DataOut_NewValid_3D_Int,
+            DataOut             => DataOut,
+            DataOut_NewValid    => DataOut_NewValid,
             IsHeaderOut         => open,  -- Not connected in this mode
             NbitsOut            => open,  -- Not connected in this mode
-            
+
             -- External encoder signals not used in this mode
-            ForceStop_Ext       => '0',
+            ForceStop_Ext       => open,
             AwaitingConfig_Ext  => '0',
-            Ready_Ext           => '1',
+            Ready_Ext           => Ready_Ext,
             FIFO_Full_Ext       => '0',
             EOP_Ext             => '0',
             Finished_Ext        => '0',
@@ -212,18 +213,18 @@ begin
         
         -- Connect outputs to top-level ports
         -- Convert output from CCSDS123 to CCSDS121 width (assuming proper sizing)
-        DataOut(DataOut_3D_Int'range) <= DataOut_3D_Int;
-        DataOut(DataOut'high downto DataOut_3D_Int'length) <= (others => '0'); -- Zero extend if needed
-        DataOut_NewValid <= DataOut_NewValid_3D_Int;
-        AwaitingConfig <= AwaitingConfig_3D_Int;
-        Ready <= Ready_3D_Int;
-        FIFO_Full <= FIFO_Full_3D_Int;
-        EOP <= EOP_3D_Int;
-        Finished <= Finished_3D_Int;
-        Error <= Error_3D_Int;
+   --     DataOut(DataOut_3D_Int'range) <= DataOut_3D_Int;
+   --     DataOut(DataOut'high downto DataOut_3D_Int'length) <= (others => '0'); -- Zero extend if needed
+   --     DataOut_NewValid <= DataOut_NewValid_3D_Int;
+   --     AwaitingConfig <= AwaitingConfig_3D_Int;
+   --     Ready <= Ready_3D_Int;
+   --     FIFO_Full <= FIFO_Full_3D_Int;
+   --     EOP <= EOP_3D_Int;
+   --     Finished <= Finished_3D_Int;
+   --     Error <= Error_3D_Int;
         
         -- Default outputs for CCSDS121 interfaces not used in this mode
-        AHBSlave121_Out <= AHB_SLV_OUT_DEFAULT;
+  --      AHBSlave121_Out <= AHB_SLV_OUT_DEFAULT;
     end generate GEN_3D_INTERNAL_MODE;
     
     -- 3D mode: CCSDS123 preprocessor with CCSDS121 block-adaptive encoder

@@ -132,7 +132,7 @@ port(
 end component;
 
 --! Instantiate the SHyLoC_subtop component
-component ShyLoc_top_Wrapper is
+component SHyLoC_toplevel_v2 is
     port (
         -- System Interface
         Clk_S            : in  std_logic;                    --! Clock signal
@@ -260,7 +260,7 @@ OSC_C0_0 : OSC_C0
 -- ShyLoc_top_Wrapper instantiation, CCSDS123+CCSDS121
 ----------------------------------------------------------------------
 gen_SHyLoC: for i in 1 to c_num_fifoports generate
-ShyLoc_top_inst : ShyLoc_top_Wrapper
+ShyLoc_top_inst : SHyLoC_toplevel_v2
     port map(
         -- System Interface
         Clk_S             => clk_s,              -- Using the clock from FCCC
