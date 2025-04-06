@@ -89,3 +89,24 @@ SHyLoC_toplevel_v2
 do $DUT/DHU-project/simulation/script/pre_syn_submodul/system_3SHyLoC_test.do
 system_3SHyLoC_tb
 gen_SHyLoC from ShyLoc_top_Wrapper to SHyLoC_toplevel_v2
+
+# ccsds123 synthesize issue
+
+Instantiated entity shyloc\_utils.barrel\_shifter has not been analyzed.  occurs when synthesized
+
+root reason is that barrel_shifter is compiled after weight_update
+
+
+For your library dependency problem, the Archive Utility can help in these ways:
+
+1. **Library Integrity Verification**
+   * Use the Archive Utility to analyze your project, which will automatically detect missing library components
+   * Generate a dependency report clearly showing compilation order and dependencies
+
+or
+
+Check file order in the Project view. File order is especially important for  VHDL files.
+
+– For VHDL files, you can automatically order the files by selecting Run >Arrange VHDL Files. Alternatively, manually move the files in the  Project view. Package files must be first on the list because they are  compiled before they are used. If you have design blocks spread over  many files, make sure you have the following file order: the file  containing the entity must be first, followed by the architecture file, and  finally the file with the configuration.
+
+ – In the Project view, check that the last file in the Project view is the  top-level source file. Alternatively, you can specify the top-level file  when you set the device options.
