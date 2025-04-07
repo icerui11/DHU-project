@@ -1,5 +1,14 @@
 # 01.04
 
+上周我主要明确了SHyLoC 应该采用哪种encoder，之前我一直使用ccsds121 作为block encoder，但是我们的3d 光谱压缩使用ccsds 123 作为sample encoder 能获取更高的压缩率。所以我修改了新的compressor 顶层模块。
+
+之后将开始关于run-time 配置的功能设计分析，从设计角度看应该是IO配置更简单，但在fpga 上板测试需要processor的参与，所有测试更难。选择spacewire 配置则正好相反。具体来说我会选择
+
+
+Last week, I mainly determined which encoder SHyLoC should use. Previously, I had been using CCSDS121 as the block encoder, but for our 3D spectral compression, using CCSDS123 as the sample encoder provides higher compression. Therefore, I modified the new compressor top-level module.
+
+Next, I will begin analyzing the run-time configuration design. From a design perspective, I/O-based configuration is simpler, but testing on the FPGA board requires the processor’s involvement, making it more difficult overall. Choosing a SpaceWire-based configuration is precisely the opposite.
+
 ## system reset
 
 * [ ]  remember in system top-level put shift-register reset
