@@ -29,6 +29,22 @@ create version2 to generate 3 SHyLoC compressor
 
 Every sensor readout shall have a fixed predefined data format (number of columns, rows, bits per pixel). The same is true for the number of readouts to compose one 3D cube array.
 
+### Venspec-U runtime-configuration
+
+only calculation the max parameter
+
+spectral 2048
+
+spatial 1024          32x32
+
+bitdepth 16
+
+### Venspec-H runtime-configuration
+
+spectral 384
+
+spatial 256          16x16
+
 ## spw_controller
 
 ### router_fifo_spwctrl_16bit

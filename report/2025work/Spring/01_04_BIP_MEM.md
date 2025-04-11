@@ -4,7 +4,6 @@
 
 之后将开始关于run-time 配置的功能设计分析，从设计角度看应该是IO配置更简单，但在fpga 上板测试需要processor的参与，所有测试更难。选择spacewire 配置则正好相反。具体来说我会选择
 
-
 Last week, I mainly determined which encoder SHyLoC should use. Previously, I had been using CCSDS121 as the block encoder, but for our 3D spectral compression, using CCSDS123 as the sample encoder provides higher compression. Therefore, I modified the new compressor top-level module.
 
 Next, I will begin analyzing the run-time configuration design. From a design perspective, I/O-based configuration is simpler, but testing on the FPGA board requires the processor’s involvement, making it more difficult overall. Choosing a SpaceWire-based configuration is precisely the opposite.
@@ -48,9 +47,9 @@ set SRC121 C:/Users/yinrui/Desktop/SHyLoc\_ip/shyloc\_ip-main/CCSDS121IP-VHDL
 
 set SRC C:/Users/yinrui/Desktop/SHyLoc\_ip/shyloc\_ip-main/CCSDS123IP-VHDL
 
-do $SRC/modelsim/tb_scripts/43\_Test.do
+do $SRC/modelsim/tb_scripts/43_Test.do
 
-* [ ]  modify the SHyLoC sub-toplevel to adjust parameter to generate compressor
+* [X]  modify the SHyLoC sub-toplevel to adjust parameter to generate compressor
 
 Ingeneral, thesampleadaptiveencoder  offers better performance for hyperspectral andmultispec traldata.This is mostly noticeable in BIP order, wherethe  block-adaptive coder under-performs,as it forms the blocks  in the way the samples arrive,even mixing spatial and spectral  information. Sample adaptive is also less complex than the  block-adaptiveone. -----shyloc2 sample-adaptive encoder
 
@@ -105,7 +104,6 @@ Instantiated entity shyloc\_utils.barrel\_shifter has not been analyzed.  occurs
 
 root reason is that barrel_shifter is compiled after weight_update
 
-
 For your library dependency problem, the Archive Utility can help in these ways:
 
 1. **Library Integrity Verification**
@@ -118,4 +116,20 @@ Check file order in the Project view. File order is especially important for  VH
 
 – For VHDL files, you can automatically order the files by selecting Run >Arrange VHDL Files. Alternatively, manually move the files in the  Project view. Package files must be first on the list because they are  compiled before they are used. If you have design blocks spread over  many files, make sure you have the following file order: the file  containing the entity must be first, followed by the architecture file, and  finally the file with the configuration.
 
- – In the Project view, check that the last file in the Project view is the  top-level source file. Alternatively, you can specify the top-level file  when you set the device options.
+– In the Project view, check that the last file in the Project view is the  top-level source file. Alternatively, you can specify the top-level file  when you set the device options.
+
+# 07.04
+
+## python count compressed data out
+
+Ctrl + Shift + P switch python version
+
+# 08.04
+
+530200 ns  do $SRC/modelsim/tb_scripts/30_Test.do
+
+airs_L16C16B21_u   1093605 ns
+
+result: use CCSDS123 : compressed data : 230line x16 -8
+
+Shyloc 234line x16 - 4
