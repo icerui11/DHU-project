@@ -143,6 +143,8 @@ How will the GR712 be notified that the compression of the frame is done so that
 
 所以在这里我也需要确认compressor是选用 run-time configuration 还是compile-time configuration. 如果压缩参数是预定义好的不需要进行调整的话使用compile-time configuration 因为选用run-time configuration ，我们需要使用一个ahb master 配置 SHyLoC compressor, 我们需要明确compressor 配置方式和要求, 比如可以在FPGA 设计一个ahbram ，configuration parameter 可以储存在这个ahbram中，prarameter可以通过GR712 修改 configuration parameter 或者根据venspec channal 的packet 配置 compressor.
 
+也就是说GR712 可以通过Finished signal 得知compression of the frame is done. 可以通过GR712 修改下一次压缩的配置参数，因为compressor 将被配置为run-time configuration, 所以将会有一个AHB master 传输给在compressor 中用于接收configuration parameter的AHB slave. 当compressor AwaitingConfig signal 置低且ready 为高就可以
+
 Therefore, I also need to confirm here whether the compressor uses run-time configuration or compile-time configuration. If the compression parameters are predefined and don't need adjustment, compile-time configuration would be appropriate. Because if using run-time configuration, we need to use an AHB master to configure the SHyLoC compressor, and we need to clarify the compressor configuration method and requirements. For example, we could design an AHBRAM in the FPGA where configuration parameters could be stored, and parameters could be modified through the GR712 processor or configured based on packets from VenSpec channels.
 
 我个人更偏向通过AHB i/o配置，因为这是更容易的选项，因为使用spacewire channel 0 会涉及在spw router 中添加新的status register，应该会需要更复杂的测试，我看见Pre-EM User-manual 应该是有8bit 的bus可以用于GR712 和 FPGA通信， 另外一点是我可以通过GR712 将 configuration register的值储存在MRAM 中通过GR712 FTMC控制，我看见我们的设计应该FPGA也就是可以通过Memcontroller读取 CFG的值（configuration register）完成run-time configuration 配置，这种方式可行吗
@@ -243,12 +245,28 @@ Hi Björn,
 
 I've reviewed the document section between "11. Compression" and "12. Time Synchronization" in detail.
 
-Regarding the time synchronization approach, I can confirm this should not pose any problems for the DHU hardware. The FPGA will only need to route TC and TM messages as specified, and we simply need to verify the FPGA router's timecode forwarding functionality in our upcoming tests. 
+Regarding the time synchronization approach, I can confirm this should not pose any problems for the DHU hardware. The FPGA will only need to route TC and TM messages as specified, and we simply need to verify the FPGA router's timecode forwarding functionality in our upcoming tests.
 
 For the channel dataset, having the basic spatial and spectral dimensions along with the bitwidth data is sufficient.
 
-My main question remains regarding D0 and D1 (data ID and sequence). I agree with the SWICD's point that these values cannot simply be placed at the beginning of each packet. As I mentioned in my MD document comments, when adding these D0 and D1 values to the science data for compression, we need to ensure that the product of the three-dimensional data accurately matches the input data quantity. 
+My main question remains regarding D0 and D1 (data ID and sequence). I agree with the SWICD's point that these values cannot simply be placed at the beginning of each packet. As I mentioned in my MD document comments, when adding these D0 and D1 values to the science data for compression, we need to ensure that the product of the three-dimensional data accurately matches the input data quantity.
 
 I've updated the MD document with additional comments and questions that we should discuss in our next disccussion.
 
 Best regards,
+
+response to email
+
+
+I have provided detailed answers to your questions in the attachment.
+
+Regarding the packet size, it has no impact on the compression core. My understanding is that VenSpec-U has 2048 bands. Due to the packet size limitation, where each packet can only be 2 Kbytes, only half a line of data can be transmitted at a time. In practice, this does not affect the compressor functionality, as the compressor simply waits for the next sample. When a new sample arrives, the compressor continues processing until all samples have been received and the compression operation is completed.
+
+正因为compression core 只关心data size, 我需要更清晰的知道关于D0(data ID) and D1(sequence) 的具体设置，因为如果需要put data ID among the pixel 的话，这样是否会让compression raw image data size 变大呢？
+
+Precisely because the compression core only cares about data size, I need to understand more clearly the specific configuration of D0 (data ID) and D1 (sequence). If we need to put the data ID among the pixels, would this increase the raw image data size for compression?
+
+关于calibration data:
+
+- LR and HR calibration at the same time, yes. So both compression cores
+  have to run at the same time. formally speaking, we “don't need” compression for dark cal. 什么意思
