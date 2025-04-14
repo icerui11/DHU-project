@@ -1,10 +1,9 @@
 ----------------------------------------------------------------------------------------------------------------------------------
--- File Description  -- verify the router fifo ctrl function inlude the router and controller to a top
---                   connect with SHyLoC to transfer data
+-- File Description  -- verify the timecode distribution function inlude the router, SHyLoC
 ----------------------------------------------------------------------------------------------------------------------------------
--- @ File Name				:	router_fifo_ctrl_top_tb.vhd
+-- @ File Name				:	tc_system_1SHyLoC_tb.vhd
 -- @ Engineer				:	Rui
--- @ Date					: 	18.03.2024
+-- @ Date					: 	26.03.2024
 -- @ Version				:	1.0
 -- @ VHDL Version			:   2008
 
@@ -31,10 +30,10 @@ context uvvm_util.uvvm_util_context;
 library uvvm_vvc_framework;
 use uvvm_vvc_framework.ti_vvc_framework_support_pkg.all;
 
-entity router_fifo_ctrl_top_tb is
-end router_fifo_ctrl_top_tb;
+entity tc_system_1SHyLoC_tb is
+end tc_system_1SHyLoC_tb;
 
-architecture rtl of router_fifo_ctrl_top_tb is
+architecture rtl of tc_system_1SHyLoC_tb is
     -- Constants
     constant clk_period   : time    := 10 ns;
     constant g_num_ports  : natural range 1 to 32 := c_num_ports ;      --  defined in package    
@@ -163,7 +162,89 @@ architecture rtl of router_fifo_ctrl_top_tb is
           end if;
         end if;
     end procedure;
-
+/*
+    procedure write_pixel_data(
+        signal clk          : in std_logic;
+        signal rst_n        : in std_logic;
+        signal ForceStop    : in std_logic;
+        signal Error_s      : in std_logic;
+        signal DataOut_Valid: in std_logic;
+        signal AwaitingConfig: in std_logic;
+        signal DataOut      : in std_logic_vector;
+        signal Finished     : in std_logic;
+        variable file_write_status : file_open_status;
+        file output         : bin_file_type
+      ) is
+        variable ini        : integer := 0;
+        variable fin        : integer := 0;
+        variable error_f    : integer := 1;
+        variable probe      : std_logic_vector(7 downto 0);
+        variable uns        : unsigned(7 downto 0);
+        variable int        : integer;
+        variable pixel_file : character;
+        variable size       : integer;
+        variable status     : FILE_OPEN_STATUS;
+      begin
+        -- Handle reset condition
+        if rst_n = '0' then
+          ini := 0;
+          fin := 0;
+        -- Handle force stop condition
+        elsif ForceStop = '1' then
+          assert false report "Comparison not possible because there has been a ForceStop assertion" severity note;
+          file_close(output);
+          ini := 0;
+          fin := 0;
+          error_f := 0;
+        -- Handle error condition
+        elsif Error_s = '1' then
+          if error_f = 1 then
+            assert false report "Comparison not possible because there has not been compression performed (configuration error)" severity note;
+            file_close(output);
+            ini := 0;
+            fin := 0;
+            error_f := 0;
+          end if;
+        else
+          -- Process valid data
+          if DataOut_Valid = '1' and AwaitingConfig = '0' then
+            -- Initialize file if first time
+            if ini = 0 then
+              file_open(status, output, work.ccsds123_tb_parameters.out_file, write_mode);
+              ini := 1;
+              fin := 1;
+            end if;
+            
+            -- Determine buffer size
+            if work.ccsds123_tb_parameters.EN_RUNCFG_G = 1 then
+              size := work.ccsds121_tb_parameters.W_BUFFER_tb;
+            else
+              size := work.ccsds121_tb_parameters.W_BUFFER_G_tb;
+            end if;
+            
+            -- Write data to file byte by byte
+            for i in 0 to (size/8) - 1 loop
+              probe := DataOut((((size/8) - 1 - i) + 1) * 8 - 1 downto ((size/8) - 1 - i) * 8);
+              uns := unsigned(probe);
+              int := to_integer(uns);
+              pixel_file := character'val(int);
+              write(output, pixel_file);
+            end loop;
+          end if;
+          
+          -- Handle completion
+          if Finished = '1' then
+            if fin = 1 then
+              assert false report "compression has been done and write into file" severity note;
+              file_close(output);
+              ini := 0;
+              fin := 0;
+              error_f := 0;
+            end if;
+          end if;
+        end if;
+    end procedure;
+*/
 
 begin 
     reset_spw <= not rst_n;                 -- reset signal for SpW IP core

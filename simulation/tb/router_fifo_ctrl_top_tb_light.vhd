@@ -1,11 +1,9 @@
 ----------------------------------------------------------------------------------------------------------------------------------
 -- File Description  -- check the router_fifo_ctrl functionality and in future connect with SHyLoC_top
--- introduced the UVVM framework for testbench and withoout test harness
--- simple UVVM version
 ----------------------------------------------------------------------------------------------------------------------------------
--- @ File Name				:	router_fifo_ctrl_top_tb_uvvm.vhd
+-- @ File Name				:	router_fifo_ctrl_top_tb_light.vhd
 -- @ Engineer				:	Rui
--- @ Date					: 	21.02.2024
+-- @ Date					: 	13.02.2024
 -- @ Version				:	1.0
 -- @ VHDL Version			:   2008
 
@@ -17,13 +15,16 @@ use std.textio.all;
 library shyloc_121;
 use shyloc_121.ccsds121_parameters.all;
 
+library shyloc_123; 
+use shyloc_123.ccsds123_parameters.all;
+
 library smartfusion2;
 use smartfusion2.all;
 
 context work.router_context;
 
-entity router_fifo_ctrl_top_tb_uvvm is
-end router_fifo_ctrl_top_tb_uvvm;
+entity router_fifo_ctrl_top_tb_light is
+end router_fifo_ctrl_top_tb_light;
 
 library uvvm_util;
 context uvvm_util.uvvm_util_context;
@@ -31,11 +32,10 @@ context uvvm_util.uvvm_util_context;
 library uvvm_vvc_framework;
 use uvvm_vvc_framework.ti_vvc_framework_support_pkg.all;
 
-architecture tb of router_fifo_ctrl_top_tb_uvvm is
-    
-    constant C_SCOPE      : string := C_TB_SCOPE_DEFAULT;
+architecture tb of router_fifo_ctrl_top_tb_light is
+
     -- Constants
-    constant C_CLK_PERIOD : time := 10 ns;                              -- use clock_generator
+    constant clk_period   : time := 10 ns;
     constant g_num_ports  : natural range 1 to 32 := c_num_ports ;      --  defined in package    
     constant g_data_width : integer := 8;
     constant g_addr_width : integer := 9;
@@ -48,8 +48,7 @@ architecture tb of router_fifo_ctrl_top_tb_uvvm is
 
     -- Component signals
     signal rst_n : std_logic := '0';
-    signal clk               : std_logic := '0';
-    signal clock_ena     : boolean   := false;
+    signal clk : std_logic := '0';
     
     -- Control signals
     signal rx_cmd_out : std_logic_vector(2 downto 0);
@@ -57,17 +56,18 @@ architecture tb of router_fifo_ctrl_top_tb_uvvm is
     signal rx_cmd_ready : std_logic := '1';
     
     -- Data signals
-    signal rx_data_out : std_logic_vector(7 downto 0);
+    signal rx_data_out   : std_logic_vector(7 downto 0);
     signal rx_data_valid : std_logic;
     signal rx_data_ready : std_logic := '1';
 
     -- CCSDS signals
-    signal ccsds_datain  : std_logic_vector(shyloc_121.ccsds121_parameters.W_BUFFER_GEN-1 downto 0);
-    signal w_update      : std_logic := '0';
-    signal asym_fifo_full : std_logic;
-    signal ccsds_ready_ext : std_logic;
+    signal ccsds_datain       : std_logic_vector(shyloc_121.ccsds121_parameters.W_BUFFER_GEN-1 downto 0);
+    signal w_update           : std_logic := '0';
+    signal asym_fifo_full     : std_logic;
+    signal ccsds_ready_ext    : std_logic;
     signal tx_ir_fifo_rupdata : std_logic;
-
+    signal raw_ccsds_data     : std_logic_vector(shyloc_123.ccsds123_parameters.D_GEN-1 downto 0);      -- transmit to ccsds 123 encoder
+    signal ccsds_datanewValid : std_logic;	                                            -- enable ccsds data input
     -- SpaceWire Interface signals (using single mode)
     signal din_p  : std_logic_vector(1 to g_num_ports-1) := (others => '0');
     signal sin_p  : std_logic_vector(1 to g_num_ports-1) := (others => '0');
@@ -103,19 +103,12 @@ architecture tb of router_fifo_ctrl_top_tb_uvvm is
     --! Testbench procedures
     --------------------------------------------------------------------
 
+    procedure monitor_data is
+    begin
+    end monitor_data;
 
 begin
     
-    -----------------------------------------------------------------------------
-    -- Instantiate test harness, containing DUT and Executors
-    -----------------------------------------------------------------------------
-    i_test_harness: entity work.router_fifo_ctrl_top_th;
-    
-    -----------------------------------------------------------------------------
-    -- Clock Generator
-    -----------------------------------------------------------------------------
-    clock_generator(clk, clock_ena, C_CLK_PERIOD, "DHT clock start");
-
     reset_spw <= not rst_n;                 -- reset signal for SpW IP core
     -- Instantiate DUT using package constants
     DUT: entity work.router_fifo_ctrl_top 
@@ -137,16 +130,22 @@ begin
         w_update           => w_update,
         asym_fifo_full     => asym_fifo_full,
         ccsds_ready_ext    => ccsds_ready_ext,
-
+        
+        raw_ccsds_data     => raw_ccsds_data,
+		ccsds_datanewValid => ccsds_datanewValid,
         -- SpaceWire Interface
-        din_p              => din_p,
-        sin_p              => sin_p,
-        dout_p             => dout_p,
-        sout_p             => sout_p,
+        din_p  => din_p,
+        sin_p  => sin_p,
+        dout_p => dout_p,
+        sout_p => sout_p,
 
-        spw_error          => spw_error,
-        router_connected   => router_connected
+        spw_error        => spw_error,
+        router_connected => router_connected
     );
+
+    --signal mapping for router_top
+ --   din_p(1) <= Dout_p_spw;
+ --   sin_p(1) <= Sout_p_spw;
 
     gen_dut_tx: for i in 1 to g_num_ports-1 generate
       gen_spw_tx: if c_fifo_ports(i) = '0' generate
@@ -225,17 +224,12 @@ begin
     end process;
     
     -- Stimulus process
-    p_main: process
-
-    constant C_SCOPE        : string  := C_TB_SCOPE_DEFAULT;
-    variable v_time_stamp   : time := 0 ns;
-    variable recv_byte      : std_logic_vector (7 downto 0) := (others => '0');
-
+    stim_sequencer: process
     procedure test1 is 
         begin 
-          -- Test Case 1: Send raw 8-bit data through gen_spw_tx port 1
-          wait until (codecs(1).Connected = '1' and router_connected(1) = '1');	-- wait for SpW instances to establish connection, make sure Spw link is connected
-          report "SpW port_1 Uplink Connected !" severity note;
+            wait until (clk'event and clk = '1') and router_connected(5) = '1' and router_connected(1) = '1';	-- because the fifo_in data is come from other router spw port
+            assert false
+                report "router port5 is connected" severity note;
   
           wait for 3.532 us;	
           -- load Tx data to send --
@@ -244,12 +238,33 @@ begin
           end if;
   
            wait for clk_period;
-          codecs(1).Tx_data  <= "000000010";						-- Load TX SpW Data port 1, first data as path address
+          codecs(1).Tx_data  <= "000100000";						-- Load TX SpW Data port 1, first data as path address
           codecs(1).Tx_OR <= '1';									-- set Tx Data OR port
           wait for clk_period;							    -- wait for data to be clocked in
           report "SpW Data Loaded : " & to_string(codecs(1).Tx_data) severity note;
           codecs(1).Tx_OR <= '0';									-- de-assert TxOR
           
+          wait for clk_period;
+          codecs(1).Tx_data  <= "011110010";						-- Load TX SpW Data port 1
+          codecs(1).Tx_OR <= '1';									-- set Tx Data OR port
+          wait for clk_period;							           -- wait for data to be clocked in
+          report "SpW Data Loaded : " & to_string(codecs(1).Tx_data) severity note;
+          codecs(1).Tx_OR <= '0';	
+
+          wait for clk_period;
+          codecs(1).Tx_data  <= "011110011";						-- Load TX SpW Data port 1
+          codecs(1).Tx_OR <= '1';									-- set Tx Data OR port
+          wait for clk_period;							           -- wait for data to be clocked in
+          report "SpW Data Loaded : " & to_string(codecs(1).Tx_data) severity note;
+          codecs(1).Tx_OR <= '0';	
+
+          wait for clk_period;
+          codecs(1).Tx_data  <= "011110110";						-- Load TX SpW Data port 1
+          codecs(1).Tx_OR <= '1';									-- set Tx Data OR port
+          wait for clk_period;							           -- wait for data to be clocked in
+          report "SpW Data Loaded : " & to_string(codecs(1).Tx_data) severity note;
+          codecs(1).Tx_OR <= '0';	
+
           wait for clk_period;
           codecs(1).Tx_data  <= "011110100";						-- Load TX SpW Data port 1, first data as path address
           codecs(1).Tx_OR <= '1';									-- set Tx Data OR port
@@ -309,15 +324,9 @@ begin
           wait for clk_period*5;
         end test2;
     begin 
-        --wait for UVVM to finish initialization
-   --     await_uvvm_initialization(VOID);
-        start_clock(CLOCK_GENERATOR_VVCT, 1, "Start clock generator");                   -- without test harness and already have clock generator
-        report_global_ctrl(VOID);
-        report_msg_id_panel(VOID);
-
-        enable_log_msg(ALL_MESSAGES);
-        set_log_file_name("router_fifo_ctrl_log.txt");
-        set_alert_file_name("router_fifo_ctrl_alert.txt");
+    
+    set_log_file_name("router_fifo_ctrl_log.txt");
+    set_alert_file_name("router_fifo_ctrl_alert.txt");
         test1;
         log(ID_LOG_HDR, "transmit data from port 1 and receive the same data through port2");
         log(ID_LOG_HDR, "Test1 completed");
@@ -329,6 +338,30 @@ begin
   
         -- Wait for error conditions
         wait until spw_error = '0';
+        
+       
+    end process;
+/*
+    -- Monitor process
+    mon_proc: process
+    begin
+        wait until rising_edge(clk);
+        if rx_data_valid = '1' then
+            report "Received data: " & integer'image(to_integer(unsigned(rx_data_out)));
+        end if;
+        if spw_error = '1' then
+            report "SpW Error detected!" severity warning;
+        end if;
     end process;
 
+    monitor_port2: process
+    begin
+        wait until rising_edge(clk);
+        if codecs(2).Rx_data = "011110100" and codecs(2).Rx_OR = '1' then
+            assert false
+            report "router port2 has successfully transmit data and spw receive data: " & to_string(codecs(2).Rx_data)
+            severity note;
+        end if;
+    end process;
+*/
 end tb;

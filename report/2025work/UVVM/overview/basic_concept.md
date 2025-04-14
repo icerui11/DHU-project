@@ -12,9 +12,22 @@ Key innovation of VVC framework is that it provides a communication mechanism th
 * is not necessary to define intermediate signals between the component and the DUT
 * if the project is large and the interface interactions are complex, it is recommened  to create a SPW VVC. if it is small, use the Utility library
 
+# UVVM architecture
+
+Test harness
+
+1. component instantiation
+2. signal connections between components
+3. clock generation
+4. basic reset logic
+
+应该只关注结构和连接
+
+测试逻辑和顺序控制应该在test sequencer中
+
 ## Hands-on practice
 
-### VVC clock generator 
+### VVC clock generator
 
 1. use clock generator VVC to run the clock, put in the test harness
    1. controlling it from the test sequencer

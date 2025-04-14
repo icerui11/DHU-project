@@ -1,10 +1,10 @@
 ----------------------------------------------------------------------------------------------------------------------------------
--- File Description  -- transmit the data from the fifo to the spacewire router interface and receive the data from the spacewire interface
+-- File Description  -- Three SHyLoC compressors are connected to the SPW router, and the compressors must be connected to the SpW FIFO ports.
 ----------------------------------------------------------------------------------------------------------------------------------
 -- @ File Name				:	router_multi_shyloc_ctrl.vhd
 -- @ Engineer				:	Rui Yin
 -- @ Date					: 	20.02.2024
--- @ version				:	2.0
+-- @ version				:	1.0
 -- @ VHDL Version			:   2008
 -- @ Supported Toolchain	:	libero 12.0
 -- @ Target Device			: 	m2s150t
@@ -34,25 +34,25 @@ entity router_multi_shyloc_ctrl is
 	port( 
 		
 		-- standard register control signals --
-		clk_in	: in 	std_logic;		-- clk input, rising edge trigger
-		rst_in	: in 	std_logic;		-- reset input, active high
-        fifo_full   : in 	std_logic;		-- fifo full signal
-		fifo_empty  : in 	std_logic;		-- enable input, asserted high. 
-		fifo_r_update : out 	std_logic;	-- fifo read request signal.
-        ccsds_ready_ext : out std_logic;	-- ccsds ready signal
-        fifo_ack    : in 	std_logic;		-- fifo ack signal
-        write_done  : out 	std_logic;		-- write done signal
+		clk_in	       : in 	std_logic;		-- clk input, rising edge trigger
+		rst_in	       : in 	std_logic;		-- reset input, active high
+        fifo_full      : in 	std_logic;		-- fifo full signal
+		fifo_empty     : in 	std_logic;		-- enable input, asserted high. 
+		fifo_r_update  : out 	std_logic;	    -- fifo read request signal.
+        ccsds_ready_ext : out   std_logic;	    -- ccsds ready signal
+        fifo_ack        : in 	std_logic;		-- fifo ack signal
+        write_done      : out 	std_logic;		-- write done signal
         
 		-- RAM signals
-		ram_data_in		: in 	std_logic_vector(7 downto 0) ;	-- data read from RAM
+		ram_data_in		: in 	std_logic_vector(7 downto 0);	-- data read from RAM
 
 		-- SpW Data Signals
-		spw_Tx_data		: out   std_logic_vector(7 downto 0);		-- SpW Tx_data
-		spw_Tx_Con		: out 	std_logic;					-- SpW character control bit
-		spw_Tx_OR		: out 	std_logic;					-- SpW Tx_data Output Ready
-		spw_Tx_IR		: in 	std_logic;					-- SpW Tx_data Input Ready	
+		spw_Tx_data		: out   std_logic_vector(7 downto 0);	-- SpW Tx_data
+		spw_Tx_Con		: out 	std_logic;					    -- SpW character control bit
+		spw_Tx_OR		: out 	std_logic;					   -- SpW Tx_data Output Ready
+		spw_Tx_IR		: in 	std_logic;					   -- SpW Tx_data Input Ready	
 		
-		spw_Rx_data		: in   	std_logic_vector(7 downto 0);		-- SpW Rx_data
+		spw_Rx_data		: in   	std_logic_vector(7 downto 0);	                        -- SpW Rx_data
 		spw_Rx_Con		: in 	std_logic						:= '0';					-- SpW character control bit
 		spw_Rx_OR		: in 	std_logic						:= '0';					-- SpW Rx_data Output Ready
 		spw_Rx_IR		: out 	std_logic						:= '1';					-- SpW Rx_data Input Ready	
@@ -67,16 +67,15 @@ entity router_multi_shyloc_ctrl is
 		
 		-- SpW Control Signals
 		spw_Connected	: in 	std_logic	:= '0';										-- asserted when SpW Link is Connected
-		spw_Rx_ESC_ESC	: in 	std_logic 	:= '0';    
+		spw_Rx_ESC_ESC	: in 	std_logic 	:= '0';                                     
 		spw_ESC_EOP 	: in	std_logic 	:= '0';    
-		spw_ESC_EEP     : in	std_logic 	:= '0';
+		spw_ESC_EEP     : in	std_logic 	:= '0';                                       
 		spw_Parity_error: in	std_logic 	:= '0';
 		
 		ccsds_datanewValid : out std_logic;	                                            -- enable ccsds data input
 		error_out		   : out std_logic 	:= '0'									    -- assert when error
     );
 end router_multi_shyloc_ctrl;
-
 
 ---------------------------------------------------------------------------------------------------------------------------------
 -- Code Description & Developer Notes --
