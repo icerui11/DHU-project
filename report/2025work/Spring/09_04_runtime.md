@@ -1,3 +1,9 @@
+# 15.04 Buffer memory size 
+
+* [ ]  明确所有压缩核所需要的SDRAM 大小，最好是其大小边界
+* [ ]  需要知道MEM-controller 能否支持并发储存多路数据到SDRAM的任务（比如3个compression core 的compressed data 以及 两个BIP-MEM需要从sdram 读取）
+* [ ]  由于使用BIP-MEM 从SDRAM 需要延迟，这个大小将是多少
+
 # 4.9 Run-time configuration
 
 如果我使用spw RMAP 来更新设计在spacewire router中的register，用register的值配置SHyLoC compressor , 那么在FPGA设计中是否我只需要一个ahb master就足够了？但是当compressor 例如ccsds123 awaitingconfig signal 为高 时是否需要设置额外的控制逻辑使得这个ahb master开始读取register中的值？
@@ -6,6 +12,11 @@
 
 实际configuration parameter update through Router port 0 from GR712, in port 0 there is a rmap_target.
 
+* [ ]  需要确定AHB master 控制信号是GR712 还是FPGA上产生
+
+## AHB parameter
+
+* hburst      0b000     single transfer burst
 
 ## router_ahb_reg
 

@@ -257,7 +257,6 @@ Best regards,
 
 response to email
 
-
 I have provided detailed answers to your questions in the attachment.
 
 Regarding the packet size, it has no impact on the compression core. My understanding is that VenSpec-U has 2048 bands. Due to the packet size limitation, where each packet can only be 2 Kbytes, only half a line of data can be transmitted at a time. In practice, this does not affect the compressor functionality, as the compressor simply waits for the next sample. When a new sample arrives, the compressor continues processing until all samples have been received and the compression operation is completed.
@@ -270,3 +269,69 @@ Precisely because the compression core only cares about data size, I need to und
 
 - LR and HR calibration at the same time, yes. So both compression cores
   have to run at the same time. formally speaking, we “don't need” compression for dark cal. 什么意思
+
+# Email in 15.04 from pablo
+
+context:
+
+```
+Thank you very much for putting this information together. This is really informative and important (in fact most of it should go to the user manual of the pre-EM even if they are not specific to the pre-EM). We have two follow-up questions on this topic:
+ 
+Is it true that these three signals (Awaiting Config, Ready, Finished) will be repeated three times (i.e. once per core)?
+How will the compression core notify how much compressed data it has produced? I assume that the starting memory address for output will be provided to the core during the configuration phase, but the output size will not be predictable and therefore has to be communicated back to the processor somehow.
+ 
+
+From your comment about the dimensions I understand that for the normal VESU observations defined in https://venspec.atlassian.net/wiki/spaces/PfPssEnvisionCcu/pages/337641556/CCU-Channels+SWICD#11.3.2.-Configuration-of-compression-cores the dimensions would be x=205, y=6486 (although we will probably break this down in several chunks) and z=74, whereas for the VESH dayside we would have x=256, y=1, z=384 (at most). Is this right? Once you confirm it, I can ask DLR to swap X and Y in the diagram.
+
+Concerning D0 and D1, the only effect for you is that the header of the packet is 28 bytes (6 bytes of primary header, 14 bytes of the secondary header and 8 bytes for D0 and D1), which the compression core shall discard alongside the trailing 2 bytes of the CRC. Concerning the inclusion of "virtual pixels" containing data ID, this is up to the channels. For instance, VESU could decide to extend the dimension of their data to 207 pixels in the spatial direction where the first two are "virtual" and always contain the data set ID. This would definitely increase the size of the raw data, but my expectation is that it would have a very small impact in the compressed version because it would be a constant value on each data set. Additionally, we could "recommend" to the channels to limit the number of virtual pixels to one or two per frame instead of per row.
+
+```
+
+Answer for Q1:
+
+Yes. Each compression core will have its own set of control signals. Since each core works independently, naturally each has its own control signals. 
+
+对于这一点，我们想知道的是GR712打算通过I/O 还是spw RMAP 读取Finished这些信号.
+
+我们计划是compression core configuration parameter 通过RMAP GR712传输给FPGA，但如果是直接通过RMAP 读取compression core status(这里面含有Finished 等控制信号)则不可行，因为可能有其它链路正在从FPGA 传输给 GR712, 这意味RMAP数据包需要等待。
+
+Answer for Q2:
+
+compressor core  本身并没有通知有多少compressed data 的功能。我们可以设计counter 统计有多少compressed data. 可以将compression data number 储存在compression core的 status register中，这个值可以随Finished 信号一起被读取。
+
+对于Venspec channel dimension size 根据SWICD 我能确认 x, y, z 大小是正确的。
+
+此外我们需要确认对于VESU observation y size, y将被分成多少个chunk，因为我们需要将a set of compressed data放入 buffer memory中，因此这个chunk number 很重要，这关系到SDRAM 的大小 是否足够
+
+
+
+### response
+
+
+Answer for Q1:
+
+Yes. Each compression core will have its own set of control signals. Since each core works independently, naturally each has its own control signals.
+
+For this point, we want to know whether the GR712 plans to read these signals via I/O or SpW RMAP.
+
+Another aspect concerns the configuration parameters. Our plan is to transmit the compression core configuration parameters from the GR712 to the FPGA via RMAP. However, if we try to directly read the compression core status (which includes the Finished and other control signals) through RMAP, it won't work because there might be other links transferring data from the FPGA to the GR712. This means the RMAP packets would have to wait.
+
+Answer for Q2:
+
+The compressor core itself does not have a function to indicate how many compressed data items there are. We can design a counter to count the number of compressed data items. The compression data number can be stored in the compression core’s status register, and this value can be read together with the Finished signal.
+
+Regarding the Venspec channel dimension size, according to SWICD, I can confirm that the sizes for x, y, and z are correct.
+
+In addition, we need to confirm for the VESU observation y size: into how many chunks will the y dimension be divided? This is important because we need to store a set of compressed data in the buffer memory, and the number of chunks is critical. It directly affects whether the SDRAM size will be sufficient.
+
+
+比如从AwaitingConfig signal deasserted 到 finished signal asserted 期间 总共的 compressed data 数量，
+
+~在这里我认为更有用的是one acquision 所产生的compressed data 数量，因为我计划需要确定是否需要将one acquisitions of data 缓存进fifo后 再传输给processor，这样compressed data 数量也可以提前发送给processor，让processor 控制信号控制memory controller 传输缓存的compressed data 到processor中~
+
+The compressor core itself doesn't have a built-in function to indicate the amount of compressed data. If needed, we can design a counter to count the number of compressed data items—for example, counting the quantity between when the AwaitingConfig signal is deasserted and when the finished signal is asserted.
+
+It is necessary to determine whether one set of data should be cached in the SDRAM first before being transferred to the processor. This way, the number of compressed data items can be sent to the processor ahead of time, allowing the processor's control signals to instruct the memory controller in transferring the cached compressed data to the processor.
+
+
+For data, can the processor control each channel to start transmitting data, or must the FPGA always be ready to start receiving data?
