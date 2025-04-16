@@ -289,7 +289,7 @@ Concerning D0 and D1, the only effect for you is that the header of the packet i
 
 Answer for Q1:
 
-Yes. Each compression core will have its own set of control signals. Since each core works independently, naturally each has its own control signals. 
+Yes. Each compression core will have its own set of control signals. Since each core works independently, naturally each has its own control signals.
 
 对于这一点，我们想知道的是GR712打算通过I/O 还是spw RMAP 读取Finished这些信号.
 
@@ -303,10 +303,7 @@ compressor core  本身并没有通知有多少compressed data 的功能。我�
 
 此外我们需要确认对于VESU observation y size, y将被分成多少个chunk，因为我们需要将a set of compressed data放入 buffer memory中，因此这个chunk number 很重要，这关系到SDRAM 的大小 是否足够
 
-
-
 ### response
-
 
 Answer for Q1:
 
@@ -324,7 +321,6 @@ Regarding the Venspec channel dimension size, according to SWICD, I can confirm 
 
 In addition, we need to confirm for the VESU observation y size: into how many chunks will the y dimension be divided? This is important because we need to store a set of compressed data in the buffer memory, and the number of chunks is critical. It directly affects whether the SDRAM size will be sufficient.
 
-
 比如从AwaitingConfig signal deasserted 到 finished signal asserted 期间 总共的 compressed data 数量，
 
 ~在这里我认为更有用的是one acquision 所产生的compressed data 数量，因为我计划需要确定是否需要将one acquisitions of data 缓存进fifo后 再传输给processor，这样compressed data 数量也可以提前发送给processor，让processor 控制信号控制memory controller 传输缓存的compressed data 到processor中~
@@ -333,5 +329,19 @@ The compressor core itself doesn't have a built-in function to indicate the amou
 
 It is necessary to determine whether one set of data should be cached in the SDRAM first before being transferred to the processor. This way, the number of compressed data items can be sent to the processor ahead of time, allowing the processor's control signals to instruct the memory controller in transferring the cached compressed data to the processor.
 
-
 For data, can the processor control each channel to start transmitting data, or must the FPGA always be ready to start receiving data?
+
+## Venspec-U calibration
+
+LR and HR calibration at the same time
+
+根据Venspec-U 所说，LR and HR calibration at the same time，那么这是否意味这Venspec-U 需要两个SpW link来传输数据给我DHU？因为我们Pre-EM 设计的每个channel只有一个SpW port. 如果是这样我们需要增加一个spw port.
+
+反之，如昨天我们对Memory controller 讨论的那样，如果Venspec-U 只通过一个SpW link传输raw data,我们考虑memory controller并发访问SDRAM 对于Venspcec-U 相关的数据就不需要考虑两个compression core在BIP-mem mode 同时访问SDRAM的问题了. 因为这样处理Venspec-U LR and HR 肯定有一个compression core处于空闲状态
+
+
+Based on what Venspec-U mentioned—that LR and HR calibration occur at the same time—does this mean that Venspec-U requires two SpW links to transfer data to DHU? Because in our Pre-EM design, each channel only has one SpW port. If that is the case, we need to add an extra SpW port.
+
+Conversely, as we discussed yesterday regarding the memory controller, if Venspec-U only transfers raw data through one SpW link, then in our consideration of the memory controller's concurrent access to SDRAM concerning Venspec-U-related data, there is no need to consider the problem of two compression cores simultaneously accessing SDRAM in the BIP-mem mode.
+
+Because handling it this way, one of the compression cores for Venspec-U's LR and HR will definitely be idle.
