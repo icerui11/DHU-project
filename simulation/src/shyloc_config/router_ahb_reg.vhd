@@ -52,7 +52,13 @@ entity router_ahb_reg is
 		axi_in 			: in 	r_maxi_lite_dword	:= c_maxi_lite_dword;
 		axi_out			: out 	r_saxi_lite_dword	:= c_saxi_lite_dword;
 		
-		config_mem_out	: out 	t_byte_array(0 to 31) := (others => (others => '0'))
+		config_mem_out	: out 	t_byte_array(0 to 31) := (others => (others => '0'));
+
+		-- AHB signals
+		clk_ahb         : in    std_logic;
+		rst_ahb         : in    std_logic;
+		ahbsi   : in  ahb_slv_in_type;        --! AHB slave input signals
+		ahbso   : out ahb_slv_out_type;       --! AHB slave output signals
     );
 end router_ahb_reg;
 
