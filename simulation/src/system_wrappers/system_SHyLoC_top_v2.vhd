@@ -16,8 +16,8 @@ use ieee.std_logic_1164.all;
 
 library smartfusion2;
 use smartfusion2.all;
-library src;
-use src.all;
+--library src;
+--use src.all;
 
 library work;
 use work.system_constant_pckg.all;
