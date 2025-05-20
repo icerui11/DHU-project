@@ -88,3 +88,27 @@ The problem is that the table breaks down in several requirements, which is why 
 3. The data set data (the pixel values) shall be transmitted as one TM(213,2), zero or more TM(213,3) and zero or one TM(213,4). For each of these packets, the first 4 bytes of the data shall be the dat set ID, followed by 4 bytes of packet counter and then the pixel information. (see table for reference).
 4. Science data packets that shall be transmitted to ground uncompressed shall be sent to the SpW address of the processor.
 5. Science data packets to be compressed shall be transmitted to the assigned compression core SpW address.
+
+
+
+
+
+## mail from Bj 20.05
+
+This is very interesting and we should definitely discuss this further!
+Of course there needs to be an additional parameter defining if 3D or 1D
+compression to be used (for data <16bit).
+But Benjamin from V-U proposes to use 3D compression only for Observation,
+which is done with reduced dataset (205x74 or 205x18 pixels). The large
+dataset for dark (and also for sun??) calibration could be compressed by 1D
+only?
+This said could mean, that also for V-H, 1D compression of the calibration
+data could be sufficient??
+This would result in only 1D compression for V-H and for V-U only a 3D
+compression for max. 205x74 pixels, which could be handled without external
+memory? Please check.
+Of course, this would ease the dataflow to/from the memory and FPGA
+internal structures significantly.
+
+
+：因为目前我们没办法直接使用综合工具查看压缩核将使用的资源，因此我建立了一个Excel计算3d compression core将使用的FPGA RAM资源，这里分别计算了V-U LR and HR 两个参数下将使用的RAM 数量，结果分别是30 LSRAM and 11 LSRAM，这只是通过计算的大概范围，并且我们需要留意RTG4 的RAM比Smartfusion2 更小，（RTG4为209 LSRAM， SM2为 236），但对于V-U 如果只需要使用3d 压缩observation data 我们就可以不使用External memory 缓存临时数据而只使用BIP-mode
