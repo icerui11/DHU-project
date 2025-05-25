@@ -6,7 +6,7 @@
 * [X]  V-U resource utilzation excel
 * [ ]  need whole FPGA resource usage overview
 * [X]  FPGA project for seperate spw codec clk
-* [ ]  FPGA project for another indien student : memory-mapped configuration for SHyLoC
+* [X]  FPGA project for another indien student : memory-mapped configuration for SHyLoC
 
 # TBD specification
 
@@ -30,3 +30,11 @@ need to recompile UVVM library and vlib smartfusion2 precompile library
 ## 23.05 system_bus doc
 
 create a word FPGA_sys_bus_001
+
+## 26.05 two task WP complete
+
+SHyLoC runtime cfg
+
+multiple clk router
+
+both WP in word file
