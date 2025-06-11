@@ -1,2 +1,4 @@
 *.bak
 simulation/coverage/system_3SHyLoC_tb.covhtml
+*.qdb
+System_bus/Sim/modelsim

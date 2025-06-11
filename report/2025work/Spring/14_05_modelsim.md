@@ -4,7 +4,7 @@
 * [ ]  I/O interface control
 * [X]  设计两套bus,为compression core configuration part 设计一套bus
 * [X]  V-U resource utilzation excel
-* [ ]  need whole FPGA resource usage overview
+* [X]  need whole FPGA resource usage overview
 * [X]  FPGA project for seperate spw codec clk
 * [X]  FPGA project for another indien student : memory-mapped configuration for SHyLoC
 
