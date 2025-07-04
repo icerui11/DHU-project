@@ -14,6 +14,7 @@
 --								
 -- Document Number			:	TBD
 -- modification History		:	17.03.2025 add c_cum_fifoports
+--                           v2.0 add independent clock for SpW node
 ----------------------------------------------------------------------------------------------------------------------------------
 library ieee;			
 use ieee.std_logic_1164.all;

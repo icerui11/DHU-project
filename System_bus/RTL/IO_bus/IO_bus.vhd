@@ -1,6 +1,8 @@
 ---====================== Start Copyright Notice ========================---
 --== Filename ..... IO_bus.vhd                                          ==--
 --== Project ...... SHyLoC Configuration IO_Bus                         ==--
+--== Institute .... IDA TU Braunschweig RoSy                            ==--
+--== Authors ...... Rui Yin                                             ==--
 --== Description .. IO Bus for SHyLoC compression core configuration     ==--
 --== Authors ...... Modified for SHyLoC integration                      ==--
 --== Version ...... 2.00                                                 ==--
@@ -13,11 +15,11 @@ library work; use work.IO_bus_pkg.all;
 
 entity IO_bus is 
 generic ( 
-    ver_model : std_logic_vector(2 downto 0) := "010" -- default to qm/fm model 
+ --   ver_model : std_logic_vector(2 downto 0) := "010" -- default to qm/fm model 
     );
 port ( 
-    clk         :  in std_logic; 
-    async_rst_n : in std_logic;
+    clk                        :  in std_logic; 
+    async_rst_n                :  in std_logic;
     -- gr712 processor interface
     i_gr712_mem_iosn           : in    std_logic;
     i_gr712_mem_writen         : in    std_logic;

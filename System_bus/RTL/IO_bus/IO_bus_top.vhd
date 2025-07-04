@@ -29,37 +29,22 @@ entity IO_bus_top is
       clk                        : in    std_logic;
       async_rst_n                : in    std_logic;
       
-      -- GR712 processor interface (original)
+      -- GPIO bidirectional interface
+      gpio_data   : inout std_logic_vector(7 downto 0);  
+      gpio_addr   : inout std_logic_vector(7 downto 0);  
+      
+      -- GPIO control signals
       i_GR712_mem_romsn_0        : in    std_logic;
-      i_GR712_mem_romsn_1        : in    std_logic;
-      i_GR712_mem_iosn           : in    std_logic;
-      i_GR712_mem_writen         : in    std_logic;
-      i_GR712_mem_oen            : in    std_logic;
-      i_GR712_mem_add            : in    std_logic_vector(11 downto 0);
-      io_GR712_mem_data          : inout std_logic_vector(31 downto 0);
-      o_nor_flash_dir            : out   std_logic;
+      gpio_dir    : out std_logic;    -- 方向控制：0=输入模式，1=输出模式
+      gpio_oe     : out std_logic;    -- outout enable
+      gpio_we     : out std_logic;    -- write enable
+      gpio_re     : out std_logic;    -- read enable
+      gpio_valid  : out std_logic;    -- data valid
+      gpio_ready  : in  std_logic;    
+ --     gpio_ack    : out std_logic;    -- acknowledge signal 
       
-      -- Original core interfaces
-      o_core_if                  : out   write_core_if_vector(0 to 7);
-      i_core_if                  : in    read_core_if_vector(0 to 7);
-      o_large_core_if            : out   write_large_core_if_vector(8 to 9);
-      i_large_core_if            : in    read_core_if_vector(8 to 9);
+
       
-      -- Boot memory area
-      o_bootrom_csn              : out   std_logic;
-      o_bootrom_add              : out   std_logic_vector(11 downto 0);
-      i_bootrom_data             : in    std_logic_vector(7 downto 0);
-      
-      -- Compression cores AHB Master interface
-      ahb_m_haddr                : out   std_logic_vector(AHB_ADDR_WIDTH-1 downto 0);
-      ahb_m_htrans               : out   std_logic_vector(1 downto 0);
-      ahb_m_hwrite               : out   std_logic;
-      ahb_m_hsize                : out   std_logic_vector(2 downto 0);
-      ahb_m_hburst               : out   std_logic_vector(2 downto 0);
-      ahb_m_hwdata               : out   std_logic_vector(31 downto 0);
-      ahb_m_hready               : in    std_logic;
-      ahb_m_hresp                : in    std_logic_vector(1 downto 0);
-      ahb_m_hrdata               : in    std_logic_vector(31 downto 0);
       
       -- Compression core base addresses (configurable)
       core_base_addr             : in    std_logic_vector(NUM_CORES*AHB_ADDR_WIDTH-1 downto 0);
