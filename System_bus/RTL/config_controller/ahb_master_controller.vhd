@@ -54,12 +54,14 @@ entity ahb_master_controller is
     compressor_status_HR : in compressor_status;
     compressor_status_LR : in compressor_status;
     compressor_status_H  : in compressor_status;
-
-    compressor_sel : in std_logic_vector(1 downto 0); -- "00"=CCSDS123+121, "01"=CCSDS121
-
     
-    ctrli : out  ahbtbm_ctrl_in_type;          --! Control signals to communicate with AHB master module. 
-    ctrlo : in ahbtbm_ctrl_out_type            --! Control signals to communicate with AHB master module. 
+    -- ram configuration interface input
+    ram_wr_en   : in  std_logic;                     -- Write enable signal for RAM
+    wr_addr     : in  std_logic_vector(g_input_addr_width-1 downto 0); 
+    wr_data     : in  std_logic_vector(g_input_data_width-1 downto 0);
+    
+    ctrli       : out  ahbtbm_ctrl_in_type;          --! Control signals to communicate with AHB master module. 
+    ctrlo       : in ahbtbm_ctrl_out_type            --! Control signals to communicate with AHB master module. 
   );
 end entity ahb_master_controller;
 
@@ -103,8 +105,8 @@ architecture rtl of ahb_master_controller is
   -- Modified by AS: Counter width maximum is 4 bits, as max 10 CFG register
   -- Modified by AS: new reverse counters in exchange of counter and counter_reg
   signal rev_counter, rev_counter_reg: unsigned(3 downto 0);
-  -- Modified by AS: beats, count_burst and burst_size widths reduced from 32 to 5 bits
-  signal count_burst, count_burst_cmb, burst_size, burst_size_cmb, beats, beats_reg: unsigned (4 downto 0);
+  -- Modified by AS: beats, count_burst and burst_size widths reduced from 16 to 4 bits
+  signal count_burst, count_burst_cmb, burst_size, burst_size_cmb, beats, beats_reg: unsigned (3 downto 0);
   ------------------
   
   -- Read flag for FIFO - allow reading from FIFO
@@ -116,37 +118,27 @@ architecture rtl of ahb_master_controller is
   signal config_valid_adapted_ahb: std_logic;
   -- AHB status information
   signal ahb_status_s, ahb_status_ahb_cmb, ahb_status_ahb_reg: ahbm_123_status;
-
-            
-  signal ram_start_addr : std_logic_vector(g_ram_addr_width downto 0); -- RAM start address for configuration data
-  signal ram_read_num : std_logic_vector(2 downto 0);       -- Number of registers to read from RAM
+        
+  signal ram_start_addr : std_logic_vector(g_output_addr_width-1 downto 0); -- RAM start address for configuration data
+  signal ram_read_num :  integer range 0 to 10;       -- Number of registers to read from RAM
   signal compressor_status : compressor_status_array; -- Compressor status for all compressors
 
-
-  signal config_done : std_logic;  -- Configuration done signal, to execute the next compressor configuration  
+  signal config_done, config_done_cmb : std_logic;  -- Configuration done signal, to execute the next compressor configuration  
 
   -- Signals for config_arbiter instance
   signal arbiter_grant       : std_logic_vector(1 downto 0);
   signal arbiter_grant_valid : std_logic;
   signal arbiter_config_req  : std_logic;
   
-  signal ahb_base_addr_123, ahb_base_addr_121 : std_logic_vector(11 downto 0); -- AHB base addresses for CCSDS123 and CCSDS121
-  -- determine ccsds123 or ccsds121
-  signal ram_read_segment : std_logic := '0'; -- '0' for CCSDS123, '1' for CCSDS121
+  signal ahb_base_addr_123, ahb_base_addr_121 : std_logic_vector(31 downto 0); -- AHB base addresses for CCSDS123 and CCSDS121
 
   -- Signals for config_ram_8to32
   signal ram_wr_en    : std_logic;                     -- Write enable signal
   signal ram_wr_addr  : std_logic_vector(6 downto 0);  -- Write address (7 bits)
   signal ram_wr_data  : std_logic_vector(7 downto 0);  -- Write data (8 bits)
-  signal ram_rd_en    : std_logic;                     -- Read enable signal
-  signal ram_rd_addr  : std_logic_vector(4 downto 0);  -- Read address (5 bits)
-  signal ram_rd_data  : std_logic_vector(31 downto 0); -- Read data (32 bits)
-  signal ram_rd_valid : std_logic;                     -- Read valid signal
-
 
 --new definition
   signal r, rin      : reg_type;
-
 
   -- from GR712
   signal gr712_read_req : std_logic;  -- GR712 read request signal
@@ -158,7 +150,7 @@ begin
   ctrli <= ctrl.i;
   ctrl.o <= ctrlo;
   rd_in <= rd_in_out;
-
+/*
 preload_fifo : process(clk, rst_n)
 begin
     if rst_n = '0' then
@@ -172,24 +164,28 @@ begin
         end if;
     end if;
 end process preload_fifo;
-
+*/
 
 reg: process(clk, rst_n)
 begin
   if rst_n = '0' then
     r <= RES
-    address_write <= (others => '0');
-    rev_counter_reg <= (others => '0');
-    beats_reg <= (others => '0');
+    address_write    <= (others => '0');
+ --   rev_counter_reg <= (others => '0');
+    beats_reg        <= (others => '0');
+    remaining_writes <= (others => '0');
+    config_done      <= '0';
   elsif clk'event and clk = '1' then
     r <= rin; 
     address_write <= address_write_cmb;
-    rev_counter_reg <= rev_counter;
+   -- rev_counter_reg <= rev_counter;
     beats_reg <= beats; 
+    remaining_writes <= remaining_writes_cmb;
+    config_done <= config_done_cmb;
   end if;
 end process reg;
 
-process(arbiter_grant, arbiter_config_req, r, arbiter_grant_valid, empty, rev_counter_reg, remaining_writes)
+process(arbiter_grant, arbiter_config_req, r, arbiter_grant_valid, rev_counter_reg, remaining_writes, state_next_ahbw, state_reg_ahbw, ctrl.o.update, address_write)
   variable v              : reg_type;
   variable inc            : unsigned; 
   variable tot_size       : std_logic_vector(15 downto 0);
@@ -200,8 +196,8 @@ begin
     ahbwrite_cmb <= '0';
     v := r; 
     inc := '1';
-
-
+    beats <= beats_reg;
+    
     case r.config_state is    
       when IDLE =>
          ahb_address_switch := '0'; -- Reset address switch
@@ -217,9 +213,10 @@ begin
       when ARBITER_WR =>
          if arbiter_grant_valid = '1' then        -- Arbiter has granted a request(write has high priority)
            v.start_preload_ram := '1'; -- Start preloading RAM data
-            if empty = '0' then
+            if r.empty = '0' then
               v.config_state := AHB_TRANSFER_WR;
-              rev_counter <= to_unsigned(ram_read_num, 4);    
+  --            rev_counter <= to_unsigned(ram_read_num, 4);    
+              remaining_writes_cmb <= to_unsigned(ram_read_num, 4); -- Set remaining writes to the number of registers to read
             end if; 
             case ram_read_num is     
               when 4 => 
@@ -234,14 +231,14 @@ begin
          end if;
 
       when AHB_TRANSFER_WR =>        -- write request 
-        if remaining_writes < to_unsigned(ram_read_num, rev_counter'length) then
-          beats_v := remaining_writes_cmb;
+        if remaining_writes < to_unsigned(ram_read_num, 4) then
+          beats_v := remaining_writes;
         else
-          beats_v := to_unsigned(ram_read_num, rev_counter'length); -- Set beats_v to the number of registers to read
+          beats_v := to_unsigned(ram_read_num, 4); -- Set beats_v to the number of registers to read
         end if;
         beats <= beats_v;
 
-        if (empty = '0' and ctrl.o.update = '1' and (state_next_ahbw = s0 or state_next_ahbw = s4)) then
+        if (r.empty = '0' and ctrl.o.update = '1' and (state_next_ahbw = s0 or state_next_ahbw = s4)) then
           v.data_valid := '1';
           v.r_update := '1';                  -- read from FIFO
         end if; 
@@ -252,6 +249,7 @@ begin
             when 4 => 
               if unsigned(address_write) = unsigned(ahb_base_addr_121) + to_unsigned(16,5) then   -- (4) * 4 
                 address_write_cmb <= ahb_base_addr_121 - x"00000004";
+                config_done_cmb <= '1'; 
                 v.config_state := IDLE;  
               else 
                 address_write_cmb <= address_write + x"00000004"; -- 4 bytes per register
@@ -268,6 +266,7 @@ begin
                 if unsigned(address_write) = unsigned(ahb_base_addr_121) + to_unsigned(16,5) then   -- (4) * 4 
                   address_write_cmb <= ahb_base_addr_123 - x"00000004";
                   v.config_state := IDLE;                  -- Switch to IDLE after writing all registers, maybe in future into state done
+                  config_done_cmb <= '1'; 
                 else 
                   address_write_cmb <= address_write + x"00000004"; 
                 end if;
@@ -284,6 +283,7 @@ begin
 
           -- trigeger the write operation
           ahbwrite_cmb <= '1';
+          remaining_writes_cmb <= remaining_writes - 1; -- Decrement remaining writes counter
           ahb_wr_cnt_cmb <= ahb_wr_cnt_reg + 1; -- Increment write counter 
 
           -- Modified by AS: initiating burst operation if there are enough data pending --
@@ -312,6 +312,7 @@ begin
                 if unsigned(address_write) = unsigned(ahb_base_addr_121) + to_unsigned(16,5) then   -- (4) * 4 
                   address_write_cmb <= ahb_base_addr_121 - x"00000004";
                   v.config_state := IDLE;  
+                  config_done_cmb <= '1'; 
                 else 
                   address_write_cmb <= address_write + x"00000004"; -- 4 bytes per register
                 end if;
@@ -327,6 +328,7 @@ begin
                   if unsigned(address_write) = unsigned(ahb_base_addr_121) + to_unsigned(16,5) then   -- (4) * 4 
                     address_write_cmb <= ahb_base_addr_123 - x"00000004";
                     v.config_state := IDLE;                  -- Switch to IDLE after writing all registers, maybe in future into state done
+                    config_done_cmb <= '1'; 
                   else 
                     address_write_cmb <= address_write + x"00000004"; 
                   end if;
@@ -337,7 +339,7 @@ begin
             end case;
           end if;
 
-          if (empty = '0' and v.data_valid = '0' and (count_burst_cmb /= 0) and (state_reg_ahbw = s4)) then
+          if (r.empty = '0' and v.data_valid = '0' and (count_burst_cmb /= 0) and (state_reg_ahbw = s4)) then
             v.w_update := '1';
             ahbwrite_cmb <= '1';
             appidle_cmb <= false;  --appidle = true if there will be more data in the next cycle
@@ -377,13 +379,15 @@ end case;
     if r.ram_read_cnt < ram_read_num then              -- buffer the CFG to FIFO
       if r.start_preload_ram = '1' then
         v.ram_rd_en := '1';                  -- Enable RAM read
-        v.ram_rd_addr := std_logic_vector(unsigned(r.ram_start_addr) + 1);
+        v.ram_rd_addr := std_logic_vector(unsigned(r.ram_start_addr) + unsigned(r.ram_read_cnt));
         v.ram_read_cnt := r.ram_read_cnt + 1;
       else
         v.ram_rd_en := '0';
       end if;
     else
       v.start_preload_ram := '0'; -- Stop preloading RAM data
+      v.ram_rd_en := '0';
+      v.ram_read_cnt := (others => '0'); -- Reset RAM read counter
     end if;
     
     if r.ram_rd_en = '1' then
@@ -397,13 +401,15 @@ end case;
 
 end process;
   
-comb_ahb: process (state_reg_ahbw, address_write_cmb, address_read_cmb, data_cmb, size_cmb, appidle_cmb, appidle, htrans_cmb, hburst_cmb, debug_cmb, ahbwrite_cmb, rst_ahb, ctrl.o.update, ctrl_reg.i, ctrl.i, ahbread_cmb, beats, count_burst, burst_size)
+comb_ahb: process (state_reg_ahbw, address_write_cmb, address_read_cmb, data_cmb, size_cmb, appidle_cmb, appidle, htrans_cmb, hburst_cmb, debug_cmb, 
+  ahbwrite_cmb, rst_ahb, ctrl.o.update, ctrl_reg.i, ctrl.i, ahbread_cmb, beats_reg, count_burst, burst_size)
   -------------------------------------
   begin  
     state_next_ahbw <= state_reg_ahbw;
     count_burst_cmb <= count_burst;
     burst_size_cmb <= burst_size;
     ctrl.i <= ctrl_reg.i;
+
 
     -- AHB state machine
     case (state_reg_ahbw) is
@@ -586,103 +592,11 @@ comb_ahb: process (state_reg_ahbw, address_write_cmb, address_read_cmb, data_cmb
     end case;
   end process;
   
-  buffer_CFG: process(clk, rst_n)
-              begin
-                if rst_n = '0' then
-                  w_update <= '0';
-                elsif rising_edge(clk) then                
-                  if r.ram_rd_en = '1' then
-                    w_update <= '1';  -- Enable write update signal when RAM read is enabled
-                    data_in  <= ram_rd_data;  -- Read data from RAM
-                  else
-                    w_update <= '0';  -- Disable write update signal when RAM read is disabled
-                  end if;
-                end if;
-              end process;
-
-
-read_prc: process(clk, rst_n)
-begin
-    if rst_n = '0' then
-        ram_rd_en <= '0';
-        read_ram_done <= '0';          
-    elsif rising_edge(clk) then
-        case curr_state is   
-            when READ_RAM =>
-          
-              case arbiter_grant is
-                when "00" => -- HR
-                    if ram_read_segment = '0' then -- CCSDS123
-                        ram_rd_addr <= std_logic_vector(unsigned(c_hr_ccsds123_base) + ram_read_cnt);
-                        ram_rd_en <= '1'; 
-                        if ram_read_cnt > CCSDS123_CFG_NUM - 1 then
-                            ram_read_cnt <= 0;
-                            ram_read_segment <= '1'; -- Switch to CCSDS121
-                            ram_rd_en <= '0'; 
-                        else
-                            ram_read_cnt <= ram_read_cnt + 1;
-                        end if;
-                    else -- CCSDS121
-                        ram_rd_addr <= std_logic_vector(unsigned(c_hr_ccsds121_base) + ram_read_cnt);
-                        ram_rd_en <= '1'; 
-                        if ram_read_cnt > CCSDS121_CFG_NUM - 1 then
-                            ram_read_cnt <= 0;
-                            ram_rd_en <= '0'; 
-                            read_ram_done <= '1';         -- Configuration done to let arbiter know
-                        else
-                            ram_read_cnt <= ram_read_cnt + 1;
-                        end if;
-                    end if;
-
-                when "01" => -- LR
-                    if ram_read_segment = '0' then -- CCSDS123
-                        ram_rd_addr <= std_logic_vector(unsigned(c_lr_ccsds123_base) + ram_read_cnt);
-                        ram_rd_en <= '1'; 
-                        if ram_read_cnt > CCSDS123_CFG_NUM - 1 then
-                            ram_read_cnt <= 0;
-                            ram_read_segment <= '1'; -- Switch to CCSDS121
-                            ram_rd_en <= '0'; 
-                        else
-                            ram_read_cnt <= ram_read_cnt + 1;
-                        end if;
-                    else -- CCSDS121
-                        ram_rd_addr <= std_logic_vector(unsigned(c_lr_ccsds121_base) + ram_read_cnt);
-                        ram_rd_en <= '1'; 
-                        if ram_read_cnt > CCSDS121_CFG_NUM - 1 then
-                            ram_read_cnt <= 0;
-                            ram_rd_en <= '0'; 
-                            read_ram_done <= '1'; 
-                        else
-                            ram_read_cnt <= ram_read_cnt + 1;
-                        end if;
-                    end if;
-
-                when "10" => -- H
-                    ram_rd_addr <= std_logic_vector(unsigned(c_h_ccsds121_base) + ram_read_cnt);
-                    ram_rd_en <= '1'; 
-                    if ram_read_cnt > CCSDS121_CFG_NUM - 1 then
-                        ram_read_cnt <= 0;
-                        ram_rd_en <= '0'; 
-                        read_ram_done <= '1'; 
-                    else
-                        ram_read_cnt <= ram_read_cnt + 1;
-                    end if;
-
-                when others =>
-                    ram_rd_en <= '0'; 
-              end case;
-
-            when others =>
-                ram_rd_en <= '0';
-        end case;
-
-end process read_prc;
-
 
 -- Instantiate config_arbiter
 config_arbiter_inst : entity work.config_arbiter
   generic map (
-    g_ram_addr_width => g_ram_addr_width,  -- RAM address width
+    g_ram_addr_width => g_output_addr_width,  -- RAM address width
   )
   port map (
     clk                => clk,
@@ -717,34 +631,32 @@ config_ram_inst : entity work.config_ram_8to32
     wr_en       => ram_wr_en,    -- Write enable signal
     wr_addr     => ram_wr_addr,  -- Write address
     wr_data     => ram_wr_data,  -- Write data
-    rd_en       => ram_rd_en,    -- Read enable signal
-    rd_addr     => ram_rd_addr,  -- Read address
-    rd_data     => ram_rd_data,  -- Read data output
-    rd_valid    => ram_rd_valid  -- Read valid signal
+    rd_en       => r.ram_rd_en,    -- Read enable signal
+    rd_addr     => r.ram_rd_addr,  -- Read address
+    rd_data     => r.ram_rd_data,  -- Read data output
+    rd_valid    => r.ram_rd_valid  -- Read valid signal
   );
   
   fifo_no_edac: entity shyloc_utils.fifop2_base(arch)
   generic map (
-      RESET_TYPE  => RESET_TYPE,
-      W  => W, 
-      NE   => NE, 
-      W_ADDR  => W_ADDR, 
-      TECH => TECH)
+      RESET_TYPE  => 0,
+      W  => 32, 
+      NE   => 10, 
+      W_ADDR  => 4, 
+      TECH => 0)
   port map (
-    clk  => clk, 
-    rst_n => rst_n, 
-    clr  => clr,
+    clk       => clk, 
+    rst_n     => rst_n, 
+    clr       => r.clr,
     w_update  => r.w_update, 
     r_update  => r.r_update, 
-    hfull   =>  hfull, 
-    empty   => empty, 
-    full    => full, 
-    afull   => afull, 
-    aempty    => aempty, 
-    data_in   => data_in,
-    data_out  => data_out
+    hfull     => r.hfull, 
+    empty     => r.empty, 
+    full      => r.full, 
+    afull     => r.afull, 
+    aempty    => r.aempty, 
+    data_in   => r.data_in,
+    data_out  => r.data_out
   );
-
-
 
 end architecture rtl;

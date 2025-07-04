@@ -42,12 +42,18 @@ package config_pkg is
     constant CCSDS123_CFG_NUM : integer := 6; -- 6 registers for CCSDS123
     constant CCSDS121_CFG_NUM : integer := 4; -- 4 registers for CCSDS121
 
+    type compressor_status_array is record 
+        AwaitingConfig           : std_logic; -- Awaiting configuration signal
+    end record; 
+
     type config_state_type is (IDLE, ARBITER_WR, AHB_TRANSFER_WR, AHB_Burst_WR, ERROR); 
     type reg_type is record
       config_state              : config_state_type;
       ram_read_cnt              : unsigned(3 downto 0); -- RAM read counter (4 bits) 
       ram_rd_en                 : std_logic; -- RAM read enable signal
       ram_rd_addr               : std_logic_vector(c_output_addr_width-1 downto 0); -- RAM read address
+      ram_rd_data               : std_logic_vector(c_output_data_width-1 downto 0); -- RAM read data
+      ram_rd_valid              : std_logic; 
       start_preload_ram         : std_logic; -- Signal to start preloading RAM 
       data_valid                : std_logic; -- Data valid signal
       r_update                  : std_logic; 
@@ -67,6 +73,8 @@ package config_pkg is
       ram_read_cnt           => (others => '0'),  -- Initialize read counter to 0
       ram_rd_en             => '0',
       ram_rd_addr           => (others => '0'),
+      ram_rd_data           => (others => '0'),  
+      ram_rd_valid          => '0',
       start_preload_ram     => '0',
       data_valid            => '0',
       r_update              => '0',
