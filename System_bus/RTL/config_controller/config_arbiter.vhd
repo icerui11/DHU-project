@@ -31,8 +31,13 @@ entity config_arbiter is
         config_done     : in  std_logic;  -- Configuration completed 
         config_req      : out std_logic;  -- Request configuration 
         
-        start_add       : out  std_logic_vector(g_ram_addr_width-1 downto 0);  -- Start address for configuration
-        read_num        : out  std_logic_vector(2 downto 0);   -- Number of CFG to read
+        start_add       : out  std_logic_vector(g_ram_addr_width-1 downto 0);  -- Start address for configuration read
+        read_num        : out  integer range 0 to 10;   -- Number of CFG to read
+
+        -- ahb w/r address
+        ahb_base_addr_123   : out std_logic_vector(31 downto 0);  -- AHB base address for configuration
+        ahb_base_addr_121   : out std_logic_vector(31 downto 0);  -- AHB base address for configuration
+
         -- Grant Interface
         grant           : out std_logic_vector(1 downto 0);  -- "00": HR, "01": LR, "10": H, "11": None
         grant_valid     : out std_logic 
@@ -61,6 +66,7 @@ begin
     begin
         if rst_n = '0' then
             config_active <= '0';
+            read_num <= 0;                       
             current_grant <= GRANT_NONE;
             rr_counter <= "00";                   -- start from HR
         elsif rising_edge(clk) then
@@ -86,8 +92,10 @@ begin
                                     current_grant <= GRANT_HR;
                                     config_active <= '1';
                                     grant_found := '1';
-                                    start_add <= x"08";                      -- Set start address for HR
-                                    read_num <= "111";                      -- Read 7 registers for HR
+                                    start_add <= x"00";                      -- Set start address for HR
+                                    read_num <= 10;                      -- Read 10 registers for HR
+                                    ahb_base_addr_123 <= x"20000000";                 -- w/r ahb base address 
+                                    ahb_base_addr_121 <= x"1000000"; 
                                 end if;
                             when "01" =>  -- LR
                                 if compressor_status_LR.AwaitingConfig = '1' then
@@ -95,7 +103,9 @@ begin
                                     config_active <= '1';
                                     grant_found := '1';
                                     start_add <= x"30";                      -- Set start address for LR
-                                    read_num <= "111";                      -- Read 7 registers for LR
+                                    read_num <= 10;                      -- Read 7 registers for LR
+                                    ahb_base_addr_123 <= x"4000000";                 -- w/r ahb base address 
+                                    ahb_base_addr_121 <= x"5000000";   
                                 end if;
                             when "10" =>  -- H
                                 if compressor_status_H.AwaitingConfig = '1' then
@@ -103,7 +113,8 @@ begin
                                     config_active <= '1';
                                     grant_found := '1';
                                     start_add <= x"54";                      -- Set start address for V-H
-                                    read_num <= "011";                      -- Read 3 registers for V-H
+                                    read_num <= 4;                      -- Read 3 registers for V-H
+                                    ahb_base_addr_121 <= x"7000000";   
                                 end if;
                             when others =>  -- No grant
                                 current_grant <= GRANT_NONE;

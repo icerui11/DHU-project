@@ -65,22 +65,6 @@ end entity ahb_master_controller;
 
 architecture rtl of ahb_master_controller is
 
-  -- State machine states
-  type config_state_type is (
-    IDLE,              -- Waiting for start signal
- --   READ_CONFIG_SIZE,  -- Determine configuration size based on compressor selection
-    READ_RAM,          -- Reading data from RAM
-    AHB_REQUEST,       -- Requesting AHB bus
-    AHB_ADDR_PHASE,    -- AHB address phase
-    AHB_DATA_PHASE,    -- AHB data phase
-    WAIT_RESPONSE,     -- Waiting for slave response
-    CHECK_COMPLETE,    -- Check if all data transferred
-    ERROR_STATE,       -- Error handling
-    DONE               -- Configuration complete
-  );
-  type config_state_type is (IDLE, ARBITER, AHB_TRANSFER_HR, AHB_TRANSFER_LR, AHB_TRANSFER_H); 
-
-   signal curr_state, next_state : config_state_type;
    signal ram_read_cnt : unsigned(3 downto 0); -- RAM read 
 
    signal read_ram_done : std_logic := '0'; -- Signal to indicate RAM read completion
@@ -96,6 +80,7 @@ architecture rtl of ahb_master_controller is
   signal ctrl, ctrl_reg  : ahbtb_ctrl_type;
 
   ---------------------
+  signal remaining_writes, remaining_writes_cmb: unsigned(4 downto 0);    -- Total number of samples pending to read/write (reverse sample counters) 
   -- Write address
   signal address_write, address_write_cmb   : std_logic_vector(31 downto 0);
   -- Read address
@@ -115,9 +100,9 @@ architecture rtl of ahb_master_controller is
   --Trigger a write or read operation
   signal ahbwrite, ahbwrite_cmb, ahbread_cmb, ahbread : std_logic;
   --Counters
-  -- Modified by AS: Counter width depending on compile-time parameters (instead of 32 fixed size)
+  -- Modified by AS: Counter width maximum is 4 bits, as max 10 CFG register
   -- Modified by AS: new reverse counters in exchange of counter and counter_reg
-  signal rev_counter, rev_counter_reg: unsigned((W_Nx_GEN + W_Nz_GEN - 1) downto 0);
+  signal rev_counter, rev_counter_reg: unsigned(3 downto 0);
   -- Modified by AS: beats, count_burst and burst_size widths reduced from 32 to 5 bits
   signal count_burst, count_burst_cmb, burst_size, burst_size_cmb, beats, beats_reg: unsigned (4 downto 0);
   ------------------
@@ -132,14 +117,11 @@ architecture rtl of ahb_master_controller is
   -- AHB status information
   signal ahb_status_s, ahb_status_ahb_cmb, ahb_status_ahb_reg: ahbm_123_status;
 
-  -- arbitration signal
- -- signal grant : std_ulogic_vector(1 downto 0); -- AHB bus config abitration signal
- -- signal config_req : std_ulogic;               
+            
   signal ram_start_addr : std_logic_vector(g_ram_addr_width downto 0); -- RAM start address for configuration data
   signal ram_read_num : std_logic_vector(2 downto 0);       -- Number of registers to read from RAM
   signal compressor_status : compressor_status_array; -- Compressor status for all compressors
 
- -- signal r, rin : reg_type;
 
   signal config_done : std_logic;  -- Configuration done signal, to execute the next compressor configuration  
 
@@ -147,7 +129,8 @@ architecture rtl of ahb_master_controller is
   signal arbiter_grant       : std_logic_vector(1 downto 0);
   signal arbiter_grant_valid : std_logic;
   signal arbiter_config_req  : std_logic;
-
+  
+  signal ahb_base_addr_123, ahb_base_addr_121 : std_logic_vector(11 downto 0); -- AHB base addresses for CCSDS123 and CCSDS121
   -- determine ccsds123 or ccsds121
   signal ram_read_segment : std_logic := '0'; -- '0' for CCSDS123, '1' for CCSDS121
 
@@ -160,34 +143,13 @@ architecture rtl of ahb_master_controller is
   signal ram_rd_data  : std_logic_vector(31 downto 0); -- Read data (32 bits)
   signal ram_rd_valid : std_logic;                     -- Read valid signal
 
-  -- Function to get base address based on compressor selection
-  function get_base_address(comp_sel : std_logic_vector(1 downto 0)) 
-    return std_logic_vector is
-  begin
-    case comp_sel is
-      when "00" => return ccsds123_1_base;
-      when "01" => return ccsds123_2_base;
-      when "10" => return ccsds121_base;
-      when others => return ccsds123_1_base;
-    end case;
-  end function;
-
-  -- Function to get configuration size
-  function get_config_size(comp_sel : std_logic_vector(1 downto 0)) 
-    return unsigned is
-  begin
-    case comp_sel is
-      when "00" | "01" => return to_unsigned(ccsds123_cfg_size, 8);
-      when "10" => return to_unsigned(ccsds121_cfg_size, 8);
-      when others => return to_unsigned(ccsds123_cfg_size, 8);
-    end case;
-  end function;
 
 --new definition
-  signal r      : reg_type;
-  signal rtrans : transfer_type;
+  signal r, rin      : reg_type;
 
 
+  -- from GR712
+  signal gr712_read_req : std_logic;  -- GR712 read request signal
 begin
 
   -----------------------------------------------------------------------------  
@@ -197,123 +159,446 @@ begin
   ctrl.o <= ctrlo;
   rd_in <= rd_in_out;
 
--- config request generation
-
-process(clk, rst_n)
+preload_fifo : process(clk, rst_n)
 begin
     if rst_n = '0' then
-        config_req <= '0';
+        ram_read_cnt <= (others => '0'); -- Reset RAM read counter          , defined in pckage reg_type
+        ram_start_addr <= (others => '0'); -- Reset RAM start address
     elsif clk'event and clk = '1' then
-        if  then
-            config_req <= '1'; -- Request configuration on entering IDLE state
-        else
-            config_req <= '0'; -- Clear request in other states
+        if r.start_preload_ram = '1' then
+            if r.ram_rd_en = '1' then
+                ram_rd_addr <= r.ram_rd_addr; -- Read from RAM
+            end if;
         end if;
     end if;
-end process;
+end process preload_fifo;
 
--- config fsm
-process(clk, rst_n)
-begin 
-    if rst_n = '0' then
-       curr_state <= IDLE;
-    elsif clk'event and clk = '1' then
-        curr_state <= next_state;
-    end if;
-end process;
 
-process(arbiter_grant, arbiter_config_req, curr_state)
+reg: process(clk, rst_n)
+begin
+  if rst_n = '0' then
+    r <= RES
+    address_write <= (others => '0');
+    rev_counter_reg <= (others => '0');
+    beats_reg <= (others => '0');
+  elsif clk'event and clk = '1' then
+    r <= rin; 
+    address_write <= address_write_cmb;
+    rev_counter_reg <= rev_counter;
+    beats_reg <= beats; 
+  end if;
+end process reg;
+
+process(arbiter_grant, arbiter_config_req, r, arbiter_grant_valid, empty, rev_counter_reg, remaining_writes)
   variable v              : reg_type;
-  variable inc            : unsigned(2 downto 0);  -- increment CFG number for CCSDS123 and CCSDS121 max 6, 
+  variable inc            : unsigned; 
   variable tot_size       : std_logic_vector(15 downto 0);
   variable pointer        : std_logic_vector(4 downto 0);  -- RAM pointer for reading configuration data, 5 bits address
+  variable ahb_address_switch : std_logic; 
+  variable beats_v: unsigned(4 downto 0);      -- Modified by AS: beats_v resized from 32 to 5 bits 
 begin
+    ahbwrite_cmb <= '0';
     v := r; 
+    inc := '1';
+
 
     case r.config_state is    
-        when IDLE =>
-           if arbiter_config_req = '1' and state_reg_ahbw = idle and rst_n = '1' then         -- arbiter grants config request
-              v.config_state := ARBITER;      -- arbiter grant config request
-           else 
-              v.config_state := IDLE;           -- Stay in IDLE if no request
-           end if;
-        
-        when ARBITER =>                    
-          if arbiter_grant_valid = '1' then        -- Arbiter has granted a request
-                v.config_state := AHB_TRANSFER;  -- Grant valid, proceed to AHB transfer
-                v.ram_rd_en := '1';                -- Enable RAM read
-                v.ram_rd_addr := r.ram_start_addr;
-            else
-                v.config_state :=  IDLE;             -- No valid grant, return to IDLE
-            end if;
+      when IDLE =>
+         ahb_address_switch := '0'; -- Reset address switch
+         address_write_cmb <= (others => '0'); -- Reset write address
+          if arbiter_config_req = '1' and state_reg_ahbw = idle and rst_n = '1' then         -- 这里arbiter_config_req需替换成是否有读写请求，而不是仅仅是confgi_req
+            v.config_state := ARBITER_WR;      -- write_arbiter arbitrate   
+          elsif gr712_read_req = '1' and state_reg_ahbw = idle and rst_n = '1' then 
+            v.config_state := ARBITER_RD;
+          else 
+            v.config_state := IDLE;           -- Stay in IDLE if no request
           end if;
 
-        when AHB_TRANSFER =>
-          v.ram_rd_en := '0';  -- Disable RAM read
-          tot_size      := rtrans.size - inc;
+      when ARBITER_WR =>
+         if arbiter_grant_valid = '1' then        -- Arbiter has granted a request(write has high priority)
+           v.start_preload_ram := '1'; -- Start preloading RAM data
+            if empty = '0' then
+              v.config_state := AHB_TRANSFER_WR;
+              rev_counter <= to_unsigned(ram_read_num, 4);    
+            end if; 
+            case ram_read_num is     
+              when 4 => 
+                address_write_cmb <= ahb_base_addr_121 - x"00000004";  -- Set initial address for CCSDS121
 
-          case arbiter_grant is
-            when "00" => -- HR
+              when 10 =>
+                address_write_cmb <= ahb_base_addr_123 - x"00000004"; 
 
-              if ram_read_num - r.ahb_trans_cnt = 0 then 
-                  v.config_state := IDLE;                       -- No more data to transfer, return to IDLE
-              elsif r.hready
-              if (ctrl.o.update = '1' and state_reg_ahbw = s0) then
-                inc(conv_integer(r.trans_size(2 downto 0))) := '1';  -- 设置增量向量
-                if tot_size > 0 then
-                    v.ram_rd_en := '1';                  -- Enable RAM read
-                    v.ram_rd_addr := std_logic_vector(unsigned(r.ram_start_addr) + inc);
-                    v.ram_read_cnt := r.ram_read_cnt + 1;
-                else
-                    v.config_state := CHECK_COMPLETE;    -- All data transferred, check completion
+              when others =>
+                v.config_state := ERROR; -- Error state if ram_read_num is not 4 or 10
+            end case;
+         end if;
+
+      when AHB_TRANSFER_WR =>        -- write request 
+        if remaining_writes < to_unsigned(ram_read_num, rev_counter'length) then
+          beats_v := remaining_writes_cmb;
+        else
+          beats_v := to_unsigned(ram_read_num, rev_counter'length); -- Set beats_v to the number of registers to read
+        end if;
+        beats <= beats_v;
+
+        if (empty = '0' and ctrl.o.update = '1' and (state_next_ahbw = s0 or state_next_ahbw = s4)) then
+          v.data_valid := '1';
+          v.r_update := '1';                  -- read from FIFO
+        end if; 
+        
+        if(state_reg_ahbw = s0 and r.r_update = '1' and ctrl.o.update = '1') then
+          v.data_valid := '0';
+          case ram_read_num is 
+            when 4 => 
+              if unsigned(address_write) = unsigned(ahb_base_addr_121) + to_unsigned(16,5) then   -- (4) * 4 
+                address_write_cmb <= ahb_base_addr_121 - x"00000004";
+                v.config_state := IDLE;  
+              else 
+                address_write_cmb <= address_write + x"00000004"; -- 4 bytes per register
+              end if;
+
+            when 10 =>
+              if ahb_address_switch = '0' then
+                if unsigned(address_write) = unsigned(ahb_base_addr_123) + to_unsigned(40,6) then  -- (10) * 4
+                  address_write_cmb <= ahb_base_addr_121 - x"00000004"; -- Switch to CCSDS121 base address
+                else 
+                  address_write_cmb <= address_write + x"00000004"; 
                 end if;
-                   
+              else 
+                if unsigned(address_write) = unsigned(ahb_base_addr_121) + to_unsigned(16,5) then   -- (4) * 4 
+                  address_write_cmb <= ahb_base_addr_123 - x"00000004";
+                  v.config_state := IDLE;                  -- Switch to IDLE after writing all registers, maybe in future into state done
+                else 
+                  address_write_cmb <= address_write + x"00000004"; 
+                end if;
+              end if;
 
-           
-
-
-                  if ram_addr_cnt < read_num then 
-                    v.read_ram_en := '1';  --enable RAM read
-                    v.ram_rd_addr := 
-           
-            when "01" =>  --LR
-
-
-            when "10" =>   --H
-
-
-            when others =>  -- No valid grant
-                v.config_state := IDLE;  -- Return to IDLE state
+            when others =>
+              v.config_state := error; -- Error state if ram_read_num is not 4 or 10
           end case;
           
+          size_cmb <= "10";
+          htrans_cmb <= "10";
+          hburst_cmb <= '0';
+          data_cmb <= data_out; -- Data to be written from fifo
 
+          -- trigeger the write operation
+          ahbwrite_cmb <= '1';
+          ahb_wr_cnt_cmb <= ahb_wr_cnt_reg + 1; -- Increment write counter 
 
-            
+          -- Modified by AS: initiating burst operation if there are enough data pending --
+          if unsigned(beats_v) > 1 then
+            hburst_cmb <= '1';
+            v.config_state := AHB_Burst_WR;
+          end if;
+          -- ahb_address_switch logic , when ram_read_num = 10, need switch to CCSDS121
           
+        end if; 
 
-    end case;
-end process;
-
-process(curr_state, arbiter_grant)
-begin
-    ram_rd_en <= '0';
-    ram_rd_addr <= (others => '0');
-    case curr_state is
-        when READ_RAM =>
-            ram_rd_en <= '1';
-            case arbiter_grant is
-                when "00" => 
-                    
-                when "01" => ram_rd_addr <= some_address_01;
-                when "10" => ram_rd_addr <= some_address_10;
-                when others => ram_rd_addr <= (others => '0');
+      when AHB_Burst_WR =>
+        hburst_cmb <= '1';
+        size_cmb <= "10";
+        data_cmb <= data_out;
+        debug_cmb <= 2;
+        if ctrl.o.update = '1' then
+          htrans_cmb <= "11";
+          if r.r_update = '1' then
+            v.data_valid := '0';
+            -- Modified by AS: new counters updated --
+            remaining_writes_cmb <= remaining_writes - 1;
+            ahb_wr_cnt_cmb <= ahb_wr_cnt_reg + 1; -- Increment write counter 
+            case ram_read_num is 
+              when 4 => 
+                if unsigned(address_write) = unsigned(ahb_base_addr_121) + to_unsigned(16,5) then   -- (4) * 4 
+                  address_write_cmb <= ahb_base_addr_121 - x"00000004";
+                  v.config_state := IDLE;  
+                else 
+                  address_write_cmb <= address_write + x"00000004"; -- 4 bytes per register
+                end if;
+  
+              when 10 =>
+                if ahb_address_switch = '0' then
+                  if unsigned(address_write) = unsigned(ahb_base_addr_123) + to_unsigned(40,6) then  -- (10) * 4
+                    address_write_cmb <= ahb_base_addr_121 - x"00000004"; -- Switch to CCSDS121 base address
+                  else 
+                    address_write_cmb <= address_write + x"00000004"; 
+                  end if;
+                else 
+                  if unsigned(address_write) = unsigned(ahb_base_addr_121) + to_unsigned(16,5) then   -- (4) * 4 
+                    address_write_cmb <= ahb_base_addr_123 - x"00000004";
+                    v.config_state := IDLE;                  -- Switch to IDLE after writing all registers, maybe in future into state done
+                  else 
+                    address_write_cmb <= address_write + x"00000004"; 
+                  end if;
+                end if;
+  
+              when others =>
+                v.config_state := ERROR; -- Error state if ram_read_num is not 4 or 10
             end case;
-        when others =>
-            ram_rd_en <= '0';
-            ram_rd_addr <= (others => '0');
-    end case;
-end process;
+          end if;
 
+          if (empty = '0' and v.data_valid = '0' and (count_burst_cmb /= 0) and (state_reg_ahbw = s4)) then
+            v.w_update := '1';
+            ahbwrite_cmb <= '1';
+            appidle_cmb <= false;  --appidle = true if there will be more data in the next cycle
+            v.data_valid := '1';
+          elsif (v.data_valid = '0') then
+            appidle_cmb <= true;
+          end if;
+
+          if (state_reg_ahbw = s0) or (state_reg_ahbw = s2) then
+              if ahb_wr_cnt_reg = ram_read_num then
+                appidle_cmb <= true;               
+                v.config_state := IDLE; -- Configuration done
+              else 
+                v.config_state := AHB_TRANSFER_WR; -- Continue writing
+              end if;
+          end if;
+        end if;
+      
+    when ERROR =>
+        --error signal indicate, tbd
+        v.config_state := IDLE;
+
+    when others =>
+    v.config_state := IDLE;  -- Default case, return to IDLE state
+end case;
+
+    if ram_read_num = 10 then 
+      if ahb_wr_cnt_reg < 6 then
+        ahb_address_switch := '1';  -- execute the CCSDS123 address, then switch to CCSDS121
+      else 
+        ahb_address_switch := '0'; 
+      end if;
+    else
+      ahb_address_switch := '0'; -- No switch needed for 4 registers
+    end if;
+
+    if r.ram_read_cnt < ram_read_num then              -- buffer the CFG to FIFO
+      if r.start_preload_ram = '1' then
+        v.ram_rd_en := '1';                  -- Enable RAM read
+        v.ram_rd_addr := std_logic_vector(unsigned(r.ram_start_addr) + 1);
+        v.ram_read_cnt := r.ram_read_cnt + 1;
+      else
+        v.ram_rd_en := '0';
+      end if;
+    else
+      v.start_preload_ram := '0'; -- Stop preloading RAM data
+    end if;
+    
+    if r.ram_rd_en = '1' then
+      v.data_in := r.ram_rd_data; -- Read data from RAM
+      v.w_updadte := '1'; -- Update control signal
+    else
+      v.w_update := '0'; -- No update if not reading  
+    end if;
+
+    rin <= v;    
+
+end process;
+  
+comb_ahb: process (state_reg_ahbw, address_write_cmb, address_read_cmb, data_cmb, size_cmb, appidle_cmb, appidle, htrans_cmb, hburst_cmb, debug_cmb, ahbwrite_cmb, rst_ahb, ctrl.o.update, ctrl_reg.i, ctrl.i, ahbread_cmb, beats, count_burst, burst_size)
+  -------------------------------------
+  begin  
+    state_next_ahbw <= state_reg_ahbw;
+    count_burst_cmb <= count_burst;
+    burst_size_cmb <= burst_size;
+    ctrl.i <= ctrl_reg.i;
+
+    -- AHB state machine
+    case (state_reg_ahbw) is
+      when idle =>
+        --ctrl.o <= ctrlo_nodrive;
+        ctrl.i <= ctrli_idle;
+        if (rst_n = '0') then
+          state_next_ahbw <= s0;
+        end if;
+      when s0 =>      -- Modified by AS: if/else clauses reorganized
+        --write
+        if ahbwrite_cmb = '1' and ctrl.o.update = '1' then
+          ctrl.i.ac.ctrl.use128 <= 0;
+          ctrl.i.ac.ctrl.dbgl <= debug_cmb;
+          ctrl.i.ac.hsize <= '0' & size_cmb;
+          ctrl.i.ac.haddr <= address_write_cmb; ctrl.i.ac.hdata <= data_cmb;
+          ctrl.i.ac.hprot <= "1110"; ctrl.i.ac.hwrite <= '1'; 
+          -- Modified by AS: ctrl.i.ac.hburst assignment moved inside the if/else clause
+          if hburst_cmb = '0' then
+            ctrl.i.ac.htrans <= htrans_cmb;
+            ctrl.i.ac.hburst <= "000";
+            if (appidle_cmb = true) then
+              state_next_ahbw <= s2;
+            end if;
+          -- Modified by AS: hburst signal value depending on the hburst_cmb flag and number of beats --
+          else          --if hburst_cmb = '1' then
+            ctrl.i.ac.htrans <= "10";
+            count_burst_cmb <= to_unsigned(1, count_burst_cmb'length);
+            state_next_ahbw <= s4;
+            burst_size_cmb <= beats_reg;        -- Modified by AS: assignment from beats_reg instead of beats
+            case to_integer(beats) is
+              when 4 =>    ctrl.i.ac.hburst <= "011";
+              when 8 =>    ctrl.i.ac.hburst <= "101";
+              when 16 =>    ctrl.i.ac.hburst <= "111";
+              when others =>  ctrl.i.ac.hburst <= "001";
+            end case;
+          end if;
+          ------------------------------------------------
+        --read
+        elsif ahbread_cmb = '1' and ctrl.o.update = '1' then
+          ctrl.i.ac.ctrl.use128 <= 0;
+          ctrl.i.ac.ctrl.dbgl <= debug_cmb;
+          ctrl.i.ac.hsize <= '0' & size_cmb;
+          ctrl.i.ac.haddr <= address_read_cmb; 
+          ctrl.i.ac.hdata <= data_cmb;
+          ctrl.i.ac.hwrite <= '0';
+          ctrl.i.ac.hprot <= "1110";
+          -- Modified by AS: ctrl.i.ac.hburst assignment moved inside the if/else clause
+          if hburst_cmb = '0' then
+            ctrl.i.ac.htrans <= htrans_cmb;
+            ctrl.i.ac.hburst <= "000";
+            if (appidle_cmb = true) then
+              state_next_ahbw <= s2;
+            end if;
+          -- Modified by AS: hburst signal value depending on the hburst_cmb flag and number of beats --
+          else          --if hburst_cmb = '1' then
+            ctrl.i.ac.htrans <= "10";
+            count_burst_cmb <= to_unsigned(1, count_burst_cmb'length);
+            state_next_ahbw <= s4;
+            burst_size_cmb <= beats_reg;        -- Modified by AS: assignment from beats_reg instead of beats
+            case to_integer(beats) is
+              when 4 =>    ctrl.i.ac.hburst <= "011";
+              when 8 =>    ctrl.i.ac.hburst <= "101";
+              when 16 =>    ctrl.i.ac.hburst <= "111";
+              when others =>  ctrl.i.ac.hburst <= "001";
+            end case;
+          end if;
+          ------------------------------------------------
+        elsif ahbwrite_cmb = '1' and ctrl.o.update = '0' then
+          state_next_ahbw <= s1;
+        elsif ahbread_cmb = '1' and ctrl.o.update = '0' then
+          state_next_ahbw <= s3;
+        end if;
+      when s1 =>               -- Modified by AS: if/else clauses reorganized
+        -- wait for ctrl.o.update = '1' to write 
+        if (ctrl.o.update = '1') then
+          ctrl.i.ac.ctrl.use128 <= 0;
+          ctrl.i.ac.ctrl.dbgl <= debug_cmb;
+          ctrl.i.ac.hsize <= '0' & size_cmb;
+          ctrl.i.ac.haddr <= address_write_cmb; ctrl.i.ac.hdata <= data_cmb;
+          ctrl.i.ac.hprot <= "1110"; ctrl.i.ac.hwrite <= '1'; 
+          -- Modified by AS: ctrl.i.ac.hburst assignment moved inside the if/else clause
+          if hburst_cmb = '0' then
+            ctrl.i.ac.htrans <= htrans_cmb;
+            ctrl.i.ac.hburst <= "000";
+            if (appidle_cmb = true) then
+              state_next_ahbw <= s2;
+            else
+              state_next_ahbw <= s0;
+            end if;
+          -- Modified by AS: hburst signal value depending on the hburst_cmb flag and number of beats --
+          else          -- if hburst_cmb = '1' then
+            ctrl.i.ac.htrans <= "10";
+            count_burst_cmb <= to_unsigned(1, count_burst_cmb'length);
+            if (appidle_cmb = true) then
+              state_next_ahbw <= s2;
+            else
+              state_next_ahbw <= s4;
+            end if;
+            burst_size_cmb <= beats_reg;        -- Modified by AS: assignment from beats_reg instead of beats
+            case to_integer(beats) is
+              when 4 =>    ctrl.i.ac.hburst <= "011";
+              when 8 =>    ctrl.i.ac.hburst <= "101";
+              when 16 =>    ctrl.i.ac.hburst <= "111";
+              when others =>  ctrl.i.ac.hburst <= "001";
+            end case;
+          end if;
+          ------------------------------------------------
+        end if;
+      when s2 => 
+        -- because of appidle, wait for ctrl.o.update = '1'
+        if (ctrl.o.update = '1') then
+          state_next_ahbw <= s0;
+          ctrl.i <= ctrli_idle;          
+        end if;
+      when s3 =>
+        -- wait for ctrl.o.update = '1' to read 
+        if (ctrl.o.update = '1') then
+          ctrl.i.ac.ctrl.use128 <= 0;
+          ctrl.i.ac.ctrl.dbgl <= debug_cmb;
+          ctrl.i.ac.hsize <= '0' & size_cmb;
+          ctrl.i.ac.haddr <= address_read_cmb; 
+          ctrl.i.ac.hdata <= data_cmb;
+          ctrl.i.ac.hwrite <= '0'; 
+          ctrl.i.ac.hprot <= "1110";
+          -- Modified by AS: ctrl.i.ac.hburst assignment moved inside the if/else clause
+          if hburst_cmb = '0' then
+            ctrl.i.ac.hburst <= "000";
+            ctrl.i.ac.htrans <= htrans_cmb; 
+            if (appidle_cmb = true) then
+              state_next_ahbw <= s2;
+            else
+              state_next_ahbw <= s0;
+            end if;
+          -- Modified by AS: hburst signal value depending on the hburst_cmb flag and number of beats --
+          else          -- if hburst_cmb = '1' then
+            ctrl.i.ac.htrans <= "10";
+            count_burst_cmb <= to_unsigned(1, count_burst_cmb'length);
+            if (appidle_cmb = true) then
+              state_next_ahbw <= s2;
+            else
+              state_next_ahbw <= s4;
+            end if;
+            burst_size_cmb <= beats_reg;        -- Modified by AS: assignment from beats_reg instead of beats
+            case to_integer(beats) is
+              when 4 =>    ctrl.i.ac.hburst <= "011";
+              when 8 =>    ctrl.i.ac.hburst <= "101";
+              when 16 =>    ctrl.i.ac.hburst <= "111";
+              when others =>  ctrl.i.ac.hburst <= "001";
+            end case;
+          end if;
+          ------------------------------------------------
+        end if;
+      -- Modified by AS: Burst transanction enabled --
+      when s4 => 
+        if (ctrl.o.update = '1') then
+          -- ctrl.i <= ctrl_reg.i;    -- Modified by AS: cassignment not necessary
+          if (appidle = false) then
+            if (count_burst = burst_size - 1) then
+              count_burst_cmb <= to_unsigned(0, count_burst_cmb'length);
+              state_next_ahbw <= s2;
+            else
+              count_burst_cmb <= count_burst + 1;
+            end if;
+            ctrl.i.ac.htrans <= "11";  -- Sequential transfer
+            if (ctrl_reg.i.ac.hwrite = '1') then
+              ctrl.i.ac.haddr <= address_write_cmb;
+            else
+              ctrl.i.ac.haddr <= address_read_cmb;
+            end if;
+          else
+            ctrl.i.ac.htrans <= "01";  -- Busy
+            ctrl.i.ac.haddr <= ctrl_reg.i.ac.haddr; 
+          end if;
+          ctrl.i.ac.hdata <= data_cmb;               --data_burst (to_integer(count_burst));
+        end if;
+      ------------------------------------------------
+      when others => 
+        state_next_ahbw <= idle;
+    end case;
+  end process;
+  
+  buffer_CFG: process(clk, rst_n)
+              begin
+                if rst_n = '0' then
+                  w_update <= '0';
+                elsif rising_edge(clk) then                
+                  if r.ram_rd_en = '1' then
+                    w_update <= '1';  -- Enable write update signal when RAM read is enabled
+                    data_in  <= ram_rd_data;  -- Read data from RAM
+                  else
+                    w_update <= '0';  -- Disable write update signal when RAM read is disabled
+                  end if;
+                end if;
+              end process;
 
 
 read_prc: process(clk, rst_n)
@@ -394,202 +679,6 @@ begin
 end process read_prc;
 
 
-
-
- -----------------------------------------------------------------------------  
-  --! FSM to generate signals for AHB
-  -----------------------------------------------------------------------------
-  -- Modified by AS: signal appidle included in the sensitivity list. Data_burst removed from the sensitivity list --
-  comb_ahb: process (state_reg_ahbw, address_write_cmb, address_read_cmb, data_cmb, size_cmb, appidle_cmb, appidle, htrans_cmb, hburst_cmb, debug_cmb, ahbwrite_cmb, rst_ahb, ctrl.o.update, ctrl_reg.i, ctrl.i, ahbread_cmb, beats, count_burst, burst_size)
-    -------------------------------------
-    begin  
-      state_next_ahbw <= state_reg_ahbw;
-      count_burst_cmb <= count_burst;
-      burst_size_cmb <= burst_size;
-      ctrl.i <= ctrl_reg.i;
-      --ctrl.o <= ctrl_reg.o;
-      case (state_reg_ahbw) is
-        when idle =>
-          --ctrl.o <= ctrlo_nodrive;
-          ctrl.i <= ctrli_idle;
-          if (rst_ahb = '1') then
-            state_next_ahbw <= s0;
-          end if;
-        when s0 =>      -- Modified by AS: if/else clauses reorganized
-          --write
-          if ahbwrite_cmb = '1' and ctrl.o.update = '1' then
-            ctrl.i.ac.ctrl.use128 <= 0;
-            ctrl.i.ac.ctrl.dbgl <= debug_cmb;
-            ctrl.i.ac.hsize <= '0' & size_cmb;
-            ctrl.i.ac.haddr <= address_write_cmb; ctrl.i.ac.hdata <= data_cmb;
-            ctrl.i.ac.hprot <= "1110"; ctrl.i.ac.hwrite <= '1'; 
-            -- Modified by AS: ctrl.i.ac.hburst assignment moved inside the if/else clause
-            if hburst_cmb = '0' then
-              ctrl.i.ac.htrans <= htrans_cmb;
-              ctrl.i.ac.hburst <= "000";
-              if (appidle_cmb = true) then
-                state_next_ahbw <= s2;
-              end if;
-            -- Modified by AS: hburst signal value depending on the hburst_cmb flag and number of beats --
-            else          --if hburst_cmb = '1' then
-              ctrl.i.ac.htrans <= "10";
-              count_burst_cmb <= to_unsigned(1, count_burst_cmb'length);
-              state_next_ahbw <= s4;
-              burst_size_cmb <= beats_reg;        -- Modified by AS: assignment from beats_reg instead of beats
-              case to_integer(beats) is
-                when 4 =>    ctrl.i.ac.hburst <= "011";
-                when 8 =>    ctrl.i.ac.hburst <= "101";
-                when 16 =>    ctrl.i.ac.hburst <= "111";
-                when others =>  ctrl.i.ac.hburst <= "001";
-              end case;
-            end if;
-            ------------------------------------------------
-          --read
-          elsif ahbread_cmb = '1' and ctrl.o.update = '1' then
-            ctrl.i.ac.ctrl.use128 <= 0;
-            ctrl.i.ac.ctrl.dbgl <= debug_cmb;
-            ctrl.i.ac.hsize <= '0' & size_cmb;
-            ctrl.i.ac.haddr <= address_read_cmb; 
-            ctrl.i.ac.hdata <= data_cmb;
-            ctrl.i.ac.hwrite <= '0';
-            ctrl.i.ac.hprot <= "1110";
-            -- Modified by AS: ctrl.i.ac.hburst assignment moved inside the if/else clause
-            if hburst_cmb = '0' then
-              ctrl.i.ac.htrans <= htrans_cmb;
-              ctrl.i.ac.hburst <= "000";
-              if (appidle_cmb = true) then
-                state_next_ahbw <= s2;
-              end if;
-            -- Modified by AS: hburst signal value depending on the hburst_cmb flag and number of beats --
-            else          --if hburst_cmb = '1' then
-              ctrl.i.ac.htrans <= "10";
-              count_burst_cmb <= to_unsigned(1, count_burst_cmb'length);
-              state_next_ahbw <= s4;
-              burst_size_cmb <= beats_reg;        -- Modified by AS: assignment from beats_reg instead of beats
-              case to_integer(beats) is
-                when 4 =>    ctrl.i.ac.hburst <= "011";
-                when 8 =>    ctrl.i.ac.hburst <= "101";
-                when 16 =>    ctrl.i.ac.hburst <= "111";
-                when others =>  ctrl.i.ac.hburst <= "001";
-              end case;
-            end if;
-            ------------------------------------------------
-          elsif ahbwrite_cmb = '1' and ctrl.o.update = '0' then
-            state_next_ahbw <= s1;
-          elsif ahbread_cmb = '1' and ctrl.o.update = '0' then
-            state_next_ahbw <= s3;
-          end if;
-        when s1 =>               -- Modified by AS: if/else clauses reorganized
-          -- wait for ctrl.o.update = '1' to write 
-          if (ctrl.o.update = '1') then
-            ctrl.i.ac.ctrl.use128 <= 0;
-            ctrl.i.ac.ctrl.dbgl <= debug_cmb;
-            ctrl.i.ac.hsize <= '0' & size_cmb;
-            ctrl.i.ac.haddr <= address_write_cmb; ctrl.i.ac.hdata <= data_cmb;
-            ctrl.i.ac.hprot <= "1110"; ctrl.i.ac.hwrite <= '1'; 
-            -- Modified by AS: ctrl.i.ac.hburst assignment moved inside the if/else clause
-            if hburst_cmb = '0' then
-              ctrl.i.ac.htrans <= htrans_cmb;
-              ctrl.i.ac.hburst <= "000";
-              if (appidle_cmb = true) then
-                state_next_ahbw <= s2;
-              else
-                state_next_ahbw <= s0;
-              end if;
-            -- Modified by AS: hburst signal value depending on the hburst_cmb flag and number of beats --
-            else          -- if hburst_cmb = '1' then
-              ctrl.i.ac.htrans <= "10";
-              count_burst_cmb <= to_unsigned(1, count_burst_cmb'length);
-              if (appidle_cmb = true) then
-                state_next_ahbw <= s2;
-              else
-                state_next_ahbw <= s4;
-              end if;
-              burst_size_cmb <= beats_reg;        -- Modified by AS: assignment from beats_reg instead of beats
-              case to_integer(beats) is
-                when 4 =>    ctrl.i.ac.hburst <= "011";
-                when 8 =>    ctrl.i.ac.hburst <= "101";
-                when 16 =>    ctrl.i.ac.hburst <= "111";
-                when others =>  ctrl.i.ac.hburst <= "001";
-              end case;
-            end if;
-            ------------------------------------------------
-          end if;
-        when s2 => 
-          -- because of appidle, wait for ctrl.o.update = '1'
-          if (ctrl.o.update = '1') then
-            state_next_ahbw <= s0;
-            ctrl.i <= ctrli_idle;          
-          end if;
-        when s3 =>
-          -- wait for ctrl.o.update = '1' to read 
-          if (ctrl.o.update = '1') then
-            ctrl.i.ac.ctrl.use128 <= 0;
-            ctrl.i.ac.ctrl.dbgl <= debug_cmb;
-            ctrl.i.ac.hsize <= '0' & size_cmb;
-            ctrl.i.ac.haddr <= address_read_cmb; 
-            ctrl.i.ac.hdata <= data_cmb;
-            ctrl.i.ac.hwrite <= '0'; 
-            ctrl.i.ac.hprot <= "1110";
-            -- Modified by AS: ctrl.i.ac.hburst assignment moved inside the if/else clause
-            if hburst_cmb = '0' then
-              ctrl.i.ac.hburst <= "000";
-              ctrl.i.ac.htrans <= htrans_cmb; 
-              if (appidle_cmb = true) then
-                state_next_ahbw <= s2;
-              else
-                state_next_ahbw <= s0;
-              end if;
-            -- Modified by AS: hburst signal value depending on the hburst_cmb flag and number of beats --
-            else          -- if hburst_cmb = '1' then
-              ctrl.i.ac.htrans <= "10";
-              count_burst_cmb <= to_unsigned(1, count_burst_cmb'length);
-              if (appidle_cmb = true) then
-                state_next_ahbw <= s2;
-              else
-                state_next_ahbw <= s4;
-              end if;
-              burst_size_cmb <= beats_reg;        -- Modified by AS: assignment from beats_reg instead of beats
-              case to_integer(beats) is
-                when 4 =>    ctrl.i.ac.hburst <= "011";
-                when 8 =>    ctrl.i.ac.hburst <= "101";
-                when 16 =>    ctrl.i.ac.hburst <= "111";
-                when others =>  ctrl.i.ac.hburst <= "001";
-              end case;
-            end if;
-            ------------------------------------------------
-          end if;
-        -- Modified by AS: Burst transanction enabled --
-        when s4 => 
-          if (ctrl.o.update = '1') then
-            -- ctrl.i <= ctrl_reg.i;    -- Modified by AS: cassignment not necessary
-            if (appidle = false) then
-              if (count_burst = burst_size - 1) then
-                count_burst_cmb <= to_unsigned(0, count_burst_cmb'length);
-                state_next_ahbw <= s2;
-              else
-                count_burst_cmb <= count_burst + 1;
-              end if;
-              ctrl.i.ac.htrans <= "11";  -- Sequential transfer
-              if (ctrl_reg.i.ac.hwrite = '1') then
-                ctrl.i.ac.haddr <= address_write_cmb;
-              else
-                ctrl.i.ac.haddr <= address_read_cmb;
-              end if;
-            else
-              ctrl.i.ac.htrans <= "01";  -- Busy
-              ctrl.i.ac.haddr <= ctrl_reg.i.ac.haddr; 
-            end if;
-            ctrl.i.ac.hdata <= data_cmb;               --data_burst (to_integer(count_burst));
-          end if;
-        ------------------------------------------------
-        when others => 
-          state_next_ahbw <= idle;
-      end case;
-    end process;
-
-
-
 -- Instantiate config_arbiter
 config_arbiter_inst : entity work.config_arbiter
   generic map (
@@ -605,6 +694,8 @@ config_arbiter_inst : entity work.config_arbiter
     config_req         => arbiter_config_req,
     start_add          => ram_start_addr,
     read_num           => ram_read_num,
+    ahb_base_addr_123  => ahb_base_addr_123,
+    ahb_base_addr_121  => ahb_base_addr_121,
     grant              => arbiter_grant,
     grant_valid        => arbiter_grant_valid
   );
@@ -632,4 +723,28 @@ config_ram_inst : entity work.config_ram_8to32
     rd_valid    => ram_rd_valid  -- Read valid signal
   );
   
+  fifo_no_edac: entity shyloc_utils.fifop2_base(arch)
+  generic map (
+      RESET_TYPE  => RESET_TYPE,
+      W  => W, 
+      NE   => NE, 
+      W_ADDR  => W_ADDR, 
+      TECH => TECH)
+  port map (
+    clk  => clk, 
+    rst_n => rst_n, 
+    clr  => clr,
+    w_update  => r.w_update, 
+    r_update  => r.r_update, 
+    hfull   =>  hfull, 
+    empty   => empty, 
+    full    => full, 
+    afull   => afull, 
+    aempty    => aempty, 
+    data_in   => data_in,
+    data_out  => data_out
+  );
+
+
+
 end architecture rtl;
