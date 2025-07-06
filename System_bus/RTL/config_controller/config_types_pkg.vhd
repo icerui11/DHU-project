@@ -16,7 +16,7 @@ package config_types_pkg is
         data    : std_logic_vector(31 downto 0);    -- Register data / 寄存器数据
         valid   : std_logic;                        -- Valid flag / 有效标志
     end record;
-    
+ /*   
     -- Compressor status type 
     type compressor_status is record
         AwaitingConfig : std_logic;  
@@ -33,7 +33,7 @@ package config_types_pkg is
         Finished       => '0',
         Error          => '0'
     );
-
+*/
     -- Configuration array for each compressor / 每个压缩器的配置数组
     constant MAX_CONFIG_REGS : integer := 16;
     type config_array_type is array (0 to MAX_CONFIG_REGS-1) of config_reg_type;

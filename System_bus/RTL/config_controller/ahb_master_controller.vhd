@@ -20,7 +20,7 @@ use shyloc_utils.amba.all;
 
 --library define in config_types_pkg
 library config_controller;
-use config_controller.config_types_pkg.all;
+use config_controller.config_pkg.all;
 
 entity ahb_master_controller is
   generic (
@@ -82,7 +82,7 @@ architecture rtl of ahb_master_controller is
   signal ctrl, ctrl_reg  : ahbtb_ctrl_type;
 
   ---------------------
-  signal remaining_writes, remaining_writes_cmb: unsigned(4 downto 0);    -- Total number of samples pending to read/write (reverse sample counters) 
+  signal remaining_writes, remaining_writes_cmb: unsigned(3 downto 0);    -- Total number of samples pending to read/write (reverse sample counters) 
   -- Write address
   signal address_write, address_write_cmb   : std_logic_vector(31 downto 0);
   -- Read address
@@ -108,7 +108,8 @@ architecture rtl of ahb_master_controller is
   -- Modified by AS: beats, count_burst and burst_size widths reduced from 16 to 4 bits
   signal count_burst, count_burst_cmb, burst_size, burst_size_cmb, beats, beats_reg: unsigned (3 downto 0);
   ------------------
-  
+  signal ahb_wr_cnt_cmb, ahb_wr_cnt_reg : unsigned(3 downto 0); -- AHB write counter, counts how many registers have been written
+
   -- Read flag for FIFO - allow reading from FIFO
   signal rd_in_reg, rd_in_out, allow_read, allow_read_reg: std_logic;
      
@@ -117,11 +118,11 @@ architecture rtl of ahb_master_controller is
   -- Adapted config valid to AHB clk. 
   signal config_valid_adapted_ahb: std_logic;
   -- AHB status information
-  signal ahb_status_s, ahb_status_ahb_cmb, ahb_status_ahb_reg: ahbm_123_status;
+ -- signal ahb_status_s, ahb_status_ahb_cmb, ahb_status_ahb_reg: ahbm_123_status;
         
   signal ram_start_addr : std_logic_vector(g_output_addr_width-1 downto 0); -- RAM start address for configuration data
   signal ram_read_num :  integer range 0 to 10;       -- Number of registers to read from RAM
-  signal compressor_status : compressor_status_array; -- Compressor status for all compressors
+--  signal compressor_status : compressor_status_array; -- Compressor status for all compressors
 
   signal config_done, config_done_cmb : std_logic;  -- Configuration done signal, to execute the next compressor configuration  
 
@@ -133,7 +134,7 @@ architecture rtl of ahb_master_controller is
   signal ahb_base_addr_123, ahb_base_addr_121 : std_logic_vector(31 downto 0); -- AHB base addresses for CCSDS123 and CCSDS121
 
   -- Signals for config_ram_8to32
-  signal ram_wr_en    : std_logic;                     -- Write enable signal
+--  signal ram_wr_en    : std_logic;                     -- Write enable signal
   signal ram_wr_addr  : std_logic_vector(6 downto 0);  -- Write address (7 bits)
   signal ram_wr_data  : std_logic_vector(7 downto 0);  -- Write data (8 bits)
 
@@ -149,7 +150,7 @@ begin
   -----------------------------------------------------------------------------
   ctrli <= ctrl.i;
   ctrl.o <= ctrlo;
-  rd_in <= rd_in_out;
+ -- rd_in <= rd_in_out;
 /*
 preload_fifo : process(clk, rst_n)
 begin
@@ -169,7 +170,7 @@ end process preload_fifo;
 reg: process(clk, rst_n)
 begin
   if rst_n = '0' then
-    r <= RES
+    r <= RES;
     address_write    <= (others => '0');
  --   rev_counter_reg <= (others => '0');
     beats_reg        <= (others => '0');
@@ -187,15 +188,13 @@ end process reg;
 
 process(arbiter_grant, arbiter_config_req, r, arbiter_grant_valid, rev_counter_reg, remaining_writes, state_next_ahbw, state_reg_ahbw, ctrl.o.update, address_write)
   variable v              : reg_type;
-  variable inc            : unsigned; 
   variable tot_size       : std_logic_vector(15 downto 0);
   variable pointer        : std_logic_vector(4 downto 0);  -- RAM pointer for reading configuration data, 5 bits address
   variable ahb_address_switch : std_logic; 
-  variable beats_v: unsigned(4 downto 0);      -- Modified by AS: beats_v resized from 32 to 5 bits 
+  variable beats_v: unsigned(3 downto 0);      -- Modified by AS: beats_v resized from 16 to 4 bits 
 begin
     ahbwrite_cmb <= '0';
     v := r; 
-    inc := '1';
     beats <= beats_reg;
     
     case r.config_state is    
@@ -204,8 +203,8 @@ begin
          address_write_cmb <= (others => '0'); -- Reset write address
           if arbiter_config_req = '1' and state_reg_ahbw = idle and rst_n = '1' then         -- 这里arbiter_config_req需替换成是否有读写请求，而不是仅仅是confgi_req
             v.config_state := ARBITER_WR;      -- write_arbiter arbitrate   
-          elsif gr712_read_req = '1' and state_reg_ahbw = idle and rst_n = '1' then 
-            v.config_state := ARBITER_RD;
+ --         elsif gr712_read_req = '1' and state_reg_ahbw = idle and rst_n = '1' then 
+ --           v.config_state := ARBITER_RD;
           else 
             v.config_state := IDLE;           -- Stay in IDLE if no request
           end if;
@@ -220,10 +219,10 @@ begin
             end if; 
             case ram_read_num is     
               when 4 => 
-                address_write_cmb <= ahb_base_addr_121 - x"00000004";  -- Set initial address for CCSDS121
+                address_write_cmb <= std_logic_vector(unsigned(ahb_base_addr_121) - x"00000004");  -- Set initial address for CCSDS121
 
               when 10 =>
-                address_write_cmb <= ahb_base_addr_123 - x"00000004"; 
+                address_write_cmb <= std_logic_vector(unsigned(ahb_base_addr_123) - x"00000004"); 
 
               when others =>
                 v.config_state := ERROR; -- Error state if ram_read_num is not 4 or 10
@@ -248,27 +247,27 @@ begin
           case ram_read_num is 
             when 4 => 
               if unsigned(address_write) = unsigned(ahb_base_addr_121) + to_unsigned(16,5) then   -- (4) * 4 
-                address_write_cmb <= ahb_base_addr_121 - x"00000004";
+                address_write_cmb <= std_logic_vector(unsigned(ahb_base_addr_121) - x"00000004");
                 config_done_cmb <= '1'; 
                 v.config_state := IDLE;  
               else 
-                address_write_cmb <= address_write + x"00000004"; -- 4 bytes per register
+                address_write_cmb <= std_logic_vector(unsigned(address_write) + x"00000004"); -- 4 bytes per register
               end if;
 
             when 10 =>
               if ahb_address_switch = '0' then
                 if unsigned(address_write) = unsigned(ahb_base_addr_123) + to_unsigned(40,6) then  -- (10) * 4
-                  address_write_cmb <= ahb_base_addr_121 - x"00000004"; -- Switch to CCSDS121 base address
+                  address_write_cmb <= std_logic_vector(unsigned(ahb_base_addr_123) - x"00000004"); -- Switch to CCSDS121 base address
                 else 
-                  address_write_cmb <= address_write + x"00000004"; 
+                  address_write_cmb <= std_logic_vector(unsigned(address_write) + x"00000004");
                 end if;
               else 
                 if unsigned(address_write) = unsigned(ahb_base_addr_121) + to_unsigned(16,5) then   -- (4) * 4 
-                  address_write_cmb <= ahb_base_addr_123 - x"00000004";
+                  address_write_cmb <= std_logic_vector(unsigned(ahb_base_addr_121) - x"00000004");
                   v.config_state := IDLE;                  -- Switch to IDLE after writing all registers, maybe in future into state done
                   config_done_cmb <= '1'; 
                 else 
-                  address_write_cmb <= address_write + x"00000004"; 
+                  address_write_cmb <= std_logic_vector(unsigned(address_write) + x"00000004");
                 end if;
               end if;
 
@@ -279,7 +278,7 @@ begin
           size_cmb <= "10";
           htrans_cmb <= "10";
           hburst_cmb <= '0';
-          data_cmb <= data_out; -- Data to be written from fifo
+          data_cmb <= r.data_out; -- Data to be written from fifo
 
           -- trigeger the write operation
           ahbwrite_cmb <= '1';
@@ -298,7 +297,7 @@ begin
       when AHB_Burst_WR =>
         hburst_cmb <= '1';
         size_cmb <= "10";
-        data_cmb <= data_out;
+        data_cmb <= r.data_out;
         debug_cmb <= 2;
         if ctrl.o.update = '1' then
           htrans_cmb <= "11";
@@ -310,27 +309,27 @@ begin
             case ram_read_num is 
               when 4 => 
                 if unsigned(address_write) = unsigned(ahb_base_addr_121) + to_unsigned(16,5) then   -- (4) * 4 
-                  address_write_cmb <= ahb_base_addr_121 - x"00000004";
+                  address_write_cmb <= std_logic_vector(unsigned(ahb_base_addr_121) - x"00000004");
                   v.config_state := IDLE;  
                   config_done_cmb <= '1'; 
                 else 
-                  address_write_cmb <= address_write + x"00000004"; -- 4 bytes per register
+                  address_write_cmb <= std_logic_vector(unsigned(address_write) + x"00000004");
                 end if;
   
               when 10 =>
                 if ahb_address_switch = '0' then
                   if unsigned(address_write) = unsigned(ahb_base_addr_123) + to_unsigned(40,6) then  -- (10) * 4
-                    address_write_cmb <= ahb_base_addr_121 - x"00000004"; -- Switch to CCSDS121 base address
+                    address_write_cmb <= std_logic_vector(unsigned(ahb_base_addr_123) - x"00000004"); -- Switch to CCSDS121 base address
                   else 
-                    address_write_cmb <= address_write + x"00000004"; 
+                    address_write_cmb <= std_logic_vector(unsigned(address_write) + x"00000004");
                   end if;
                 else 
                   if unsigned(address_write) = unsigned(ahb_base_addr_121) + to_unsigned(16,5) then   -- (4) * 4 
-                    address_write_cmb <= ahb_base_addr_123 - x"00000004";
+                    address_write_cmb <= std_logic_vector(unsigned(ahb_base_addr_121) - x"00000004");
                     v.config_state := IDLE;                  -- Switch to IDLE after writing all registers, maybe in future into state done
                     config_done_cmb <= '1'; 
                   else 
-                    address_write_cmb <= address_write + x"00000004"; 
+                    address_write_cmb <= std_logic_vector(unsigned(address_write) + x"00000004");
                   end if;
                 end if;
   
@@ -379,7 +378,7 @@ end case;
     if r.ram_read_cnt < ram_read_num then              -- buffer the CFG to FIFO
       if r.start_preload_ram = '1' then
         v.ram_rd_en := '1';                  -- Enable RAM read
-        v.ram_rd_addr := std_logic_vector(unsigned(r.ram_start_addr) + unsigned(r.ram_read_cnt));
+        v.ram_rd_addr := std_logic_vector(unsigned(ram_start_addr) + r.ram_read_cnt);
         v.ram_read_cnt := r.ram_read_cnt + 1;
       else
         v.ram_rd_en := '0';
@@ -392,7 +391,7 @@ end case;
     
     if r.ram_rd_en = '1' then
       v.data_in := r.ram_rd_data; -- Read data from RAM
-      v.w_updadte := '1'; -- Update control signal
+      v.w_update := '1'; -- Update control signal
     else
       v.w_update := '0'; -- No update if not reading  
     end if;
@@ -402,7 +401,7 @@ end case;
 end process;
   
 comb_ahb: process (state_reg_ahbw, address_write_cmb, address_read_cmb, data_cmb, size_cmb, appidle_cmb, appidle, htrans_cmb, hburst_cmb, debug_cmb, 
-  ahbwrite_cmb, rst_ahb, ctrl.o.update, ctrl_reg.i, ctrl.i, ahbread_cmb, beats_reg, count_burst, burst_size)
+  ahbwrite_cmb, ctrl.o.update, ctrl_reg.i, ctrl.i, ahbread_cmb, beats_reg, count_burst, burst_size)
   -------------------------------------
   begin  
     state_next_ahbw <= state_reg_ahbw;
@@ -594,9 +593,9 @@ comb_ahb: process (state_reg_ahbw, address_write_cmb, address_read_cmb, data_cmb
   
 
 -- Instantiate config_arbiter
-config_arbiter_inst : entity work.config_arbiter
+config_arbiter_inst : entity config_controller.config_arbiter
   generic map (
-    g_ram_addr_width => g_output_addr_width,  -- RAM address width
+    g_ram_addr_width => g_output_addr_width  -- RAM address width
   )
   port map (
     clk                => clk,
@@ -616,7 +615,7 @@ config_arbiter_inst : entity work.config_arbiter
 
 
 -- Instantiate config_ram_8to32
-config_ram_inst : entity work.config_ram_8to32
+config_ram_inst : entity config_controller.config_ram_8to32
   generic map (
     INPUT_DATA_WIDTH  => g_input_data_width,      -- Input data width
     INPUT_ADDR_WIDTH  => g_input_addr_width,      -- Input address width

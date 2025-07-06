@@ -42,9 +42,22 @@ package config_pkg is
     constant CCSDS123_CFG_NUM : integer := 6; -- 6 registers for CCSDS123
     constant CCSDS121_CFG_NUM : integer := 4; -- 4 registers for CCSDS121
 
-    type compressor_status_array is record 
-        AwaitingConfig           : std_logic; -- Awaiting configuration signal
-    end record; 
+    -- Compressor status type 
+    type compressor_status is record
+        AwaitingConfig : std_logic;  
+        Ready          : std_logic;
+        Finished       : std_logic;
+        Error          : std_logic;
+    end record;
+
+    type compressor_status_array is array (0 to c_num_compressors-1) of compressor_status;
+    
+    constant compressor_status_init : compressor_status := (                -- compressor after reset state
+        AwaitingConfig => '1',
+        Ready          => '0',
+        Finished       => '0',
+        Error          => '0'
+    );
 
     type config_state_type is (IDLE, ARBITER_WR, AHB_TRANSFER_WR, AHB_Burst_WR, ERROR); 
     type reg_type is record
@@ -88,6 +101,91 @@ package config_pkg is
       data_in               => (others => '0'),
       data_out              => (others => '0')
     );
+
+      ---------------------------------------------------------------------------
+  --! AHB master control record.
+  ---------------------------------------------------------------------------
+  type ahbtbm_ctrl_type is record
+    delay   : std_logic_vector(7 downto 0);
+    dbgl    : integer;
+    reset   : std_logic;
+    use128  : integer;
+  end record;
+  
+  ---------------------------------------------------------------------------
+  --! AHB master access type record.
+  ---------------------------------------------------------------------------
+  type ahbtbm_access_type is record
+    haddr     : std_logic_vector(31 downto 0);
+    hdata     : std_logic_vector(31 downto 0);
+    hdata128  : std_logic_vector(127 downto 0);
+    htrans    : std_logic_vector(1 downto 0);
+    hburst    : std_logic_vector(2 downto 0);
+    hsize     : std_logic_vector(2 downto 0);
+    hprot     : std_logic_vector(3 downto 0);
+    hwrite    : std_logic;
+    ctrl      : ahbtbm_ctrl_type;
+  end record;
+  
+  ---------------------------------------------------------------------------
+  --! AHB master status type record
+  ---------------------------------------------------------------------------
+  type ahbtbm_status_type is record
+    err     : std_logic;
+    ecount  : std_logic_vector(15 downto 0);
+    eaddr   : std_logic_vector(31 downto 0);
+    edatac  : std_logic_vector(31 downto 0);
+    edatar  : std_logic_vector(31 downto 0);
+    hresp   : std_logic_vector(1 downto 0);
+  end record;
+  
+  ---------------------------------------------------------------------------
+  --! AHB master access array type
+  ---------------------------------------------------------------------------
+  type ahbtbm_access_array_type is array (0 to 1) of ahbtbm_access_type;
+
+  ---------------------------------------------------------------------------
+  --! AHB master ctrl type
+  ---------------------------------------------------------------------------
+  type ahbtbm_ctrl_in_type is record
+    ac  : ahbtbm_access_type;
+  end record;
+  
+  ---------------------------------------------------------------------------
+  --! AHB master ctrl out type
+  ---------------------------------------------------------------------------
+  type ahbtbm_ctrl_out_type is record
+    rst       : std_logic;
+    clk       : std_logic;
+    update    : std_logic;
+    dvalid    : std_logic;
+    hrdata    : std_logic_vector(31 downto 0);
+    hrdata128 : std_logic_vector(127 downto 0);
+    status    : ahbtbm_status_type;
+  end record;
+
+  --------------------------------------------------------------------------
+  --! AHB ctrl type
+  ---------------------------------------------------------------------------
+  type ahbtb_ctrl_type is record
+    i : ahbtbm_ctrl_in_type;
+    o : ahbtbm_ctrl_out_type;
+  end record;
+  --------------------------------------------------------------------------
+  --! AHB idle constant
+  ---------------------------------------------------------------------------
+  constant ac_idle : ahbtbm_access_type :=
+    (haddr => x"00000000", hdata => x"00000000", 
+     hdata128 => x"00000000000000000000000000000000", 
+     htrans => "00", hburst =>"000", hsize => "000", hprot => "0000", hwrite => '0', 
+     ctrl => (delay => x"00", dbgl => 100, reset =>'0', use128 => 0));
+
+  --------------------------------------------------------------------------
+  --! AHB cltr idle constant
+  ---------------------------------------------------------------------------    
+  constant ctrli_idle : ahbtbm_ctrl_in_type :=(ac => ac_idle);
+
+ /*   
 -----------------------------------------------------------------------------
 --! Read configuration values from config record and format them as AHB data
 --! This is the inverse operation of ahb_read_config_123
@@ -261,6 +359,6 @@ begin
     end case;
     
 end procedure ahb_write_config_123;
-
+*/
 
 end package config_pkg;

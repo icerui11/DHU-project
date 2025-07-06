@@ -42,7 +42,7 @@ end entity config_ram_8to32;
 architecture rtl of config_ram_8to32 is  
     -- RAM storage type definition
     type ram_type is array (0 to INPUT_DEPTH-1) of std_logic_vector(INPUT_DATA_WIDTH-1 downto 0);
-    
+    signal ram_memory : ram_type;
     -- Read registers
     signal rd_data_reg : std_logic_vector(OUTPUT_DATA_WIDTH-1 downto 0);
     signal rd_valid_reg : std_logic;

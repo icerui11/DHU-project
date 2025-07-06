@@ -13,11 +13,11 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library work;
-use work.config_types_pkg.all;
+use work.config_pkg.all;
 
 entity config_arbiter is
     generic (
-        g_ram_addr_width : integer := c_ram_addr_width;               -- RAM address width
+        g_ram_addr_width : integer := c_ram_addr_width               -- RAM address width
     );
     port (
         clk             : in  std_logic;
