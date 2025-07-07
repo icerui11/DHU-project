@@ -17,7 +17,7 @@ use work.config_pkg.all;
 
 entity config_arbiter is
     generic (
-        g_ram_addr_width : integer := c_ram_addr_width               -- RAM address width
+        g_ram_addr_width : integer := c_output_addr_width               -- RAM address width
     );
     port (
         clk             : in  std_logic;
@@ -92,29 +92,29 @@ begin
                                     current_grant <= GRANT_HR;
                                     config_active <= '1';
                                     grant_found := '1';
-                                    start_add <= x"00";                      -- Set start address for HR
+                                    start_add <= "00000";                      -- Set start address for HR
                                     read_num <= 10;                      -- Read 10 registers for HR
                                     ahb_base_addr_123 <= x"20000000";                 -- w/r ahb base address 
-                                    ahb_base_addr_121 <= x"1000000"; 
+                                    ahb_base_addr_121 <= x"10000000"; 
                                 end if;
                             when "01" =>  -- LR
                                 if compressor_status_LR.AwaitingConfig = '1' then
                                     current_grant <= GRANT_LR;
                                     config_active <= '1';
                                     grant_found := '1';
-                                    start_add <= x"30";                      -- Set start address for LR
+                                    start_add <= "01010";                      -- Set start address for LR
                                     read_num <= 10;                      -- Read 7 registers for LR
-                                    ahb_base_addr_123 <= x"4000000";                 -- w/r ahb base address 
-                                    ahb_base_addr_121 <= x"5000000";   
+                                    ahb_base_addr_123 <= x"40000000";                 -- w/r ahb base address 
+                                    ahb_base_addr_121 <= x"50000000";   
                                 end if;
                             when "10" =>  -- H
                                 if compressor_status_H.AwaitingConfig = '1' then
                                     current_grant <= GRANT_H;
                                     config_active <= '1';
                                     grant_found := '1';
-                                    start_add <= x"54";                      -- Set start address for V-H
+                                    start_add <= "10100";                      -- Set start address for V-H
                                     read_num <= 4;                      -- Read 3 registers for V-H
-                                    ahb_base_addr_121 <= x"7000000";   
+                                    ahb_base_addr_121 <= x"70000000";   
                                 end if;
                             when others =>  -- No grant
                                 current_grant <= GRANT_NONE;

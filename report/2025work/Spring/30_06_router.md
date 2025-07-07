@@ -6,7 +6,8 @@ C:\Users\yinrui\Desktop\Envison_DHU\DHU-project\simulation\script\router\router_
 
 do $DUT/DHU-project/simulation/script/router/router_tb_ip_test.do
 
-
-# controller 
+# controller
 
 do $DUT/DHU-project/System_bus/scripts/ahb_master_controller.do
+
+Noted: 后期应该设计机制，在reset后 需要通过GR712传输完配置参数给parameter_ram 后 再 重新配置compressor

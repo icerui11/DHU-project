@@ -133,10 +133,10 @@ architecture rtl of ahb_master_controller is
   
   signal ahb_base_addr_123, ahb_base_addr_121 : std_logic_vector(31 downto 0); -- AHB base addresses for CCSDS123 and CCSDS121
 
-  -- Signals for config_ram_8to32
+  -- Signals for config_ram_8to32 from input
 --  signal ram_wr_en    : std_logic;                     -- Write enable signal
-  signal ram_wr_addr  : std_logic_vector(6 downto 0);  -- Write address (7 bits)
-  signal ram_wr_data  : std_logic_vector(7 downto 0);  -- Write data (8 bits)
+--  signal ram_wr_addr  : std_logic_vector(6 downto 0);  -- Write address (7 bits)
+--  signal ram_wr_data  : std_logic_vector(7 downto 0);  -- Write data (8 bits)
 
 --new definition
   signal r, rin      : reg_type;
@@ -186,7 +186,7 @@ begin
   end if;
 end process reg;
 
-process(arbiter_grant, arbiter_config_req, r, arbiter_grant_valid, rev_counter_reg, remaining_writes, state_next_ahbw, state_reg_ahbw, ctrl.o.update, address_write)
+process(arbiter_grant, arbiter_config_req, ram_wr_en, r, arbiter_grant_valid, rev_counter_reg, remaining_writes, state_next_ahbw, state_reg_ahbw, ctrl.o.update, address_write)
   variable v              : reg_type;
   variable tot_size       : std_logic_vector(15 downto 0);
   variable pointer        : std_logic_vector(4 downto 0);  -- RAM pointer for reading configuration data, 5 bits address
@@ -199,9 +199,10 @@ begin
     
     case r.config_state is    
       when IDLE =>
+         v.start_preload_ram := '0';
          ahb_address_switch := '0'; -- Reset address switch
          address_write_cmb <= (others => '0'); -- Reset write address
-          if arbiter_config_req = '1' and state_reg_ahbw = idle and rst_n = '1' then         -- 这里arbiter_config_req需替换成是否有读写请求，而不是仅仅是confgi_req
+          if arbiter_config_req = '1' and state_reg_ahbw = idle and ram_wr_en = '0' then         -- 这里arbiter_config_req需替换成是否有读写请求，而不是仅仅是confgi_req, ram_wr_en 避免读写冲突
             v.config_state := ARBITER_WR;      -- write_arbiter arbitrate   
  --         elsif gr712_read_req = '1' and state_reg_ahbw = idle and rst_n = '1' then 
  --           v.config_state := ARBITER_RD;
@@ -210,6 +211,10 @@ begin
           end if;
 
       when ARBITER_WR =>
+          if ram_wr_en = '1' then
+            v.config_state := IDLE;
+          end if;
+               
          if arbiter_grant_valid = '1' then        -- Arbiter has granted a request(write has high priority)
            v.start_preload_ram := '1'; -- Start preloading RAM data
             if r.empty = '0' then
@@ -230,6 +235,10 @@ begin
          end if;
 
       when AHB_TRANSFER_WR =>        -- write request 
+        if ram_wr_en = '1' then
+          v.config_state := IDLE;
+        end if;
+
         if remaining_writes < to_unsigned(ram_read_num, 4) then
           beats_v := remaining_writes;
         else
@@ -295,6 +304,10 @@ begin
         end if; 
 
       when AHB_Burst_WR =>
+        if ram_wr_en = '1' then
+          v.config_state := IDLE;
+        end if;
+
         hburst_cmb <= '1';
         size_cmb <= "10";
         data_cmb <= r.data_out;
@@ -628,8 +641,8 @@ config_ram_inst : entity config_controller.config_ram_8to32
     clk         => clk,          -- System clock
     rst_n       => rst_n,        -- Active low reset
     wr_en       => ram_wr_en,    -- Write enable signal
-    wr_addr     => ram_wr_addr,  -- Write address
-    wr_data     => ram_wr_data,  -- Write data
+    wr_addr     => wr_addr,  -- Write address
+    wr_data     => wr_data,  -- Write data
     rd_en       => r.ram_rd_en,    -- Read enable signal
     rd_addr     => r.ram_rd_addr,  -- Read address
     rd_data     => r.ram_rd_data,  -- Read data output
