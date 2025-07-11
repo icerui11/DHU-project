@@ -10,6 +10,7 @@ entity reg_bank_inf_asym2 is
   generic (RESET_TYPE: integer := 1;    --! Implement Asynchronous Reset (0) or Synchronous Reset (1)
        Cz: natural := 15;       --! Number of components of the vectors.
        W: natural := 32;        --! Bit width of the stored values.
+       syn_mode : string  := "lsram";  -- Use the syn_ramstyle attribute to manually control"lsram""uram","registers"
        W_ADDRESS: natural := 32);   --! Bit width of the address signal. 
   port (
     -- System Interface
@@ -33,6 +34,8 @@ end reg_bank_inf_asym2;
 architecture arch_reset_flavour of reg_bank_inf_asym2 is
   type array_type is array (0 to Cz-1) of std_logic_vector (data_in'high downto 0);
   signal bank: array_type;
+    attribute syn_ramstyle : string;
+    attribute syn_ramstyle of bank : signal is "registers";
 begin
 
   process(clk, rst_n) 

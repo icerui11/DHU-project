@@ -39,6 +39,7 @@ entity router_fifo_ctrl_top_v2 is
     g_mode				: string 					:= "single";			-- valid options are "diff", "single" and "custom".
     g_priority          : string                    := c_priority;          
     g_ram_style         : string                    := c_ram_style;
+    syn_mode            : string  := "lsram";  -- Use the syn_ramstyle attribute to manually control"lsram""uram","registers"
     g_router_port_addr  : integer                   := c_router_port_addr           
     );                                                                                                    
 
@@ -227,6 +228,7 @@ begin
             W_Size      => 32,        --! Bit width of the stored values.
             R_Size      => 8,         --! Bit width of the read values.
             NE          => 64,        --! Number of elements of the FIFO.
+            syn_mode    => syn_mode,  -- Use the syn_ramstyle attribute
             W_ADDR      => 8,         --! Bit width of the address.
             TECH        => 0)         --! Parameter used to change technology; (0) uses inferred memories.
         port map( 
@@ -250,6 +252,4 @@ begin
           
         end generate gen_ctrl; 
     end generate gen_fifo_controller;
-
-    
 end rtl;
