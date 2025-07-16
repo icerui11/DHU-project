@@ -37,7 +37,7 @@ package router_pckg is
 	constant c_fabric_bus_width 	: natural range 1 to 4 		:= 1;				-- nonet-witdth of Xbar fabric data channel. 1 = 9 bits, 4 = 36 bits
 	constant c_spw_clk_freq			: real						:= 100_000_000.0;	-- frequency of SpaceWire Clock in Hz (default 200MHz)
 	constant c_router_clk_freq		: real 						:= 100_000_000.0;	-- frequency of Router Fabric & Arbitration (sim only)
-	constant c_num_ports 			: natural range 2 to 32  	:= 4;		        -- number of router ports, 0 is internal address, maximum 32 (31 + 1)
+	constant c_num_ports 			: natural range 2 to 32  	:= 7;		        -- number of router ports, 0 is internal address, maximum 32 (31 + 1)
 	constant c_port_mode			: string 					:= "single";        -- valid options are "single", "diff" and "custom". 
 	constant c_priority				: string 					:= "fifo";          -- valid options are "fifo" and "none"
 	constant c_ram_style			: string 					:= "auto";			-- type of ram (xilinx) to use for FiFo (block, auto, see Xillinx user guide)

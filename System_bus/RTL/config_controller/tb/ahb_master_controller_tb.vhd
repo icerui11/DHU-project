@@ -235,6 +235,7 @@ begin
             wr_data <= CCSDS123_CONFIG(i mod 16);
             wait for CLK_PERIOD;
         end loop;
+        wait for 4 * CLK_PERIOD;  
         rst_n <= '0';  -- after writing to RAM, reset the compressor to reconfigurate it 
         wait for 4 * CLK_PERIOD;  
         rst_n <= '1';  -- release reset to allow configuration

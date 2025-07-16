@@ -87,8 +87,8 @@ add wave -position end  sim:/ahb_master_controller_tb/dut/debug
 add wave -position end  sim:/ahb_master_controller_tb/dut/debug_cmb
 add wave -position end  sim:/ahb_master_controller_tb/dut/appidle
 add wave -position end  sim:/ahb_master_controller_tb/dut/appidle_cmb
-add wave -position end  sim:/ahb_master_controller_tb/dut/data_valid
-add wave -position end  sim:/ahb_master_controller_tb/dut/data_valid_cmb
+#add wave -position end  sim:/ahb_master_controller_tb/dut/data_valid
+#add wave -position end  sim:/ahb_master_controller_tb/dut/data_valid_cmb
 add wave -position end  sim:/ahb_master_controller_tb/dut/ahbwrite
 add wave -position end  sim:/ahb_master_controller_tb/dut/ahbwrite_cmb
 add wave -position end  sim:/ahb_master_controller_tb/dut/ahbread_cmb
@@ -103,12 +103,6 @@ add wave -position end  sim:/ahb_master_controller_tb/dut/beats
 add wave -position end  sim:/ahb_master_controller_tb/dut/beats_reg
 add wave -position end  sim:/ahb_master_controller_tb/dut/ahb_wr_cnt_cmb
 add wave -position end  sim:/ahb_master_controller_tb/dut/ahb_wr_cnt_reg
-add wave -position end  sim:/ahb_master_controller_tb/dut/rd_in_reg
-add wave -position end  sim:/ahb_master_controller_tb/dut/rd_in_out
-add wave -position end  sim:/ahb_master_controller_tb/dut/allow_read
-add wave -position end  sim:/ahb_master_controller_tb/dut/allow_read_reg
-add wave -position end  sim:/ahb_master_controller_tb/dut/clear_ahb
-add wave -position end  sim:/ahb_master_controller_tb/dut/config_valid_adapted_ahb
 add wave -position end  sim:/ahb_master_controller_tb/dut/ram_start_addr
 add wave -position end  sim:/ahb_master_controller_tb/dut/ram_read_num
 add wave -position end  sim:/ahb_master_controller_tb/dut/config_done

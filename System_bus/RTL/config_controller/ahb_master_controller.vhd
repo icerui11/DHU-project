@@ -79,7 +79,7 @@ architecture rtl of ahb_master_controller is
   -- control registers for AHB 
   signal ctrl, ctrl_reg  : ahbtb_ctrl_type;
   ---------------------
-  signal remaining_writes, remaining_writes_cmb: unsigned(3 downto 0);    -- Total number of samples pending to read/write (reverse sample counters) 
+  signal remaining_reads, remaining_reads_cmb, remaining_writes, remaining_writes_cmb: unsigned(3 downto 0);    -- Total number of samples pending to read/write (reverse sample counters) 
   -- Write address
   signal address_write, address_write_cmb   : std_logic_vector(31 downto 0);
   -- Read address
@@ -93,7 +93,7 @@ architecture rtl of ahb_master_controller is
   -- if 0, next address stage takes place in the next cycle
     signal appidle, appidle_cmb   : boolean;
   -- Modified by AS: new signal to know if the written/read value has been consumed
-  signal data_valid, data_valid_cmb  : std_logic;
+  --signal data_valid, data_valid_cmb  : std_logic;
   -------------------------------
   
   --Trigger a write or read operation
@@ -108,12 +108,12 @@ architecture rtl of ahb_master_controller is
   signal ahb_wr_cnt_cmb, ahb_wr_cnt_reg : unsigned(3 downto 0); -- AHB write counter, counts how many registers have been written
 
   -- Read flag for FIFO - allow reading from FIFO
-  signal rd_in_reg, rd_in_out, allow_read, allow_read_reg: std_logic;
+ -- signal rd_in_reg, rd_in_out, allow_read, allow_read_reg: std_logic;
      
     -- Adapted clear to AHB clk. 
-  signal clear_ahb: std_logic;
+ -- signal clear_ahb: std_logic;
   -- Adapted config valid to AHB clk. 
-  signal config_valid_adapted_ahb: std_logic;
+--  signal config_valid_adapted_ahb: std_logic;
   -- AHB status information
  -- signal ahb_status_s, ahb_status_ahb_cmb, ahb_status_ahb_reg: ahbm_123_status;
         
@@ -135,6 +135,7 @@ architecture rtl of ahb_master_controller is
 --------signals for fifo 
   signal empty_cmb, full_cmb, hfull_cmb, afull_cmb, aempty_cmb : std_logic; -- FIFO empty and full signals
   signal data_out_fifo : std_logic_vector(g_output_data_width-1 downto 0); -- Data output from FIFO
+  signal r_update_reg, w_update_reg : std_logic; -- Read and write update signals for FIFO
 --new definition
   signal r, rin      : reg_type;
 
@@ -168,34 +169,78 @@ reg: process(clk, rst_n)
 begin
   if rst_n = '0' then
     r <= RES;
-    address_write    <= (others => '0');
  --   rev_counter_reg <= (others => '0');
+    size <= (others => '0');
+    htrans <= (others => '0');
+    hburst <= '0';
+    debug <= 0;
+    appidle <= true;
+    address_write <= (others => '0');
+    address_read <= (others => '0');
+    count_burst <= (others => '0');
+    burst_size     <= (others => '0');
+    ctrl_reg.i       <= ctrli_idle;
+    ctrl_reg.o       <= ctrlo_nodrive;
+    ahb_wr_cnt_reg   <= (others => '0'); -- Reset AHB write counter
+    ahbwrite         <= '0';
+    ahbread          <= '0';
+    state_reg_ahbw   <= idle; 
     beats_reg        <= (others => '0');
+    remaining_reads  <= (others => '0');
     remaining_writes <= (others => '0');
     config_done      <= '0';
-    state_reg_ahbw   <= idle; 
+    r_update_reg     <= '0';
+    w_update_reg     <= '0';
   elsif clk'event and clk = '1' then
     r <= rin; 
-    address_write <= address_write_cmb;
    -- rev_counter_reg <= rev_counter;
-    beats_reg <= beats; 
+    size             <= size_cmb;
+    htrans           <= htrans_cmb;
+    hburst           <= hburst_cmb;
+    debug            <= debug_cmb;
+    appidle          <= appidle_cmb;
+    address_write    <= address_write_cmb;
+    address_read     <= address_read_cmb;
+    count_burst      <= count_burst_cmb;
+    burst_size       <= burst_size_cmb;
+    ctrl_reg.i       <= ctrl.i;  
+    ahb_wr_cnt_reg   <= ahb_wr_cnt_cmb;  -- Update AHB write counter
+    ahbwrite         <= ahbwrite_cmb; 
+    ahbread          <= ahbread_cmb;
+    state_reg_ahbw   <= state_next_ahbw; -- Update state register
+    beats_reg        <= beats; 
+    remaining_reads  <= remaining_reads_cmb;
     remaining_writes <= remaining_writes_cmb;
-    config_done <= config_done_cmb;
-    state_reg_ahbw <= state_next_ahbw; -- Update state register
-  end if;
+    config_done      <= config_done_cmb; 
+    r_update_reg     <= r.r_update;     -- register read update signal
+    w_update_reg     <= r.w_update; 
+   end if;
 end process reg;
 
-process(arbiter_grant, arbiter_config_req, ram_wr_en, r, empty_cmb, arbiter_grant_valid, rev_counter_reg, remaining_writes, state_next_ahbw, state_reg_ahbw, ctrl.o.update, address_write, ahb_wr_cnt_reg, ram_rd_data_cmb)
+process(arbiter_grant, arbiter_config_req, ram_wr_en, r, empty_cmb, arbiter_grant_valid, rev_counter_reg, remaining_writes, state_next_ahbw, state_reg_ahbw, ctrl.o.update, address_write, ahb_wr_cnt_reg, ram_rd_data_cmb, ram_rd_valid_cmb)
   variable v              : reg_type;
   variable tot_size       : std_logic_vector(15 downto 0);
   variable pointer        : std_logic_vector(4 downto 0);  -- RAM pointer for reading configuration data, 5 bits address
   variable ahb_address_switch : std_logic; 
   variable beats_v: unsigned(3 downto 0);      -- Modified by AS: beats_v resized from 16 to 4 bits 
 begin
+
+    address_write_cmb <= address_write;     
+    address_read_cmb <= address_read;  
+    size_cmb <= size;
+    htrans_cmb <= htrans;
+    hburst_cmb <= hburst;
+    debug_cmb <= debug;
+    appidle_cmb <= appidle;
+    ahb_wr_cnt_cmb <= ahb_wr_cnt_reg; 
     ahbwrite_cmb <= '0';
+    ahbread_cmb <= '0'; 
     v := r; 
     beats <= beats_reg;
-    
+    remaining_reads_cmb <= remaining_reads;
+    remaining_writes_cmb <= remaining_writes;
+    config_done_cmb <= '0'; 
+
     case r.config_state is    
       when IDLE =>
          v.start_preload_ram := '0';
@@ -250,7 +295,7 @@ begin
           v.r_update := '1';                  -- read from FIFO
         end if; 
         
-        if(state_reg_ahbw = s0 and r.r_update = '1' and ctrl.o.update = '1') then
+        if(state_reg_ahbw = s0 and r_update_reg = '1' and ctrl.o.update = '1') then
           v.data_valid := '0';
           case ram_read_num is 
             when 4 => 
@@ -313,7 +358,7 @@ begin
         debug_cmb <= 2;
         if ctrl.o.update = '1' then
           htrans_cmb <= "11";
-          if r.r_update = '1' then
+          if r_update_reg = '1' then
             v.data_valid := '0';
             -- Modified by AS: new counters updated --
             remaining_writes_cmb <= remaining_writes - 1;
@@ -387,7 +432,7 @@ end case;
       ahb_address_switch := '0'; -- No switch needed for 4 registers
     end if;
 
-    if r.ram_read_cnt <= ram_read_num then              -- buffer the CFG to FIFO
+    if r.ram_read_cnt < ram_read_num then              -- buffer the CFG to FIFO
       if r.start_preload_ram = '1' then
         v.ram_rd_en := '1';                  -- Enable RAM read
         v.data_in := ram_rd_data_cmb;       -- Read data from RAM
@@ -405,12 +450,14 @@ end case;
       v.ram_read_cnt := (others => '0'); -- Reset RAM read counter
     end if;
    
-    if r.ram_rd_en = '1' then       --pipeline the RAM read operation
- --     v.data_in := ram_rd_data_cmb; -- Read data from RAM
+    if ram_rd_valid_cmb = '1' then       --pipeline the RAM read operation
+      v.data_in := ram_rd_data_cmb; -- Read data from RAM
       v.w_update := '1'; -- Update control signal
     else
       v.w_update := '0'; -- No update if not reading  
     end if;
+
+
 
     rin <= v;    
 
