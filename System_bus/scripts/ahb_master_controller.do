@@ -63,7 +63,6 @@ add wave -position end  sim:/ahb_master_controller_tb/dut/wr_addr
 add wave -position end  sim:/ahb_master_controller_tb/dut/wr_data
 add wave -position end  sim:/ahb_master_controller_tb/dut/ctrli
 add wave -position end  sim:/ahb_master_controller_tb/dut/ctrlo
-add wave -position end  sim:/ahb_master_controller_tb/dut/ram_read_cnt
 add wave -position end  sim:/ahb_master_controller_tb/dut/read_ram_done
 add wave -position end  sim:/ahb_master_controller_tb/dut/state_reg_ahbw
 add wave -position end  sim:/ahb_master_controller_tb/dut/state_next_ahbw

@@ -67,7 +67,7 @@ end entity ahb_master_controller;
 
 architecture rtl of ahb_master_controller is
 
-   signal ram_read_cnt : unsigned(3 downto 0); -- RAM read 
+   --signal ram_read_cnt : unsigned(3 downto 0); -- RAM read 
    signal read_ram_done : std_logic := '0'; -- Signal to indicate RAM read completion
   ---------------------------
   -- AHB related signals
@@ -291,12 +291,13 @@ begin
         beats <= beats_v;
 
         if (empty_cmb = '0' and ctrl.o.update = '1' and (state_next_ahbw = s0 or state_next_ahbw = s4)) then
-          v.data_valid := '1';
+          v.data_valid := '0';
           v.r_update := '1';                  -- read from FIFO
         end if; 
         
-        if(state_reg_ahbw = s0 and r_update_reg = '1' and ctrl.o.update = '1') then
-          v.data_valid := '0';
+        if((state_next_ahbw = s0 or state_next_ahbw = s4) and r_update_reg = '1' and ctrl.o.update = '1') then
+          v.data_valid := '1';
+          appidle_cmb <= false; 
           case ram_read_num is 
             when 4 => 
               if unsigned(address_write) = unsigned(ahb_base_addr_121) + to_unsigned(16,5) then   -- (4) * 4 
@@ -335,6 +336,7 @@ begin
 
           -- trigeger the write operation
           ahbwrite_cmb <= '1';
+          
           remaining_writes_cmb <= remaining_writes - 1; -- Decrement remaining writes counter
           ahb_wr_cnt_cmb <= ahb_wr_cnt_reg + 1; -- Increment write counter 
 
@@ -359,7 +361,7 @@ begin
         if ctrl.o.update = '1' then
           htrans_cmb <= "11";
           if r_update_reg = '1' then
-            v.data_valid := '0';
+            v.data_valid := '1';
             -- Modified by AS: new counters updated --
             remaining_writes_cmb <= remaining_writes - 1;
             ahb_wr_cnt_cmb <= ahb_wr_cnt_reg + 1; -- Increment write counter 
@@ -369,6 +371,7 @@ begin
                   address_write_cmb <= std_logic_vector(unsigned(ahb_base_addr_121) - x"00000004");
                   v.config_state := IDLE;  
                   config_done_cmb <= '1'; 
+                  v.data_valid := '0';                 
                 else 
                   address_write_cmb <= std_logic_vector(unsigned(address_write) + x"00000004");
                 end if;
@@ -384,7 +387,8 @@ begin
                   if unsigned(address_write) = unsigned(ahb_base_addr_121) + to_unsigned(16,5) then   -- (4) * 4 
                     address_write_cmb <= std_logic_vector(unsigned(ahb_base_addr_121) - x"00000004");
                     v.config_state := IDLE;                  -- Switch to IDLE after writing all registers, maybe in future into state done
-                    config_done_cmb <= '1'; 
+                    config_done_cmb <= '1';
+                    v.data_valid := '0'; 
                   else 
                     address_write_cmb <= std_logic_vector(unsigned(address_write) + x"00000004");
                   end if;
@@ -395,12 +399,13 @@ begin
             end case;
           end if;
 
-          if (empty_cmb = '0' and v.data_valid = '0' and (count_burst_cmb /= 0) and (state_reg_ahbw = s4)) then
+          if (empty_cmb = '0' and v.data_valid = '1' and (count_burst_cmb /= 0) and (state_reg_ahbw = s4)) then
             v.r_update := '1';
             ahbwrite_cmb <= '1';
             appidle_cmb <= false;  --appidle = true if there will be more data in the next cycle
-            v.data_valid := '1';
-          elsif (v.data_valid = '0') then
+          end if;
+
+          if (v.data_valid = '0') then
             appidle_cmb <= true;
           end if;
 
