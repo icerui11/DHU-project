@@ -45,8 +45,6 @@ spectral 384
 
 spatial 256          16x16
 
-
-
 ## spw_controller
 
 ### router_fifo_spwctrl_16bit
