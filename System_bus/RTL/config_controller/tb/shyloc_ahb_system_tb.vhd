@@ -29,7 +29,10 @@ architecture behavior of shyloc_ahb_system_tb is
   signal clk_sys : std_logic := '0';
   signal clk_ahb : std_logic := '0';
   signal rst_n   : std_logic := '0';
-  
+  signal rst_n_lr : std_logic := '0';
+  signal rst_n_h  : std_logic := '0';
+  signal rst_n_hr : std_logic := '0';
+
   constant CLK_SYS_PERIOD : time := 10 ns;   -- 100 MHz system clock
   constant CLK_AHB_PERIOD : time := 8 ns;    -- 125 MHz AHB clock
   
@@ -172,6 +175,9 @@ begin
       clk_sys          => clk_sys,
       clk_ahb          => clk_ahb,
       rst_n            => rst_n,
+        rst_n_lr         => rst_n_lr,
+        rst_n_h          => rst_n_h,
+        rst_n_hr         => rst_n_hr,
       ram_wr_en        => ram_wr_en,
       ram_wr_addr      => ram_wr_addr,
       ram_wr_data      => ram_wr_data,
@@ -331,7 +337,8 @@ begin
     report "================================================================";
     report "Phase 1: Configuring HR Compressor CCSDS123";
     report "================================================================";
-    
+    rst_n_hr <= '1';
+    wait for 40 ns; 
     -- Write HR CCSDS123 configuration to RAM at address 0
     write_config_to_ram(
       start_addr => 0,
@@ -339,9 +346,12 @@ begin
       target_addr => COMPRESSOR_BASE_ADDR_HR_123,
       config_name => "HR CCSDS123"
     );
-    
+    wait for 300 ns;
+    rst_n <= '0';
+    wait for 40 ns;
+    rst_n <= '1';
     -- Wait for configuration to complete
-    wait_for_config_done(2 us, "HR CCSDS123");
+    wait_for_config_done(300 ns, "HR CCSDS123");
     
     -- Allow some time for the system to stabilize
     wait for 500 ns;
@@ -364,10 +374,10 @@ begin
     );
     
     -- Wait for configuration to complete
-    wait_for_config_done(2 us, "HR CCSDS121");
+    wait_for_config_done(200 ns, "HR CCSDS121");
     
     hr_config_done <= true;
-    wait for 500 ns;
+    wait for 200 ns;
     
     -----------------------------------------------------------------------------
     -- Test Phase 3: Test HR Compressor Operation

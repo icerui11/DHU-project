@@ -59,8 +59,8 @@ package config_pkg is
         Error          => '0'
     );
 
-    type config_state_type is (IDLE, ARBITER_WR, AHB_TRANSFER_WR, AHB_Burst_WR, ERROR); 
-    type reg_type is record
+    type config_state_type is (IDLE, ARBITER_WR, WRITE_REQ, AHB_Burst_WR, ERROR); 
+    type config_reg_type is record
       config_state              : config_state_type;
       ram_read_cnt              : unsigned(3 downto 0); -- RAM read counter (4 bits) 
       ram_rd_en                 : std_logic; -- RAM read enable signal
@@ -69,8 +69,8 @@ package config_pkg is
  --     ram_rd_valid              : std_logic; 
       start_preload_ram         : std_logic; -- Signal to start preloading RAM 
       data_valid                : std_logic; -- Data valid signal
-      r_update                  : std_logic; 
-      w_update                  : std_logic; 
+--      r_update                  : std_logic; 
+--      w_update                  : std_logic; 
       clr                       : std_logic; 
 --      hfull                     : std_logic;
 --      empty                     : std_logic;
@@ -81,7 +81,7 @@ package config_pkg is
       data_out                  : std_logic_vector(31 downto 0);   
     end record;
  
-    constant RES : reg_type :=
+    constant RES : config_reg_type :=
     ( config_state           => idle,
       ram_read_cnt           => (others => '0'),  -- Initialize read counter to 0
       ram_rd_en             => '0',
@@ -90,8 +90,8 @@ package config_pkg is
  --     ram_rd_valid          => '0',
       start_preload_ram     => '0',
       data_valid            => '0',
-      r_update              => '0',
-      w_update              => '0',
+--      r_update              => '0',
+--      w_update              => '0',
       clr                   => '0',
 --      hfull                 => '0',
 --      empty                 => '0',
@@ -101,7 +101,7 @@ package config_pkg is
       data_in               => (others => '0'),
       data_out              => (others => '0')
     );
-
+/*
       ---------------------------------------------------------------------------
   --! AHB master control record.
   ---------------------------------------------------------------------------
@@ -184,7 +184,7 @@ package config_pkg is
   --! AHB cltr idle constant
   ---------------------------------------------------------------------------    
   constant ctrli_idle : ahbtbm_ctrl_in_type :=(ac => ac_idle);
-  
+
   constant ctrlo_nodrive : ahbtbm_ctrl_out_type :=(rst => 'H', clk => 'H', 
     update => 'H', dvalid => 'H', hrdata => (others => 'H'), hrdata128 => (others => 'H'),
     status => (err => 'H', ecount => (others => 'H'), eaddr => (others => 'H'),

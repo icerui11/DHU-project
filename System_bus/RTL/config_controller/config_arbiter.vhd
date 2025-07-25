@@ -12,8 +12,8 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-library work;
-use work.config_pkg.all;
+library config_controller;
+use config_controller.config_pkg.all;
 
 entity config_arbiter is
     generic (

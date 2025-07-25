@@ -118,7 +118,7 @@ architecture rtl of ahb_master_controller_v2 is
   signal empty_cmb, full_cmb, hfull_cmb, afull_cmb, aempty_cmb : std_logic;
   signal data_out_fifo : std_logic_vector(g_output_data_width-1 downto 0);
   signal r_update_reg, w_update_reg : std_logic;
-  
+  signal r_update_out, w_update_out : std_logic;  -- Read and write update signals for FIFO
   -- New definition
   signal r, rin : config_reg_type;
 
@@ -170,13 +170,15 @@ begin
       beats_reg <= beats; 
       remaining_writes <= remaining_writes_cmb;
       config_done <= config_done_cmb; 
-      r_update_reg <= r.r_update;
-      w_update_reg <= r.w_update; 
+     w_update_reg <= w_update_out;
+      if (ctrl.o.update = '1') then
+        r_update_reg <= r_update_out;
+      end if; 
     end if;
   end process reg;
 
   -- Main combinational process
-  process(arbiter_grant, arbiter_config_req, ram_wr_en, r, empty_cmb, arbiter_grant_valid, 
+  process(arbiter_grant, arbiter_config_req, ram_wr_en, r, empty_cmb, arbiter_grant_valid, r_update_reg, w_update_reg,
           remaining_writes, state_next_ahbw, state_reg_ahbw, ctrl.o.update, address_write, 
           ahb_wr_cnt_reg, ram_rd_data_cmb, ram_rd_valid_cmb, ahb_target_addr, ram_read_num, data_out_fifo)
     variable v : config_reg_type;
@@ -193,15 +195,16 @@ begin
     ahb_wr_cnt_cmb <= ahb_wr_cnt_reg; 
     ahbwrite_cmb <= '0';
     v := r; 
+    r_update_out <= '0';  -- Default to read update
+    w_update_out <= '0';  -- Default to write update
     beats <= beats_reg;
     remaining_writes_cmb <= remaining_writes;
     config_done_cmb <= '0'; 
-    v.data_valid := '0';
+  --  v.data_valid := '0';
     
     case r.config_state is    
       when IDLE =>
         v.start_preload_ram := '0';
-        v.r_update := '0';
         ahb_wr_cnt_cmb <= (others => '0');
         remaining_writes_cmb <= (others => '0');
         address_write_cmb <= (others => '0');
@@ -246,21 +249,20 @@ begin
 
         -- Trigger FIFO read when ready
         if (empty_cmb = '0' and ctrl.o.update = '1' and (state_next_ahbw = s0 or state_next_ahbw = s4)) then
-          v.data_valid := '0';
-          v.r_update := '1';  -- Read from FIFO
+          v.data_valid := '1';
+          r_update_out <= '1';  -- Read from FIFO
         end if; 
         
         -- Process write when data is ready
-        if((state_next_ahbw = s0 or state_next_ahbw = s4) and r_update_reg = '1' and ctrl.o.update = '1') then
-          appidle_cmb <= false;
+        if((state_reg_ahbw = s0) and r_update_reg = '1' and ctrl.o.update = '1') then
+          v.data_valid := '0';
           
           -- Check if this is the last register
           if ahb_wr_cnt_reg = ram_read_num - 1 then
-            address_write_cmb <= std_logic_vector(unsigned(ahb_target_addr) - x"00000004");
+       --     address_write_cmb <= std_logic_vector(unsigned(ahb_target_addr) - x"00000004");
             config_done_cmb <= '1';
             v.config_state := IDLE;
             v.data_valid := '0';
-          v.r_update := '0';
           else 
             address_write_cmb <= std_logic_vector(unsigned(address_write) + x"00000004");
             v.data_valid := '1';
@@ -282,6 +284,11 @@ begin
             hburst_cmb <= '1';
             v.config_state := AHB_Burst_WR;
           end if;
+          if empty_cmb = '0' then
+            appidle_cmb <= false;  -- Not idle if data is available
+          else
+            appidle_cmb <= true;   -- Set to idle if no data
+          end if;
         end if; 
 
       when AHB_Burst_WR =>
@@ -298,42 +305,40 @@ begin
         if ctrl.o.update = '1' then
           htrans_cmb <= "11";  -- Sequential transfer
           if r_update_reg = '1' then
-            v.data_valid := '1';
-            
+            v.data_valid := '0';
+            remaining_writes_cmb <= remaining_writes - 1;
             -- Check if this is the last register
-            if ahb_wr_cnt_reg = ram_read_num - 1 then
-              address_write_cmb <= std_logic_vector(unsigned(ahb_target_addr) - x"00000004");
+            if ahb_wr_cnt_reg = ram_read_num  then
+        --      address_write_cmb <= std_logic_vector(unsigned(ahb_target_addr) - x"00000004");
               v.config_state := IDLE;
               config_done_cmb <= '1';
             else 
               address_write_cmb <= std_logic_vector(unsigned(address_write) + x"00000004");
-              remaining_writes_cmb <= remaining_writes - 1;
               ahb_wr_cnt_cmb <= ahb_wr_cnt_reg + 1;
             end if;
           end if;
 
           -- Trigger next FIFO read if needed
-          if (empty_cmb = '0' and v.data_valid = '1' and (count_burst_cmb /= 0) and (state_reg_ahbw = s4)) then
-            v.r_update := '1';
+          if (empty_cmb = '0' and v.data_valid = '0' and (count_burst_cmb /= 0) and (state_reg_ahbw = s4)) then
+            r_update_out <= '1';
             ahbwrite_cmb <= '1';
             appidle_cmb <= false;
+            v.data_valid := '1';
+          elsif v.data_valid = '0' then 
+            appidle_cmb <= true;  
           end if;
 
-          -- Set appidle if no more data
-          if (v.data_valid = '0') then
-            appidle_cmb <= true;
-          end if;
 
           -- Check for end of burst
           if (state_reg_ahbw = s0) or (state_reg_ahbw = s2) then
             if ahb_wr_cnt_reg = ram_read_num then
               appidle_cmb <= true;               
               v.config_state := IDLE;
-              v.r_update := '0';
+              config_done_cmb <= '1';
             end if;
           end if;
         end if;
-      
+
       when ERROR =>
         -- Error handling - return to IDLE
         v.config_state := IDLE;
@@ -355,16 +360,16 @@ begin
     else
       v.start_preload_ram := '0';
       v.ram_rd_en := '0';
-      v.w_update := '0'; 
+      w_update_out <= '0'; 
       v.ram_read_cnt := (others => '0');
     end if;
    
     -- Pipeline RAM read operation
     if ram_rd_valid_cmb = '1' then
       v.data_in := ram_rd_data_cmb;
-      v.w_update := '1';
+      w_update_out <= '1';
     else
-      v.w_update := '0';
+      w_update_out <= '0';
     end if;
 
     rin <= v;    
@@ -617,8 +622,8 @@ begin
       clk      => clk, 
       rst_n    => rst_n, 
       clr      => r.clr,
-      w_update => r.w_update, 
-      r_update => r.r_update, 
+      w_update => w_update_reg,
+      r_update => r_update_out,
       hfull    => hfull_cmb, 
       empty    => empty_cmb, 
       full     => full_cmb, 

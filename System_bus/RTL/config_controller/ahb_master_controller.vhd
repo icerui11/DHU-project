@@ -101,7 +101,7 @@ architecture rtl of ahb_master_controller is
   --Counters
   -- Modified by AS: Counter width maximum is 4 bits, as max 10 CFG register
   -- Modified by AS: new reverse counters in exchange of counter and counter_reg
-  signal rev_counter, rev_counter_reg: unsigned(3 downto 0);
+ -- signal rev_counter, rev_counter_reg: unsigned(3 downto 0);
   -- Modified by AS: beats, count_burst and burst_size widths reduced from 16 to 4 bits
   signal count_burst, count_burst_cmb, burst_size, burst_size_cmb, beats, beats_reg: unsigned (3 downto 0);
   ------------------
@@ -138,7 +138,7 @@ architecture rtl of ahb_master_controller is
   signal r_update_reg, w_update_reg : std_logic; -- Read and write update signals for FIFO
 --new definition
   signal r, rin      : reg_type;
-
+  signal ahb_address_switch : std_logic; 
   -- from GR712
   signal gr712_read_req : std_logic;  -- GR712 read request signal
 begin
@@ -217,11 +217,10 @@ begin
    end if;
 end process reg;
 
-process(arbiter_grant, arbiter_config_req, ram_wr_en, r, empty_cmb, arbiter_grant_valid, rev_counter_reg, remaining_writes, state_next_ahbw, state_reg_ahbw, ctrl.o.update, address_write, ahb_wr_cnt_reg, ram_rd_data_cmb, ram_rd_valid_cmb)
+process(arbiter_grant, arbiter_config_req, ram_wr_en, r, empty_cmb, arbiter_grant_valid, remaining_writes, state_next_ahbw, state_reg_ahbw, ctrl.o.update, address_write, ahb_wr_cnt_reg, ram_rd_data_cmb, ram_rd_valid_cmb)
   variable v              : reg_type;
   variable tot_size       : std_logic_vector(15 downto 0);
   variable pointer        : std_logic_vector(4 downto 0);  -- RAM pointer for reading configuration data, 5 bits address
-  variable ahb_address_switch : std_logic; 
   variable beats_v: unsigned(3 downto 0);      -- Modified by AS: beats_v resized from 16 to 4 bits 
 begin
 
@@ -240,11 +239,14 @@ begin
     remaining_reads_cmb <= remaining_reads;
     remaining_writes_cmb <= remaining_writes;
     config_done_cmb <= '0'; 
-
+    v.data_valid := '0';
+    
     case r.config_state is    
       when IDLE =>
          v.start_preload_ram := '0';
-         ahb_address_switch := '0'; -- Reset address switch
+         ahb_wr_cnt_cmb <= (others => '0'); -- Reset AHB write counter
+         remaining_reads_cmb <= (others => '0'); -- Reset remaining reads counter
+         ahb_address_switch <= '0'; -- Reset address switch
          address_write_cmb <= (others => '0'); -- Reset write address
           if arbiter_config_req = '1' and state_reg_ahbw = s0 and ram_wr_en = '0' then         -- 这里arbiter_config_req需替换成是否有读写请求，而不是仅仅是confgi_req, ram_wr_en 避免读写冲突
             v.config_state := ARBITER_WR;      -- write_arbiter arbitrate   
@@ -262,7 +264,7 @@ begin
          if arbiter_grant_valid = '1' then        -- Arbiter has granted a request(write has high priority)
            v.start_preload_ram := '1'; -- Start preloading RAM data
             if empty_cmb = '0' then
-              v.config_state := AHB_TRANSFER_WR;
+              v.config_state := WRITE_REQ;
   --            rev_counter <= to_unsigned(ram_read_num, 4);    
               remaining_writes_cmb <= to_unsigned(ram_read_num, 4); -- Set remaining writes to the number of registers to read
             end if; 
@@ -278,15 +280,22 @@ begin
             end case;
          end if;
 
-      when AHB_TRANSFER_WR =>        -- write request 
+      when WRITE_REQ =>        -- write request 
         if ram_wr_en = '1' then
           v.config_state := IDLE;
         end if;
-
+/*
         if remaining_writes < to_unsigned(ram_read_num, 4) then
           beats_v := remaining_writes;
         else
           beats_v := to_unsigned(ram_read_num, 4); -- Set beats_v to the number of registers to read
+        end if;
+        beats <= beats_v;
+ */  
+        if remaining_writes > 4 then 
+          beats_v := resize(6-ahb_wr_cnt_reg,beats'length); -- Set beats_v to the remaining writes
+        else
+          beats_v := resize(remaining_writes, beats'length); -- Set beats_v to the remaining writes
         end if;
         beats <= beats_v;
 
@@ -294,34 +303,44 @@ begin
           v.data_valid := '0';
           v.r_update := '1';                  -- read from FIFO
         end if; 
-        
+     
         if((state_next_ahbw = s0 or state_next_ahbw = s4) and r_update_reg = '1' and ctrl.o.update = '1') then
-          v.data_valid := '1';
+   --       v.data_valid := '1';
           appidle_cmb <= false; 
+
+
           case ram_read_num is 
             when 4 => 
-              if unsigned(address_write) = unsigned(ahb_base_addr_121) + to_unsigned(16,5) then   -- (4) * 4 
+              if unsigned(address_write) = unsigned(ahb_base_addr_121) + to_unsigned(12,5) then   -- (4-1) * 4 
                 address_write_cmb <= std_logic_vector(unsigned(ahb_base_addr_121) - x"00000004");
                 config_done_cmb <= '1'; 
                 v.config_state := IDLE;  
+                v.data_valid := '0';
               else 
                 address_write_cmb <= std_logic_vector(unsigned(address_write) + x"00000004"); -- 4 bytes per register
+                v.data_valid := '1';
+                
               end if;
 
             when 10 =>
-              if ahb_address_switch = '0' then
-                if unsigned(address_write) = unsigned(ahb_base_addr_123) + to_unsigned(40,6) then  -- (10) * 4
-                  address_write_cmb <= std_logic_vector(unsigned(ahb_base_addr_123) - x"00000004"); -- Switch to CCSDS121 base address
+              if ahb_address_switch = '1' then
+                if unsigned(address_write) = unsigned(ahb_base_addr_123) + to_unsigned(20,6) then  -- (6-1) * 4
+                  address_write_cmb <= std_logic_vector(unsigned(ahb_base_addr_121) - x"00000004"); -- Switch to CCSDS121 base address
+                  v.data_valid := '0';
+                  v.config_state := WRITE_REQ; 
                 else 
                   address_write_cmb <= std_logic_vector(unsigned(address_write) + x"00000004");
+                  v.data_valid := '1';
                 end if;
               else 
-                if unsigned(address_write) = unsigned(ahb_base_addr_121) + to_unsigned(16,5) then   -- (4) * 4 
-                  address_write_cmb <= std_logic_vector(unsigned(ahb_base_addr_121) - x"00000004");
+                if unsigned(address_write) = unsigned(ahb_base_addr_121) + to_unsigned(12,5) then   -- (4-1) * 4 
+                  address_write_cmb <= std_logic_vector(unsigned(ahb_base_addr_123) - x"00000004");
                   v.config_state := IDLE;                  -- Switch to IDLE after writing all registers, maybe in future into state done
                   config_done_cmb <= '1'; 
+                  v.data_valid := '0';
                 else 
                   address_write_cmb <= std_logic_vector(unsigned(address_write) + x"00000004");
+                  v.data_valid := '1';
                 end if;
               end if;
 
@@ -333,20 +352,17 @@ begin
           htrans_cmb <= "10";
           hburst_cmb <= '0';
           data_cmb <= data_out_fifo; -- Data to be written from fifo
-
           -- trigeger the write operation
           ahbwrite_cmb <= '1';
-          
           remaining_writes_cmb <= remaining_writes - 1; -- Decrement remaining writes counter
           ahb_wr_cnt_cmb <= ahb_wr_cnt_reg + 1; -- Increment write counter 
-
           -- Modified by AS: initiating burst operation if there are enough data pending --
           if unsigned(beats_v) > 1 then
             hburst_cmb <= '1';
             v.config_state := AHB_Burst_WR;
           end if;
           -- ahb_address_switch logic , when ram_read_num = 10, need switch to CCSDS121
-          
+    
         end if; 
 
       when AHB_Burst_WR =>
@@ -363,34 +379,46 @@ begin
           if r_update_reg = '1' then
             v.data_valid := '1';
             -- Modified by AS: new counters updated --
-            remaining_writes_cmb <= remaining_writes - 1;
-            ahb_wr_cnt_cmb <= ahb_wr_cnt_reg + 1; -- Increment write counter 
+     --       remaining_writes_cmb <= remaining_writes - 1;
+     --       ahb_wr_cnt_cmb <= ahb_wr_cnt_reg + 1; -- Increment write counter 
             case ram_read_num is 
               when 4 => 
-                if unsigned(address_write) = unsigned(ahb_base_addr_121) + to_unsigned(16,5) then   -- (4) * 4 
+                if unsigned(address_write) = unsigned(ahb_base_addr_121) + to_unsigned(12,5) then   -- (4-1) * 4 
                   address_write_cmb <= std_logic_vector(unsigned(ahb_base_addr_121) - x"00000004");
                   v.config_state := IDLE;  
                   config_done_cmb <= '1'; 
-                  v.data_valid := '0';                 
+           --       v.data_valid := '0';                 
                 else 
                   address_write_cmb <= std_logic_vector(unsigned(address_write) + x"00000004");
+           --       v.data_valid := '1';
                 end if;
   
               when 10 =>
-                if ahb_address_switch = '0' then
-                  if unsigned(address_write) = unsigned(ahb_base_addr_123) + to_unsigned(40,6) then  -- (10) * 4
-                    address_write_cmb <= std_logic_vector(unsigned(ahb_base_addr_123) - x"00000004"); -- Switch to CCSDS121 base address
+                if ahb_wr_cnt_reg = 6 then 
+                  address_write_cmb <= std_logic_vector(unsigned(ahb_base_addr_121) - x"00000004");
+                  v.config_state := WRITE_REQ; -- Switch to WRITE_REQ state after writing 6 registers
+                end if;
+
+                if bnbnbnbnbnh = '1' then
+                  if unsigned(address_write) = unsigned(ahb_base_addr_123) + to_unsigned(20,6) then  -- (6-1) * 4
+                    address_write_cmb <= std_logic_vector(unsigned(ahb_base_addr_121) - x"00000004"); -- Switch to CCSDS121 base address
+           --         v.data_valid := '0';
+                    v.config_state := WRITE_REQ; -- Switch to AHB_TRANSFER_WR state
                   else 
                     address_write_cmb <= std_logic_vector(unsigned(address_write) + x"00000004");
+                    remaining_writes_cmb <= remaining_writes - 1;
+                    ahb_wr_cnt_cmb <= ahb_wr_cnt_reg + 1; -- Increment write counter 
+          --          v.data_valid := '1';
                   end if;
                 else 
-                  if unsigned(address_write) = unsigned(ahb_base_addr_121) + to_unsigned(16,5) then   -- (4) * 4 
+                  if unsigned(address_write) = unsigned(ahb_base_addr_121) + to_unsigned(12,5) then   -- (4-1) * 4 
                     address_write_cmb <= std_logic_vector(unsigned(ahb_base_addr_121) - x"00000004");
                     v.config_state := IDLE;                  -- Switch to IDLE after writing all registers, maybe in future into state done
                     config_done_cmb <= '1';
-                    v.data_valid := '0'; 
+          --          v.data_valid := '0'; 
                   else 
                     address_write_cmb <= std_logic_vector(unsigned(address_write) + x"00000004");
+          --          v.data_valid := '1';
                   end if;
                 end if;
   
@@ -413,8 +441,8 @@ begin
               if ahb_wr_cnt_reg = ram_read_num then
                 appidle_cmb <= true;               
                 v.config_state := IDLE; -- Configuration done
-              else 
-                v.config_state := AHB_TRANSFER_WR; -- Continue writing
+ --             else 
+  --              v.config_state := WRITE_REQ; -- Continue writing
               end if;
           end if;
         end if;
@@ -424,17 +452,17 @@ begin
         v.config_state := IDLE;
 
     when others =>
-    v.config_state := IDLE;  -- Default case, return to IDLE state
-end case;
+        v.config_state := IDLE;  -- Default case, return to IDLE state
+   end case;
 
     if ram_read_num = 10 then 
-      if ahb_wr_cnt_reg < 6 then
-        ahb_address_switch := '1';  -- execute the CCSDS123 address, then switch to CCSDS121
+      if ahb_wr_cnt_cmb < 6 then
+        ahb_address_switch <= '1';  -- execute the CCSDS123 address, then switch to CCSDS121
       else 
-        ahb_address_switch := '0'; 
+        ahb_address_switch <= '0'; 
       end if;
     else
-      ahb_address_switch := '0'; -- No switch needed for 4 registers
+      ahb_address_switch <= '0'; -- No switch needed for 4 registers
     end if;
 
     if r.ram_read_cnt < ram_read_num then              -- buffer the CFG to FIFO
@@ -468,7 +496,7 @@ end case;
 
 end process;
   
-comb_ahb: process (state_reg_ahbw, address_write_cmb, address_read_cmb, data_cmb, size_cmb, appidle_cmb, appidle, htrans_cmb, hburst_cmb, debug_cmb, 
+comb_ahb: process (state_reg_ahbw, rst_n, address_write_cmb, address_read_cmb, data_cmb, size_cmb, appidle_cmb, appidle, htrans_cmb, hburst_cmb, debug_cmb, 
   ahbwrite_cmb, ctrl.o.update, ctrl_reg.i, ctrl.i, ahbread_cmb, beats_reg, count_burst, burst_size)
   -------------------------------------
   begin  

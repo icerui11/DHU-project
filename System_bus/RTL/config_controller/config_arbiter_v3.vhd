@@ -1,16 +1,16 @@
 -- AHB Master Controller Compression Arbiter (Synthesis-Friendly Multi-Stage)
 -- Compressor Configuration Arbiter with Multi-Stage Per Compressor
 --== Institute .... IDA TU Braunschweig RoSy ==--
---== Authors ...... Rui Yin (Modified for Synthesis)                    ==--
---== Project ...... Compression Core Configuration                      ==--
---== Version ...... 3.01 (Synthesis Optimized)                         ==--
---== Conception ... June 2025                                            ==--
+--== Authors ...... Rui Yin (Modified for Synthesis with Enumerations)     ==--
+--== Project ...... Compression Core Configuration                         ==--
+--== Version ...... 3.02 (Enumeration-Based State Machine)                ==--
+--== Conception ... June 2025                                               ==--
 -- Functional Description:
 -- Three-compressor arbitration (HR, LR, H) with multi-stage configuration
 -- HR: CCSDS123 -> CCSDS121 (2 stages)
 -- LR: CCSDS123 -> CCSDS121 (2 stages) 
 -- H:  CCSDS121 only (1 stage)
--- Synthesis-friendly implementation without procedures
+-- Synthesis-friendly implementation with enumeration types
 
 library ieee;
 use ieee.std_logic_1164.all;
@@ -49,28 +49,43 @@ entity config_arbiter_v3 is
 end entity;
 
 architecture rtl of config_arbiter_v3 is
-    -- Grant encoding for 3 compressors
+    -- Grant encoding for 3 compressors (keep as constants for output interface)
     constant GRANT_HR       : std_logic_vector(1 downto 0) := "00";  -- HR compressor
     constant GRANT_LR       : std_logic_vector(1 downto 0) := "01";  -- LR compressor  
     constant GRANT_H        : std_logic_vector(1 downto 0) := "10";  -- H compressor
     constant GRANT_NONE     : std_logic_vector(1 downto 0) := "11";  -- No grant
 
-    -- Configuration stage definitions (encoded as 2-bit values for synthesis efficiency)
-    constant STAGE_IDLE     : std_logic_vector(1 downto 0) := "00";
-    constant STAGE_CCSDS123 : std_logic_vector(1 downto 0) := "01";  
-    constant STAGE_CCSDS121 : std_logic_vector(1 downto 0) := "10";
-    constant STAGE_COMPLETE : std_logic_vector(1 downto 0) := "11";
+    -- Enumeration type for configuration stages
+    -- This makes the code more readable and allows synthesis tools to optimize better
+    type config_stage_type is (
+        STAGE_IDLE,      -- Initial state, no configuration active
+        STAGE_CCSDS123,  -- Configuring CCSDS123 compression stage
+        STAGE_CCSDS121,  -- Configuring CCSDS121 compression stage  
+        STAGE_COMPLETE   -- All stages completed for current compressor
+    );
     
-    -- Configuration state machine (encoded as 2-bit values)
-    constant CONFIG_IDLE        : std_logic_vector(1 downto 0) := "00";
-    constant CONFIG_ARBITRATE   : std_logic_vector(1 downto 0) := "01";  
-    constant CONFIG_EXECUTE     : std_logic_vector(1 downto 0) := "10";
-    constant CONFIG_WAIT_DONE   : std_logic_vector(1 downto 0) := "11";
+    -- Enumeration type for main state machine
+    -- Clear separation of concerns: idle -> arbitrate -> execute -> wait
+    type config_state_type is (
+        CONFIG_IDLE,        -- Waiting for configuration requests
+        CONFIG_ARBITRATE,   -- Selecting which compressor gets access
+        CONFIG_EXECUTE,     -- Setting up configuration parameters
+        CONFIG_WAIT_DONE    -- Waiting for configuration completion
+    );
 
-    -- Internal registers (explicitly defined for clear synthesis inference)
-    signal config_state_reg     : std_logic_vector(1 downto 0);
-    signal current_grant_reg    : std_logic_vector(1 downto 0);
-    signal current_stage_reg    : std_logic_vector(1 downto 0);
+    -- Enumeration type for compressor selection (internal use)
+    -- This provides type safety and better readability than std_logic_vector
+    type compressor_type is (
+        COMP_HR,    -- High Resolution compressor
+        COMP_LR,    -- Low Resolution compressor  
+        COMP_H,     -- H compressor
+        COMP_NONE   -- No compressor selected
+    );
+
+    -- Internal registers using enumeration types
+    signal config_state_reg     : config_state_type;
+    signal current_grant_reg    : compressor_type;
+    signal current_stage_reg    : config_stage_type;
     signal rr_counter_reg       : unsigned(1 downto 0);  -- Round-robin counter (0-2 for HR, LR, H)
     signal config_active_reg    : std_logic;
 
@@ -79,10 +94,10 @@ architecture rtl of config_arbiter_v3 is
     signal read_num_reg         : integer range 0 to 10;
     signal ahb_target_addr_reg  : std_logic_vector(31 downto 0);
 
-    -- Intermediate signals for combinational logic
-    signal next_config_state    : std_logic_vector(1 downto 0);
-    signal next_current_grant   : std_logic_vector(1 downto 0);
-    signal next_current_stage   : std_logic_vector(1 downto 0);
+    -- Next state signals using enumeration types
+    signal next_config_state    : config_state_type;
+    signal next_current_grant   : compressor_type;
+    signal next_current_stage   : config_stage_type;
     signal next_rr_counter      : unsigned(1 downto 0);
     signal next_config_active   : std_logic;
 
@@ -97,7 +112,7 @@ architecture rtl of config_arbiter_v3 is
     signal next_stage_valid     : std_logic;
     
     -- Simplified arbitration signals (priority encoder based)
-    signal arbitration_grant    : std_logic_vector(1 downto 0);
+    signal arbitration_grant    : compressor_type;
     signal arbitration_valid    : std_logic;
 
 begin
@@ -110,33 +125,55 @@ begin
     any_needs_config <= hr_needs_config or lr_needs_config or h_needs_config;
 
     -- Combinational logic for stage completion detection
+    -- Using enumeration comparison is more readable than bit pattern matching
     grant_complete <= '1' when current_stage_reg = STAGE_COMPLETE else '0';
 
-    -- Next stage determination (combinational logic replacing the get_next_stage function)
-    next_stage_determination: process(current_grant_reg, current_stage_reg)
+    -- Next stage determination using enumeration types
+    -- This is much clearer than bit pattern comparisons
+    next_stage_determination: process(current_grant_reg, current_stage_reg,config_done)
     begin
         case current_grant_reg is
-            when GRANT_HR | GRANT_LR =>  -- HR and LR need both CCSDS123 and CCSDS121
+            when COMP_HR | COMP_LR =>  -- HR and LR need both CCSDS123 and CCSDS121
                 case current_stage_reg is
                     when STAGE_IDLE     => 
                         next_current_stage <= STAGE_CCSDS123;
                         next_stage_valid <= '1';
                     when STAGE_CCSDS123 => 
-                        next_current_stage <= STAGE_CCSDS121;
-                        next_stage_valid <= '1';
+                        if config_done = '1' then
+                            next_current_stage <= STAGE_CCSDS121;
+                            next_stage_valid <= '1';
+                        else
+                            next_current_stage <= STAGE_CCSDS123;  -- Stay in CCSDS123 until done
+                            next_stage_valid <= '0';
+                        end if;
                     when STAGE_CCSDS121 => 
-                        next_current_stage <= STAGE_COMPLETE;
-                        next_stage_valid <= '1';
+                        if config_done = '1' then
+                            next_current_stage <= STAGE_COMPLETE;  -- All stages done
+                            next_stage_valid <= '0';
+                        else
+                            next_current_stage <= STAGE_CCSDS121;  -- Stay in CCSDS121 until done
+                            next_stage_valid <= '1';
+                        end if;
                     when others         => 
                         next_current_stage <= STAGE_COMPLETE;
                         next_stage_valid <= '0';
                 end case;
                 
-            when GRANT_H =>              -- H only needs CCSDS121
+            when COMP_H =>              -- H only needs CCSDS121
                 case current_stage_reg is
                     when STAGE_IDLE => 
                         next_current_stage <= STAGE_CCSDS121;
                         next_stage_valid <= '1';
+
+                    when STAGE_CCSDS121 =>
+                        if config_done = '1' then
+                            next_current_stage <= STAGE_COMPLETE;  -- All stages done
+                            next_stage_valid <= '0';
+                        else
+                            next_current_stage <= STAGE_CCSDS121;  -- Stay in CCSDS121 until done
+                            next_stage_valid <= '1';
+                        end if;
+
                     when others     => 
                         next_current_stage <= STAGE_COMPLETE;
                         next_stage_valid <= '0';
@@ -148,7 +185,8 @@ begin
         end case;
     end process;
 
-    -- Configuration parameter setting (combinational logic replacing the set_config_params procedure)
+    -- Configuration parameter setting using enumeration types
+    -- Much more readable than decoding bit patterns
     config_param_setting: process(current_grant_reg, next_current_stage, next_stage_valid)
     begin
         -- Default values to ensure all signals are assigned
@@ -158,7 +196,7 @@ begin
 
         if next_stage_valid = '1' then
             case current_grant_reg is
-                when GRANT_HR =>  -- HR compressor configuration
+                when COMP_HR =>  -- HR compressor configuration
                     case next_current_stage is
                         when STAGE_CCSDS123 =>
                             start_add_reg <= "00000";           -- HR CCSDS123 config start address
@@ -172,7 +210,7 @@ begin
                             null; -- Keep default values
                     end case;
                     
-                when GRANT_LR =>  -- LR compressor configuration
+                when COMP_LR =>  -- LR compressor configuration
                     case next_current_stage is
                         when STAGE_CCSDS123 =>
                             start_add_reg <= "01010";           -- LR CCSDS123 config start address
@@ -186,7 +224,7 @@ begin
                             null; -- Keep default values
                     end case;
                     
-                when GRANT_H =>   -- H compressor configuration
+                when COMP_H =>   -- H compressor configuration
                     case next_current_stage is
                         when STAGE_CCSDS121 =>
                             start_add_reg <= "10100";           -- H CCSDS121 config start address
@@ -203,7 +241,7 @@ begin
     end process;
 
     -- Simplified round-robin arbitration using priority encoder approach
-    -- This creates a rotated priority vector based on round-robin counter
+    -- Now returns enumeration type instead of std_logic_vector
     rotated_priority: process(hr_needs_config, lr_needs_config, h_needs_config, rr_counter_reg)
         -- Create request vector: [H, LR, HR] (bit 2, 1, 0)
         variable request_vector : std_logic_vector(2 downto 0);
@@ -240,51 +278,52 @@ begin
             grant_vector := "000";
         end if;
         
-        -- Convert grant vector back to compressor selection
-        -- accounting for the rotation we applied
+        -- Convert grant vector back to compressor selection using enumeration
+        -- This is much clearer than bit pattern assignments
         case rr_counter_reg is
             when "00" =>  -- No rotation needed
                 if grant_vector(2) = '1' then      -- H granted
-                    arbitration_grant <= GRANT_H;
+                    arbitration_grant <= COMP_H;
                 elsif grant_vector(1) = '1' then   -- LR granted  
-                    arbitration_grant <= GRANT_LR;
+                    arbitration_grant <= COMP_LR;
                 elsif grant_vector(0) = '1' then   -- HR granted
-                    arbitration_grant <= GRANT_HR;
+                    arbitration_grant <= COMP_HR;
                 else
-                    arbitration_grant <= GRANT_NONE;
+                    arbitration_grant <= COMP_NONE;
                 end if;
                 
             when "01" =>  -- Reverse rotation: [HR, H, LR] -> [H, LR, HR]
                 if grant_vector(2) = '1' then      -- HR granted (was highest)
-                    arbitration_grant <= GRANT_HR;
+                    arbitration_grant <= COMP_HR;
                 elsif grant_vector(1) = '1' then   -- H granted (was middle)
-                    arbitration_grant <= GRANT_H;
+                    arbitration_grant <= COMP_H;
                 elsif grant_vector(0) = '1' then   -- LR granted (was lowest)
-                    arbitration_grant <= GRANT_LR;
+                    arbitration_grant <= COMP_LR;
                 else
-                    arbitration_grant <= GRANT_NONE;
+                    arbitration_grant <= COMP_NONE;
                 end if;
                 
             when "10" =>  -- Reverse rotation: [LR, HR, H] -> [H, LR, HR]
                 if grant_vector(2) = '1' then      -- LR granted (was highest)
-                    arbitration_grant <= GRANT_LR;
+                    arbitration_grant <= COMP_LR;
                 elsif grant_vector(1) = '1' then   -- HR granted (was middle)
-                    arbitration_grant <= GRANT_HR;
+                    arbitration_grant <= COMP_HR;
                 elsif grant_vector(0) = '1' then   -- H granted (was lowest)
-                    arbitration_grant <= GRANT_H;
+                    arbitration_grant <= COMP_H;
                 else
-                    arbitration_grant <= GRANT_NONE;
+                    arbitration_grant <= COMP_NONE;
                 end if;
                 
             when others =>
-                arbitration_grant <= GRANT_NONE;
+                arbitration_grant <= COMP_NONE;
         end case;
         
         -- Set arbitration valid flag
         arbitration_valid <= '1' when grant_vector /= "000" else '0';
     end process;
 
-    -- Main state machine next state logic (simplified with clear arbitration)
+    -- Main state machine next state logic using enumeration types
+    -- Much more readable and maintainable than bit pattern comparisons
     next_state_logic: process(config_state_reg, any_needs_config, arbitration_valid, arbitration_grant,
                              grant_complete, config_done, next_stage_valid)
     begin
@@ -306,7 +345,7 @@ begin
                     next_current_grant <= arbitration_grant;
                     next_config_state <= CONFIG_EXECUTE;
                 else
-                    next_current_grant <= GRANT_NONE;
+                    next_current_grant <= COMP_NONE;
                     next_config_state <= CONFIG_IDLE;
                 end if;
 
@@ -320,7 +359,7 @@ begin
                     end if;
                     
                     next_config_state <= CONFIG_IDLE;
-                    next_current_grant <= GRANT_NONE;
+                    next_current_grant <= COMP_NONE;
                     next_config_active <= '0';
                 elsif next_stage_valid = '1' then
                     -- Valid next stage exists, start configuration
@@ -329,7 +368,7 @@ begin
                 else
                     -- Invalid state, return to idle
                     next_config_state <= CONFIG_IDLE;
-                    next_current_grant <= GRANT_NONE;
+                    next_current_grant <= COMP_NONE;
                 end if;
 
             when CONFIG_WAIT_DONE =>
@@ -340,18 +379,20 @@ begin
                 end if;
                 
             when others =>
+                -- This should never happen with enumeration types, but good practice
                 next_config_state <= CONFIG_IDLE;
-                next_current_grant <= GRANT_NONE;
+                next_current_grant <= COMP_NONE;
         end case;
     end process;
 
-    -- Registered state machine (sequential logic - clear for synthesis tools)
+    -- Registered state machine using enumeration types
+    -- Reset values are much clearer with enumeration names
     state_registers: process(clk, rst_n)
     begin
         if rst_n = '0' then
-            -- Clear reset state - explicitly defined for synthesis
+            -- Clear reset state using enumeration literals
             config_state_reg <= CONFIG_IDLE;
-            current_grant_reg <= GRANT_NONE;
+            current_grant_reg <= COMP_NONE;
             current_stage_reg <= STAGE_IDLE;
             rr_counter_reg <= "00";           -- Start from HR
             config_active_reg <= '0';
@@ -383,8 +424,13 @@ begin
         end if;
     end process;
     
-    -- Output assignments (combinational)
-    grant <= current_grant_reg when config_active_reg = '1' else GRANT_NONE;
+    -- Output assignments with enumeration to std_logic_vector conversion
+    -- This conversion function makes the interface mapping clear
+    grant <= GRANT_HR   when current_grant_reg = COMP_HR and config_active_reg = '1' else
+             GRANT_LR   when current_grant_reg = COMP_LR and config_active_reg = '1' else
+             GRANT_H    when current_grant_reg = COMP_H  and config_active_reg = '1' else
+             GRANT_NONE;
+             
     grant_valid <= config_active_reg;
     config_req <= config_active_reg;
 
