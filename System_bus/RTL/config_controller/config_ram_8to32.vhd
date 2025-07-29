@@ -40,123 +40,131 @@ entity config_ram_8to32 is
 end entity config_ram_8to32;
 
 architecture rtl of config_ram_8to32 is  
-    -- RAM storage type definition
-    type ram_type is array (0 to INPUT_DEPTH-1) of std_logic_vector(INPUT_DATA_WIDTH-1 downto 0);
+    -- RAM storage type definition - Changed to 32-bit x 24
+    type ram_type is array (0 to OUTPUT_DEPTH-1) of std_logic_vector(OUTPUT_DATA_WIDTH-1 downto 0);
     signal ram_memory : ram_type;
-    -- Read registers
- --   signal base_addr : integer;
-    -- Read state machine signals
-    type read_state_type is (IDLE, READING);
-    signal read_state : read_state_type;
     
-    -- Read control signals
-    signal byte_counter : unsigned(1 downto 0);  -- 0 to 3, tracks which byte we're reading
-    signal base_addr_reg : unsigned(INPUT_ADDR_WIDTH-1 downto 0);  -- Base address for current read
-    signal current_addr : integer range 0 to 95;  -- Current byte address being read
-    signal rd_data_temp : std_logic_vector(OUTPUT_DATA_WIDTH-1 downto 0);  -- Temporary data accumulator
+    -- Write state machine signals
+    type write_state_type is (IDLE, WRITING);
+    signal write_state : write_state_type;
+    
+    -- Write control signals
+    signal byte_counter : unsigned(1 downto 0);  -- 0 to 3, tracks which byte we're writing
+    signal word_addr_reg : unsigned(OUTPUT_ADDR_WIDTH-1 downto 0);  -- Current 32-bit word address
+    signal wr_data_temp : std_logic_vector(OUTPUT_DATA_WIDTH-1 downto 0);  -- Temporary data accumulator
+    signal word_complete : std_logic;  -- Signal indicating a complete 32-bit word is ready
+    
+    -- Read registers
+    signal rd_data_reg : std_logic_vector(OUTPUT_DATA_WIDTH-1 downto 0);
     signal rd_valid_reg : std_logic;
 
 begin
 
-    write_proc : process(clk)
-    begin
-        if rising_edge(clk) then    
-            if wr_en = '1' then
-                ram_memory(to_integer(unsigned(wr_addr))) <= wr_data;
-            end if;
-        end if;
-    end process write_proc;
-/*
-    -- Read process
-    read_proc : process(clk, rst_n)
-    begin
-        if rst_n = '0' then  
-            rd_data <= (others => '0');
-            rd_valid <= '0';
-        elsif rising_edge(clk) then  
-            if rd_en = '1' then
-                base_addr <= to_integer(unsigned(rd_addr) & "00");
-
-                rd_data(7 downto 0)   <= ram_memory(base_addr);
-                rd_data(15 downto 8)  <= ram_memory(base_addr + 1);
-                rd_data(23 downto 16) <= ram_memory(base_addr + 2);
-                rd_data(31 downto 24) <= ram_memory(base_addr + 3);
-       --         rd_data <= temp_data;
-                rd_valid <= '1';
-            else
-                rd_data <= (others => '0');
-                rd_valid <= '0';
-            end if;
-        end if;
-    end process read_proc;
---    rd_data <= rd_data_reg;
---    rd_valid <= rd_valid_reg;
-*/
-
-    read_proc : process(clk, rst_n)
+    -- Write process - Assembles 4 consecutive 8-bit writes into 32-bit data
+    write_proc : process(clk, rst_n)
     begin
         if rst_n = '0' then
             -- Asynchronous reset: initialize all signals
-            read_state <= IDLE;
+            write_state <= IDLE;
             byte_counter <= (others => '0');
-            base_addr_reg <= (others => '0');
-            rd_data_temp <= (others => '0');
-            rd_valid_reg <= '0';
+            word_addr_reg <= (others => '0');
+            wr_data_temp <= (others => '0');
+            word_complete <= '0';
             
         elsif rising_edge(clk) then
             
-            case read_state is
+            word_complete <= '0';  -- Default: no complete word
+            
+            case write_state is
                 
                 when IDLE =>
-                    -- Wait for read enable signal
-                    rd_valid_reg <= '0';  -- Clear valid signal in idle state
+                    -- Wait for write enable signal
+                    byte_counter <= (others => '0');  -- Start from byte 0
+                    wr_data_temp <= (others => '0');  -- Clear temp data
                     
-                    if rd_en = '1' then
-                        -- Start new read sequence
-                        read_state <= READING;
-                        byte_counter <= (others => '0');  -- Start from byte 0
-                        -- Calculate base address: 5-bit rd_addr becomes 7-bit base address
-                        base_addr_reg <= (others => '0');
-                        rd_data_temp <= (others => '0');  -- Clear temp data
+                    if wr_en = '1' then
+                        -- Start new write sequence
+                        write_state <= WRITING;
+                        -- Calculate 32-bit word address from 8-bit address (divide by 4)
+                        word_addr_reg <= unsigned(wr_addr(INPUT_ADDR_WIDTH-1 downto 2));
+                        -- Store first byte
+                        wr_data_temp(7 downto 0) <= wr_data;
+                        byte_counter <= "01";  -- Next byte position
                     end if;
                 
-                when READING =>
-                    -- Sequential byte reading state
+                when WRITING =>
+                    -- Sequential byte writing state
                     
-                    -- Calculate current byte address
-                    current_addr <= to_integer(base_addr_reg + byte_counter);
-                    
-                    -- Read current byte and place it in correct position
-                    case byte_counter is
-                        when "00" =>  -- Reading byte 0 (LSB)
-                            rd_data_temp(7 downto 0) <= ram_memory(current_addr);
-                        when "01" =>  -- Reading byte 1
-                            rd_data_temp(15 downto 8) <= ram_memory(current_addr);
-                        when "10" =>  -- Reading byte 2
-                            rd_data_temp(23 downto 16) <= ram_memory(current_addr);
-                        when "11" =>  -- Reading byte 3 (MSB)
-                            rd_data_temp(31 downto 24) <= ram_memory(current_addr);
-                        when others =>
-                            -- Should never reach here
-                            null;
-                    end case;
-                    
-                    -- Check if we've read all 4 bytes
-                    if byte_counter = "11" then
-                        -- Finished reading all bytes
-                        read_state <= IDLE;
-                        rd_valid_reg <= '1';  -- Assert valid signal
-                        byte_counter <= (others => '0');
+                    if wr_en = '1' then
+                        -- Check if this write belongs to the same 32-bit word
+                        if unsigned(wr_addr(INPUT_ADDR_WIDTH-1 downto 2)) = word_addr_reg then
+                            -- Same word, continue accumulating bytes
+                            case byte_counter is
+                                when "01" =>  -- Writing byte 1
+                                    wr_data_temp(15 downto 8) <= wr_data;
+                                when "10" =>  -- Writing byte 2
+                                    wr_data_temp(23 downto 16) <= wr_data;
+                                when "11" =>  -- Writing byte 3 (MSB)
+                                    wr_data_temp(31 downto 24) <= wr_data;
+                                when others =>
+                                    -- Should never reach here
+                                    null;
+                            end case;
+                            
+                            -- Check if we've written all 4 bytes
+                            if byte_counter = "11" then
+                                -- Finished writing all bytes of current word
+                                word_complete <= '1';  -- Signal complete word
+                                write_state <= IDLE;
+                                byte_counter <= (others => '0');
+                            else
+                                -- Move to next byte
+                                byte_counter <= byte_counter + 1;
+                            end if;
+                            
+                        else
+                            -- Different word address - write current incomplete word and start new one
+                            word_complete <= '1';  -- Write current (possibly incomplete) word
+                            write_state <= IDLE;  -- Will restart in next cycle
+                        end if;
                     else
-                        -- Move to next byte
-                        byte_counter <= byte_counter + 1;
+                        -- No write enable - stay in current state
+                        null;
                     end if;
                     
             end case;
         end if;
+    end process write_proc;
+
+    -- RAM write process - Writes complete 32-bit words to RAM
+    ram_write_proc : process(clk)
+    begin
+        if rising_edge(clk) then    
+            if word_complete = '1' then
+                ram_memory(to_integer(word_addr_reg)) <= wr_data_temp;
+            end if;
+        end if;
+    end process ram_write_proc;
+
+    -- Read process - Directly reads 32-bit data
+    read_proc : process(clk, rst_n)
+    begin
+        if rst_n = '0' then
+            rd_data_reg <= (others => '0');
+            rd_valid_reg <= '0';
+        elsif rising_edge(clk) then
+            if rd_en = '1' then
+                -- Direct 32-bit read from RAM
+                rd_data_reg <= ram_memory(to_integer(unsigned(rd_addr)));
+                rd_valid_reg <= '1';
+            else
+                rd_valid_reg <= '0';
+            end if;
+        end if;
     end process read_proc;
 
     -- Output assignments
-    rd_data <= rd_data_temp;
+    rd_data <= rd_data_reg;
     rd_valid <= rd_valid_reg;
+
 end architecture rtl;

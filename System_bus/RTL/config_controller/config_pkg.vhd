@@ -58,8 +58,14 @@ package config_pkg is
         Finished       => '0',
         Error          => '0'
     );
+    constant compressor_status_allzero : compressor_status := (                -- compressor all zero for tb
+        AwaitingConfig => '0',
+        Ready          => '0',
+        Finished       => '0',
+        Error          => '0'
+    );
 
-    type config_state_type is (IDLE, ARBITER_WR, WRITE_REQ, AHB_Burst_WR, ERROR); 
+    type config_state_type is (IDLE, ARBITER_WR, WRITE_REQ, AHB_Burst_WR, config_enable, ERROR); 
     type config_reg_type is record
       config_state              : config_state_type;
       ram_read_cnt              : unsigned(3 downto 0); -- RAM read counter (4 bits) 

@@ -91,7 +91,9 @@ constant HR_CONFIG_DATA : config_data_array := (
 );
 
   constant LR_CONFIG_DATA : config_data_array := (
+  -- word0: 00 00 00 00 => 00 00 00 00
     x"00", x"00", x"00", x"00",
+  -- word1: 04 00 00 00 => 00 00 00 04
     x"00", x"00", x"00", x"04",
     x"18", x"81", x"50", x"00",
     x"80", x"1A", x"1E", x"00",
@@ -279,29 +281,34 @@ begin
     -- write HR 121 data to RAM at address 24
     write_config_to_ram(24, HR_CONFIG_DATA_121, 16);
     -- Wait for configuration to complete
-    wait for CLK_PERIOD * 200;
+        wait for CLK_PERIOD * 6;
+    -- Write LR configuration data to RAM at address 40
+    write_config_to_ram(39, HR_CONFIG_DATA, 24);
+    write_config_to_ram(64, HR_CONFIG_DATA_121, 16);
+    wait for CLK_PERIOD * 10;
     
     -- start configure HR compressor
     compressor_status_HR.AwaitingConfig <= '1';
-    wait for CLK_PERIOD * 200;
+    wait for CLK_PERIOD * 60;
     
     -- Check if data was written to AHB memory at HR base address
     --check_ahb_memory(16#10000000#, HR_CONFIG_DATA, 6);  -- 6 words (24 bytes)
-
+   compressor_status_HR.AwaitingConfig <= '0';
     -- Test Phase 2: Configure LR compressor
     test_phase <= 2;
     report "Test Phase 2: Configuring LR compressor";
-
+    wait for CLK_PERIOD * 6;
     -- Write LR configuration data to RAM at address 40
-    write_config_to_ram(40, LR_CONFIG_DATA, 24);
-    write_config_to_ram(56, LR_CONFIG_DATA_121, 16);
+   -- write_config_to_ram(39, LR_CONFIG_DATA, 24);
+   -- write_config_to_ram(56, LR_CONFIG_DATA_121, 16);
     -- Wait for configuration to complete
-    wait for CLK_PERIOD * 200;
+    wait for CLK_PERIOD * 50;
     
     -- Clear LR AwaitingConfig flag
+    compressor_status_LR.AwaitingConfig <= '1';
+    wait for CLK_PERIOD * 60;
+
     compressor_status_LR.AwaitingConfig <= '0';
-    wait for CLK_PERIOD * 10;
-    
     -- Check if data was written to AHB memory at LR base address
     --check_ahb_memory(16#20000000#, LR_CONFIG_DATA, 6);
     
@@ -310,7 +317,7 @@ begin
     report "Test Phase 3: Configuring H compressor";
     
     -- Write H configuration data to RAM at address 64
-    write_config_to_ram(72, H_CONFIG_DATA, 16);
+    write_config_to_ram(80, H_CONFIG_DATA, 16);
     
     -- Wait for configuration to complete
     wait for CLK_PERIOD * 100;

@@ -260,8 +260,8 @@ begin
           -- Check if this is the last register
           if ahb_wr_cnt_reg = ram_read_num - 1 then
        --     address_write_cmb <= std_logic_vector(unsigned(ahb_target_addr) - x"00000004");
-            config_done_cmb <= '1';
-            v.config_state := IDLE;
+   --         config_done_cmb <= '1';
+            v.config_state := config_enable;
             v.data_valid := '0';
           else 
             address_write_cmb <= std_logic_vector(unsigned(address_write) + x"00000004");
@@ -310,8 +310,8 @@ begin
             -- Check if this is the last register
             if ahb_wr_cnt_reg = ram_read_num  then
         --      address_write_cmb <= std_logic_vector(unsigned(ahb_target_addr) - x"00000004");
-              v.config_state := IDLE;
-              config_done_cmb <= '1';
+              v.config_state := config_enable;
+   --           config_done_cmb <= '1';
             else 
               address_write_cmb <= std_logic_vector(unsigned(address_write) + x"00000004");
               ahb_wr_cnt_cmb <= ahb_wr_cnt_reg + 1;
@@ -332,13 +332,32 @@ begin
           -- Check for end of burst
           if (state_reg_ahbw = s0) or (state_reg_ahbw = s2) then
             if ahb_wr_cnt_reg = ram_read_num then
-              appidle_cmb <= true;               
-              v.config_state := IDLE;
-              config_done_cmb <= '1';
+ --             appidle_cmb <= true;               
+              v.config_state := config_enable;
+ --             config_done_cmb <= '1';
             end if;
           end if;
         end if;
 
+      when config_enable =>                 -- write control register (0) assert
+          beats <= to_unsigned(1, beats'length);  -- Reset beats to 1
+          if ctrl.o.update = '1' and state_reg_ahbw = s0 then
+            ahbwrite_cmb <= '1';
+            address_write_cmb <= ahb_target_addr;
+            data_cmb <= x"00000001";
+            htrans_cmb <= "10";  -- non-Sequential transfer
+            size_cmb <= "10";   -- 32-bit transfer
+            hburst_cmb <= '0';  -- Single transfer
+            if appidle = true then  
+              appidle_cmb <= false;
+              ahb_wr_cnt_cmb <= ahb_wr_cnt_reg + 1;
+            else 
+              v.config_state := IDLE;  -- Return to IDLE after writing control register
+              config_done_cmb <= '1';
+              appidle_cmb <= true;
+            end if;
+          end if;
+        
       when ERROR =>
         -- Error handling - return to IDLE
         v.config_state := IDLE;
@@ -376,7 +395,7 @@ begin
 
   end process;
   
-  comb_ahb: process (state_reg_ahbw,rst_n, address_write_cmb, address_read_cmb, data_cmb, size_cmb, appidle_cmb, appidle, htrans_cmb, hburst_cmb, debug_cmb, 
+  comb_ahb: process (state_reg_ahbw, address_write_cmb, address_read_cmb, data_cmb, size_cmb, appidle_cmb, appidle, htrans_cmb, hburst_cmb, debug_cmb, 
   ahbwrite_cmb, rst_n, ctrl.o.update, ctrl_reg.i, ctrl.i, ahbread_cmb, beats, count_burst, burst_size)
   -------------------------------------
   begin  

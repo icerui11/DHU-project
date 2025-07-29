@@ -92,8 +92,6 @@ add wave -position end  sim:/ahb_master_controller_tb/dut/ahbwrite
 add wave -position end  sim:/ahb_master_controller_tb/dut/ahbwrite_cmb
 add wave -position end  sim:/ahb_master_controller_tb/dut/ahbread_cmb
 add wave -position end  sim:/ahb_master_controller_tb/dut/ahbread
-add wave -position end  sim:/ahb_master_controller_tb/dut/rev_counter
-add wave -position end  sim:/ahb_master_controller_tb/dut/rev_counter_reg
 add wave -position end  sim:/ahb_master_controller_tb/dut/count_burst
 add wave -position end  sim:/ahb_master_controller_tb/dut/count_burst_cmb
 add wave -position end  sim:/ahb_master_controller_tb/dut/burst_size
@@ -119,12 +117,22 @@ add wave -position end  sim:/ahb_master_controller_tb/dut/hfull_cmb
 add wave -position end  sim:/ahb_master_controller_tb/dut/afull_cmb
 add wave -position end  sim:/ahb_master_controller_tb/dut/aempty_cmb
 add wave -position end  sim:/ahb_master_controller_tb/dut/data_out_fifo
+add wave -position end  sim:/ahb_master_controller_tb/dut/ahb_address_switch
 add wave -position end  sim:/ahb_master_controller_tb/dut/r
+add wave -position end  sim:/ahb_master_controller_tb/dut/rin
 add wave -position end  sim:/ahb_master_controller_tb/dut/fifo_no_edac/w_update
 add wave -position end  sim:/ahb_master_controller_tb/dut/fifo_no_edac/r_update
 add wave -position end  sim:/ahb_master_controller_tb/dut/fifo_no_edac/empty
 add wave -position end  sim:/ahb_master_controller_tb/dut/fifo_no_edac/data_in
 add wave -position end  sim:/ahb_master_controller_tb/dut/fifo_no_edac/data_out
+add wave -position end  sim:/ahb_master_controller_tb/dut/config_arbiter_inst/config_done
+add wave -position end  sim:/ahb_master_controller_tb/dut/config_arbiter_inst/config_req
+add wave -position end  sim:/ahb_master_controller_tb/dut/config_arbiter_inst/start_add
+add wave -position end  sim:/ahb_master_controller_tb/dut/config_arbiter_inst/read_num
+add wave -position end  sim:/ahb_master_controller_tb/dut/config_arbiter_inst/ahb_base_addr_123
+add wave -position end  sim:/ahb_master_controller_tb/dut/config_arbiter_inst/ahb_base_addr_121
+add wave -position end  sim:/ahb_master_controller_tb/dut/config_arbiter_inst/grant
+add wave -position end  sim:/ahb_master_controller_tb/dut/config_arbiter_inst/grant_valid
 # vsim -coverage work.ahb_master_controller_tb -vopt -t 1ns -voptargs="+acc"
 #wave file
 
