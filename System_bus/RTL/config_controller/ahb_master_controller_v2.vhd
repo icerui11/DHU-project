@@ -121,7 +121,7 @@ architecture rtl of ahb_master_controller_v2 is
   signal r_update_out, w_update_out : std_logic;  -- Read and write update signals for FIFO
   -- New definition
   signal r, rin : config_reg_type;
-
+  signal should_return_to_idle_cmb, should_return_to_idle_reg : boolean;
 begin
 
   -----------------------------------------------------------------------------  
@@ -153,6 +153,7 @@ begin
       config_done <= '0';
       r_update_reg <= '0';
       w_update_reg <= '0';
+      should_return_to_idle_reg <= true;
     elsif clk'event and clk = '1' then
       r <= rin; 
       size <= size_cmb;
@@ -170,7 +171,8 @@ begin
       beats_reg <= beats; 
       remaining_writes <= remaining_writes_cmb;
       config_done <= config_done_cmb; 
-     w_update_reg <= w_update_out;
+      w_update_reg <= w_update_out;
+      should_return_to_idle_reg <= should_return_to_idle_cmb;
       if (ctrl.o.update = '1') then
         r_update_reg <= r_update_out;
       end if; 
@@ -178,11 +180,12 @@ begin
   end process reg;
 
   -- Main combinational process
-  process(arbiter_grant, arbiter_config_req, ram_wr_en, r, empty_cmb, arbiter_grant_valid, r_update_reg, w_update_reg,
+  process(should_return_to_idle_reg, arbiter_grant, arbiter_config_req, ram_wr_en, r, empty_cmb, arbiter_grant_valid, r_update_reg, w_update_reg,
           remaining_writes, state_next_ahbw, state_reg_ahbw, ctrl.o.update, address_write, 
           ahb_wr_cnt_reg, ram_rd_data_cmb, ram_rd_valid_cmb, ahb_target_addr, ram_read_num, data_out_fifo)
     variable v : config_reg_type;
     variable beats_v : unsigned(3 downto 0);
+    variable should_return_to_idle : boolean;
   begin
 
     -- Default assignments to maintain current values
@@ -201,7 +204,18 @@ begin
     remaining_writes_cmb <= remaining_writes;
     config_done_cmb <= '0'; 
   --  v.data_valid := '0';
-    
+    /*
+    should_return_to_idle_cmb <= (arbiter_config_req = '0') or (ram_wr_en = '1');
+    if should_return_to_idle_reg then
+      v.config_state := IDLE;
+      v.start_preload_ram := '0';
+      ahb_wr_cnt_cmb <= (others => '0');
+      remaining_writes_cmb <= (others => '0');
+      address_write_cmb <= (others => '0');
+    --/ Clear all state-related signals
+      appidle_cmb <= true;
+    end if;
+*/
     case r.config_state is    
       when IDLE =>
         v.start_preload_ram := '0';
@@ -210,7 +224,7 @@ begin
         address_write_cmb <= (others => '0');
         
         -- Check for arbitration request and ensure no RAM write conflict
-        if arbiter_config_req = '1' and state_reg_ahbw = s0 and ram_wr_en = '0' then
+        if arbiter_config_req = '1' and ram_wr_en = '0' then             -- and state_reg_ahbw = s0
           v.config_state := ARBITER_WR;
         else 
           v.config_state := IDLE;
@@ -235,7 +249,7 @@ begin
 
       when WRITE_REQ =>
         -- Exit if RAM write is active
-        if ram_wr_en = '1' then
+        if (arbiter_config_req = '0') or (ram_wr_en = '1') then
           v.config_state := IDLE;
         end if;
         
@@ -245,7 +259,7 @@ begin
   --      else
           beats_v := resize(remaining_writes, beats'length);
   --      end if;
-        beats <= beats_v;
+          beats <= beats_v;
 
         -- Trigger FIFO read when ready
         if (empty_cmb = '0' and ctrl.o.update = '1' and (state_next_ahbw = s0 or state_next_ahbw = s4)) then
@@ -254,7 +268,7 @@ begin
         end if; 
         
         -- Process write when data is ready
-        if((state_reg_ahbw = s0) and r_update_reg = '1' and ctrl.o.update = '1') then
+        if((state_reg_ahbw = s0 or state_reg_ahbw = s4) and r_update_reg = '1' and ctrl.o.update = '1') then
           v.data_valid := '0';
           
           -- Check if this is the last register
@@ -293,7 +307,7 @@ begin
 
       when AHB_Burst_WR =>
         -- Exit if RAM write is active
-        if ram_wr_en = '1' then
+        if (arbiter_config_req = '0') or (ram_wr_en = '1') then
           v.config_state := IDLE;
         end if;
 
@@ -311,7 +325,6 @@ begin
             if ahb_wr_cnt_reg = ram_read_num  then
         --      address_write_cmb <= std_logic_vector(unsigned(ahb_target_addr) - x"00000004");
               v.config_state := config_enable;
-   --           config_done_cmb <= '1';
             else 
               address_write_cmb <= std_logic_vector(unsigned(address_write) + x"00000004");
               ahb_wr_cnt_cmb <= ahb_wr_cnt_reg + 1;
@@ -327,7 +340,6 @@ begin
           elsif v.data_valid = '0' then 
             appidle_cmb <= true;  
           end if;
-
 
           -- Check for end of burst
           if (state_reg_ahbw = s0) or (state_reg_ahbw = s2) then
@@ -348,6 +360,7 @@ begin
             htrans_cmb <= "10";  -- non-Sequential transfer
             size_cmb <= "10";   -- 32-bit transfer
             hburst_cmb <= '0';  -- Single transfer
+            /*
             if appidle = true then  
               appidle_cmb <= false;
               ahb_wr_cnt_cmb <= ahb_wr_cnt_reg + 1;
@@ -357,7 +370,11 @@ begin
               appidle_cmb <= true;
             end if;
           end if;
-        
+        */
+        config_done_cmb <= '1';
+        v.config_state := IDLE;  -- Return to IDLE after writing control register
+        end if;
+
       when ERROR =>
         -- Error handling - return to IDLE
         v.config_state := IDLE;

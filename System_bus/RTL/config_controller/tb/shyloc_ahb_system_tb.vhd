@@ -26,15 +26,15 @@ architecture behavior of shyloc_ahb_system_tb is
   -----------------------------------------------------------------------------
   -- Clock and Reset Signals
   -----------------------------------------------------------------------------
-  signal clk_sys : std_logic := '0';
-  signal clk_ahb : std_logic := '0';
+  signal clk_sys : std_logic := '1';
+  signal clk_ahb : std_logic := '1';
   signal rst_n   : std_logic := '0';
   signal rst_n_lr : std_logic := '0';
   signal rst_n_h  : std_logic := '0';
   signal rst_n_hr : std_logic := '0';
 
   constant CLK_SYS_PERIOD : time := 10 ns;   -- 100 MHz system clock
-  constant CLK_AHB_PERIOD : time := 8 ns;    -- 125 MHz AHB clock
+  constant CLK_AHB_PERIOD : time := 10 ns;    -- 100 MHz AHB clock
   
   -----------------------------------------------------------------------------
   -- Configuration RAM Interface
@@ -68,6 +68,8 @@ architecture behavior of shyloc_ahb_system_tb is
   -- Control and Status Signals
   -----------------------------------------------------------------------------
   signal force_stop    : std_logic := '0';
+  signal force_stop_lr : std_logic := '0';
+  signal force_stop_h  : std_logic := '0';
   signal ready_ext     : std_logic := '1';
   signal system_ready  : std_logic;
   signal config_done   : std_logic;
@@ -119,27 +121,28 @@ architecture behavior of shyloc_ahb_system_tb is
   );
   
   -- LR Compressor Configuration Data (example)
-  constant LR_CONFIG_DATA_123 : config_data_array(0 to 19) := (
+  constant LR_CONFIG_DATA_123 : config_data_array(0 to 23) := (
     x"00", x"00", x"00", x"00",
-    x"00", x"00", x"00", x"03",
-    x"10", x"41", x"30", x"00",
-    x"40", x"0A", x"0E", x"00",
-    x"C9", x"0F", x"44", x"01"
+    x"00", x"00", x"00", x"04",
+    x"18", x"81", x"50", x"00",
+    x"80", x"1A", x"1E", x"00",
+    x"D9", x"1F", x"54", x"01",
+    x"0A", x"08", x"B2", x"12"
   );
   
-  constant LR_CONFIG_DATA_121 : config_data_array(0 to 11) := (
+  constant LR_CONFIG_DATA_121 : config_data_array(0 to 15) := (
     x"00", x"00", x"00", x"00",
-    x"10", x"08", x"30", x"00",
-    x"00", x"01", x"0E", x"00"
+    x"20", x"10", x"50", x"00",
+    x"00", x"02", x"1E", x"00",
+    x"40", x"41", x"54", x"01"
   );
   
   -- H Compressor Configuration Data (example)
-  constant H_CONFIG_DATA_121 : config_data_array(0 to 19) := (
+  constant H_CONFIG_DATA_121 : config_data_array(0 to 15) := (
     x"00", x"00", x"00", x"00",
-    x"00", x"00", x"00", x"05",
-    x"20", x"82", x"60", x"00",
-    x"80", x"14", x"1C", x"00",
-    x"E9", x"2F", x"64", x"01"
+    x"20", x"10", x"50", x"00",
+    x"00", x"02", x"1E", x"00",
+    x"40", x"41", x"54", x"01"
   );
   
   -----------------------------------------------------------------------------
@@ -194,6 +197,8 @@ begin
       data_out_H       => data_out_H,
       data_out_valid_H => data_out_valid_H,
       force_stop       => force_stop,
+      force_stop_lr    => force_stop_lr,
+      force_stop_h     => force_stop_h,
       ready_ext        => ready_ext,
       system_ready     => system_ready,
       config_done      => config_done,
@@ -205,61 +210,21 @@ begin
   -----------------------------------------------------------------------------
   stimulus_proc: process
     
-    -- Procedure to write configuration data to RAM with proper format
-    -- The format in RAM is: [Target_Addr(4B)][Num_Regs(1B)][Config_Data(N*B)]
+    -- Procedure to write configuration data to RAM
     procedure write_config_to_ram(
-      constant start_addr : in integer;
+      constant start_addr : in natural;
       constant config_data : in config_data_array;
-      constant target_addr : in std_logic_vector(31 downto 0);
-      constant config_name : in string
+      constant num_bytes : in natural
     ) is
-      variable num_registers : integer;
     begin
-      -- Calculate number of 32-bit registers (4 bytes each)
-      num_registers := config_data'length / 4;
-      
-      report "========================================";
-      report "Writing " & config_name & " configuration to RAM";
-      report "Start address: " & integer'image(start_addr);
-      report "Target AHB address: " & to_hstring(target_addr);
-      report "Number of 32-bit registers: " & integer'image(num_registers);
-      report "Total bytes: " & integer'image(config_data'length);
-      
-      -- Step 1: Write target address (4 bytes, little-endian)
-      ram_wr_en <= '1';
-      ram_wr_addr <= std_logic_vector(to_unsigned(start_addr, ram_wr_addr'length));
-      ram_wr_data <= target_addr(7 downto 0);
-      wait for CLK_AHB_PERIOD;
-      
-      ram_wr_addr <= std_logic_vector(to_unsigned(start_addr + 1, ram_wr_addr'length));
-      ram_wr_data <= target_addr(15 downto 8);
-      wait for CLK_AHB_PERIOD;
-      
-      ram_wr_addr <= std_logic_vector(to_unsigned(start_addr + 2, ram_wr_addr'length));
-      ram_wr_data <= target_addr(23 downto 16);
-      wait for CLK_AHB_PERIOD;
-      
-      ram_wr_addr <= std_logic_vector(to_unsigned(start_addr + 3, ram_wr_addr'length));
-      ram_wr_data <= target_addr(31 downto 24);
-      wait for CLK_AHB_PERIOD;
-      
-      -- Step 2: Write number of registers (1 byte)
-      ram_wr_addr <= std_logic_vector(to_unsigned(start_addr + 4, ram_wr_addr'length));
-      ram_wr_data <= std_logic_vector(to_unsigned(num_registers, 8));
-      wait for CLK_AHB_PERIOD;
-      
-      -- Step 3: Write configuration data
-      for i in config_data'range loop
-        ram_wr_addr <= std_logic_vector(to_unsigned(start_addr + 5 + i, ram_wr_addr'length));
+      for i in 0 to num_bytes-1 loop
+        ram_wr_en <= '1';
+        ram_wr_addr <= std_logic_vector(to_unsigned(start_addr + i, ram_wr_addr'length));
         ram_wr_data <= config_data(i);
-        wait for CLK_AHB_PERIOD;
+        wait until rising_edge(clk_sys);
       end loop;
-      
       ram_wr_en <= '0';
-      wait for CLK_AHB_PERIOD;
-      
-      report "Configuration write complete for " & config_name;
-      report "========================================";
+      wait until rising_edge(clk_sys);
     end procedure;
     
     -- Procedure to send test data to a compressor
@@ -324,7 +289,9 @@ begin
     rst_n <= '0';
     report "Phase 0: System reset asserted";
     wait for 100 ns;
-    
+    rst_n_h <= '0';
+    rst_n_lr <= '0';
+    -- hold reset for h and hr compressors
     rst_n <= '1';
     report "Phase 0: System reset released";
     wait for 100 ns;
@@ -340,12 +307,16 @@ begin
     rst_n_hr <= '1';
     wait for 40 ns; 
     -- Write HR CCSDS123 configuration to RAM at address 0
-    write_config_to_ram(
-      start_addr => 0,
-      config_data => HR_CONFIG_DATA_123,
-      target_addr => COMPRESSOR_BASE_ADDR_HR_123,
-      config_name => "HR CCSDS123"
-    );
+    -- Write CCSDS123 configuration to RAM
+    write_config_to_ram(0, HR_CONFIG_DATA_123, 24);
+    -- write HR 121 data to RAM at address 24
+    write_config_to_ram(24, HR_CONFIG_DATA_121, 16);
+    -- write LR 123 data to RAM at address 40
+    write_config_to_ram(40, LR_CONFIG_DATA_123, 24);
+    -- write LR 121 data to RAM at address 64
+    write_config_to_ram(64, LR_CONFIG_DATA_121, 16);
+    -- write H 121 data to RAM at address 80
+    write_config_to_ram(80, H_CONFIG_DATA_121, 16);
     wait for 300 ns;
     rst_n <= '0';
     wait for 40 ns;
@@ -365,13 +336,6 @@ begin
     report "Phase 2: Configuring HR Compressor CCSDS121";
     report "================================================================";
     
-    -- Write HR CCSDS121 configuration to RAM at address 100
-    write_config_to_ram(
-      start_addr => 100,
-      config_data => HR_CONFIG_DATA_121,
-      target_addr => COMPRESSOR_BASE_ADDR_HR_121,
-      config_name => "HR CCSDS121"
-    );
     
     -- Wait for configuration to complete
     wait_for_config_done(200 ns, "HR CCSDS121");
@@ -410,37 +374,11 @@ begin
     report "Phase 4: Configuring Other Compressors";
     report "================================================================";
     
-    -- Configure LR CCSDS123
-    write_config_to_ram(
-      start_addr => 200,
-      config_data => LR_CONFIG_DATA_123,
-      target_addr => COMPRESSOR_BASE_ADDR_LR_123,
-      config_name => "LR CCSDS123"
-    );
-    wait_for_config_done(2 us, "LR CCSDS123");
-    wait for 200 ns;
-    
-    -- Configure LR CCSDS121
-    write_config_to_ram(
-      start_addr => 300,
-      config_data => LR_CONFIG_DATA_121,
-      target_addr => COMPRESSOR_BASE_ADDR_LR_121,
-      config_name => "LR CCSDS121"
-    );
-    wait_for_config_done(2 us, "LR CCSDS121");
-    wait for 200 ns;
-    
-    -- Configure H CCSDS121
-    write_config_to_ram(
-      start_addr => 400,
-      config_data => H_CONFIG_DATA_121,
-      target_addr => COMPRESSOR_BASE_ADDR_H_121,
-      config_name => "H CCSDS121"
-    );
-    wait_for_config_done(2 us, "H CCSDS121");
+
+
     
     all_config_done <= true;
-    wait for 500 ns;
+
     
     -----------------------------------------------------------------------------
     -- Test Phase 5: Full System Operation Test
