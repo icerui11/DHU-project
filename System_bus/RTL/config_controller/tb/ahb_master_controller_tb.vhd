@@ -271,7 +271,7 @@ begin
         -- Write CCSDS121 configuration to RAM / 将CCSDS121配置写入RAM
         for i in 0 to 15 loop  -- 16 bytes for CCSDS121
             ram_wr_en <= '1';
-            wr_addr <= std_logic_vector(to_unsigned(i + 50, c_input_addr_width));  -- Different offset
+            wr_addr <= std_logic_vector(to_unsigned(i + 40, c_input_addr_width));  -- Different offset
             wr_data <= CCSDS121_CONFIG(i mod 16);
             wait for CLK_PERIOD;
         end loop;

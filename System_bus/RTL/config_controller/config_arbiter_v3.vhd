@@ -215,11 +215,11 @@ begin
                         when STAGE_CCSDS123 =>
                             start_add_reg <= "01010";           -- LR CCSDS123 config start address
                             read_num_reg <= 6;                  -- Read 6 registers for CCSDS123
-                            ahb_target_addr_reg <= x"40000000"; -- CCSDS123 address for LR
+                            ahb_target_addr_reg <= x"50000000"; -- CCSDS123 address for LR
                         when STAGE_CCSDS121 =>
                             start_add_reg <= "10000";           -- LR CCSDS121 config start address
                             read_num_reg <= 4;                  -- Read 4 registers for CCSDS121
-                            ahb_target_addr_reg <= x"50000000"; -- CCSDS121 address for LR
+                            ahb_target_addr_reg <= x"40000000"; -- CCSDS121 address for LR
                         when others =>
                             null; -- Keep default values
                     end case;

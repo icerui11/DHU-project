@@ -25,6 +25,9 @@ vlib shyloc_121
 set lib_exists [file exists shyloc_utils]
 if $lib_exists==1 {vdel -all -lib shyloc_utils}
 vlib shyloc_utils
+set lib_exists [file exists compressor]
+if $lib_exists==1 {vdel -all -lib compressor}
+vlib compressor
 set lib_exists [file exists post_syn_lib]
 if $lib_exists==1 {vdel -all -lib post_syn_lib}
 vlib post_syn_lib
@@ -51,33 +54,15 @@ do $DUT/DHU-project/simulation/script/ip_core_spw.do
 do $DUT/DHU-project/simulation/script/ip_core_rmap.do
 do $DUT/DHU-project/simulation/script/ip_core_router.do
 do $DUT/DHU-project/simulation/script/ip_core_system.do
+# Venspec-H 1D compressor
+do $DUT/DHU-project/System_bus/scripts/ip_compressor.do
+do $DUT/DHU-project/System_bus/scripts/ip_grlib_amba.do
 #config_controller library
 do $DUT/DHU-project/System_bus/scripts/ip_core_config.do   
 vcom -2008 -work work $DUT/DHU-project/System_bus/RTL/config_controller/shyloc_ahb_system_top.vhd
 vcom -2008 -work work -quiet $DUT/DHU-project/System_bus/RTL/config_controller/tb/shyloc_ahb_system_tb.vhd
 vsim -coverage work.shyloc_ahb_system_tb -voptargs="+acc"
-add wave -position end  sim:/shyloc_ahb_system_tb/DUT/compressor_HR/Clk_S
-add wave -position end  sim:/shyloc_ahb_system_tb/DUT/compressor_HR/Rst_N
-add wave -position end  sim:/shyloc_ahb_system_tb/DUT/compressor_HR/AHBSlave121_In
-add wave -position end  sim:/shyloc_ahb_system_tb/DUT/compressor_HR/Clk_AHB
-add wave -position end  sim:/shyloc_ahb_system_tb/DUT/compressor_HR/Reset_AHB
-add wave -position end  sim:/shyloc_ahb_system_tb/DUT/compressor_HR/AHBSlave121_Out
-add wave -position end  sim:/shyloc_ahb_system_tb/DUT/compressor_HR/AHBSlave123_In
-add wave -position end  sim:/shyloc_ahb_system_tb/DUT/compressor_HR/AHBSlave123_Out
-add wave -position end  sim:/shyloc_ahb_system_tb/DUT/compressor_HR/AHBMaster123_In
-add wave -position end  sim:/shyloc_ahb_system_tb/DUT/compressor_HR/AHBMaster123_Out
-add wave -position end  sim:/shyloc_ahb_system_tb/DUT/compressor_HR/DataIn_shyloc
-add wave -position end  sim:/shyloc_ahb_system_tb/DUT/compressor_HR/DataIn_NewValid
-add wave -position end  sim:/shyloc_ahb_system_tb/DUT/compressor_HR/DataOut
-add wave -position end  sim:/shyloc_ahb_system_tb/DUT/compressor_HR/DataOut_NewValid
-add wave -position end  sim:/shyloc_ahb_system_tb/DUT/compressor_HR/Ready_Ext
-add wave -position end  sim:/shyloc_ahb_system_tb/DUT/compressor_HR/ForceStop
-add wave -position end  sim:/shyloc_ahb_system_tb/DUT/compressor_HR/AwaitingConfig
-add wave -position end  sim:/shyloc_ahb_system_tb/DUT/compressor_HR/Ready
-add wave -position end  sim:/shyloc_ahb_system_tb/DUT/compressor_HR/FIFO_Full
-add wave -position end  sim:/shyloc_ahb_system_tb/DUT/compressor_HR/EOP
-add wave -position end  sim:/shyloc_ahb_system_tb/DUT/compressor_HR/Finished
-add wave -position end  sim:/shyloc_ahb_system_tb/DUT/compressor_HR/Error
+do add_waves_VHcompressor.do
 add wave -position end  sim:/shyloc_ahb_system_tb/DUT/ahb_master_ctrl_inst/clk
 add wave -position end  sim:/shyloc_ahb_system_tb/DUT/ahb_master_ctrl_inst/rst_n
 add wave -position end  sim:/shyloc_ahb_system_tb/DUT/ahb_master_ctrl_inst/compressor_status_HR
@@ -141,6 +126,22 @@ add wave -position end  sim:/shyloc_ahb_system_tb/DUT/ahb_master_ctrl_inst/data_
 add wave -position end  sim:/shyloc_ahb_system_tb/DUT/ahb_master_ctrl_inst/r_update_reg
 add wave -position end  sim:/shyloc_ahb_system_tb/DUT/ahb_master_ctrl_inst/w_update_reg
 add wave -position end  sim:/shyloc_ahb_system_tb/DUT/ahb_master_ctrl_inst/r
+add wave -position end  sim:/shyloc_ahb_system_tb/DUT/ahbmo
+add wave -position end  sim:/shyloc_ahb_system_tb/DUT/ahbmi
+add wave -position end  sim:/shyloc_ahb_system_tb/DUT/ahbsi
+add wave -position end  sim:/shyloc_ahb_system_tb/DUT/ahbso
+add wave -position end  sim:/shyloc_ahb_system_tb/DUT/ctrli
+add wave -position end  sim:/shyloc_ahb_system_tb/DUT/ctrlo
+add wave -position end  sim:/shyloc_ahb_system_tb/DUT/compressor_status_HR
+add wave -position end  sim:/shyloc_ahb_system_tb/DUT/compressor_status_LR
+add wave -position end  sim:/shyloc_ahb_system_tb/DUT/compressor_status_H
+add wave -position end  sim:/shyloc_ahb_system_tb/DUT/awaiting_config
+add wave -position end  sim:/shyloc_ahb_system_tb/DUT/ready
+add wave -position end  sim:/shyloc_ahb_system_tb/DUT/finished
+add wave -position end  sim:/shyloc_ahb_system_tb/DUT/error
+add wave -position end  sim:/shyloc_ahb_system_tb/DUT/slave_sel
+add wave -position end  sim:/shyloc_ahb_system_tb/DUT/slave_sel_reg
+add wave -position end  sim:/shyloc_ahb_system_tb/DUT/slave_active
 # vsim -coverage work.shyloc_ahb_system_tb -vopt -t 1ns -voptargs="+acc"
 #wave file
 

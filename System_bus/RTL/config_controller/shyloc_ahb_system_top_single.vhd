@@ -190,7 +190,7 @@ begin
     
     -- Multiplex slave responses based on registered select
     -- 基于注册的选择复用从机响应
-    if slave_sel_reg = '0' then
+    if slave_sel = '0' then
       -- CCSDS123 slave response
       ahbmi.hready <= ahbso_123.hready;
       ahbmi.hresp  <= ahbso_123.hresp;

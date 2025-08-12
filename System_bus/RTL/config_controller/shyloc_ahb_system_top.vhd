@@ -1,20 +1,20 @@
 --------------------------------------------------------------------------------
--- Company: Your Company
--- Engineer: Your Name
--- 
--- Create Date: 2025-01-20
--- Design Name: SHyLoC AHB System Top Level
+-- Engineer: Rui Yin
+-- Create Date: 2025-08-11
+-- version : 2.0
+-- Design Name: SHyLoC AHB System multiple Compressor
 -- Module Name: shyloc_ahb_system_top
--- Project Name: SHyLoC Compression System
--- Description: 
---   Top-level integration of AHB master controller with multiple SHyLoC 
---   compressor cores using AHB decoder for multi-slave support
---   顶层集成：AHB主控制器与多个SHyLoC压缩核心，使用AHB解码器支持多从机
+-- Project Name: SHyLoC Compression System - multiple Core Version
+-- Modified shyloc_ahb_system_top with ahbctrl replacing manual decoder
 --------------------------------------------------------------------------------
 
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
+
+library grlib;
+use grlib.amba.all;
+use grlib.devices.all;
 
 library shyloc_utils;
 use shyloc_utils.amba.all;
@@ -30,17 +30,22 @@ use shyloc_121.ccsds121_parameters.all;
 library config_controller;
 use config_controller.config_pkg.all;
 
+library VH_compressor;
+use VH_compressor.VH_ccsds121_parameters.all;
+use VH_compressor.ccsds121_constants_VH.all;
+
 entity shyloc_ahb_system_top is
   generic (
-    -- Number of compressor cores / 压缩核心数量
+    -- Number of compressor cores 
     NUM_COMPRESSORS : integer := 5;
     
-    -- AHB address configuration 
-    COMPRESSOR_BASE_ADDR_HR_123 : std_logic_vector(31 downto 0) := x"20000000";
-    COMPRESSOR_BASE_ADDR_HR_121 : std_logic_vector(31 downto 0) := x"10000000";
-    COMPRESSOR_BASE_ADDR_LR_123 : std_logic_vector(31 downto 0) := x"40000000";
-    COMPRESSOR_BASE_ADDR_LR_121 : std_logic_vector(31 downto 0) := x"50000000";
-    COMPRESSOR_BASE_ADDR_H_121  : std_logic_vector(31 downto 0) := x"70000000"
+    -- AHB address configuration for slave mapping
+    -- Each slave gets 256MB space (0x10000000)
+    COMPRESSOR_BASE_ADDR_HR_123 : integer := 16#200#;  -- 0x20000000
+    COMPRESSOR_BASE_ADDR_HR_121 : integer := 16#100#;  -- 0x10000000
+    COMPRESSOR_BASE_ADDR_LR_123 : integer := 16#400#;  -- 0x40000000
+    COMPRESSOR_BASE_ADDR_LR_121 : integer := 16#500#;  -- 0x50000000
+    COMPRESSOR_BASE_ADDR_H_121  : integer := 16#700#   -- 0x70000000
   );
   port (
     -- System signals / 系统信号
@@ -51,35 +56,34 @@ entity shyloc_ahb_system_top is
     rst_n_hr    : in std_logic;
     rst_n_h     : in std_logic;
     
-    -- Configuration RAM interface / 配置RAM接口
+    -- Configuration RAM interface 
     ram_wr_en   : in std_logic;
     ram_wr_addr : in std_logic_vector(c_input_addr_width-1 downto 0);
     ram_wr_data : in std_logic_vector(7 downto 0);
     
-    -- Data interfaces for compressors / 压缩器数据接口
-    -- HR Compressor
+    -- Data interfaces for compressors 
     data_in_HR      : in  std_logic_vector(shyloc_123.ccsds123_parameters.D_GEN-1 downto 0);
     data_in_valid_HR: in  std_logic;
     data_out_HR     : out std_logic_vector(shyloc_121.ccsds121_parameters.W_BUFFER_GEN-1 downto 0);
     data_out_valid_HR: out std_logic;
     
-    -- LR Compressor  
     data_in_LR      : in  std_logic_vector(shyloc_123.ccsds123_parameters.D_GEN-1 downto 0);
     data_in_valid_LR: in  std_logic;
     data_out_LR     : out std_logic_vector(shyloc_121.ccsds121_parameters.W_BUFFER_GEN-1 downto 0);
     data_out_valid_LR: out std_logic;
     
-    -- H Compressor
     data_in_H       : in  std_logic_vector(shyloc_123.ccsds123_parameters.D_GEN-1 downto 0);
     data_in_valid_H : in  std_logic;
     data_out_H      : out std_logic_vector(shyloc_121.ccsds121_parameters.W_BUFFER_GEN-1 downto 0);
     data_out_valid_H: out std_logic;
     
-    -- Control signals / 控制信号
+    -- Control signals 
     force_stop      : in  std_logic;
+    force_stop_lr   : in  std_logic;
+    force_stop_h    : in  std_logic;
     ready_ext       : in  std_logic;
     
-    -- Status outputs / 状态输出
+    -- Status outputs
     system_ready    : out std_logic;
     config_done     : out std_logic;
     system_error    : out std_logic
@@ -89,45 +93,122 @@ end entity shyloc_ahb_system_top;
 architecture rtl of shyloc_ahb_system_top is
 
   -----------------------------------------------------------------------------
-  -- Internal signals / 内部信号
+  -- Constants for ahbctrl 
   -----------------------------------------------------------------------------
-    constant AHB_MST_IN_DEFAULT : AHB_Mst_In_Type := (
-    hgrant  => '0',      -- No grant
-    hready  => '1',      -- Always ready (no wait states)
-    hresp   => "00",     -- OKAY response
-    hrdata  => (others => '0')  -- Zero data
+  constant NAHBM : integer := 1;  -- Number of AHB masters 
+  constant NAHBS : integer := 5;  -- Number of AHB slaves 
+  -- ahb master default 
+  constant AHB_MST_IN_DEFAULT : shyloc_utils.amba.AHB_Mst_In_Type := (
+    hgrant  => '0',                  -- No grant
+    hready  => '1',                  -- Always ready (no wait states)
+    hresp   => "00",                 -- OKAY response
+    hrdata  => (others => '0')       -- Zero data
   );
-  -- AHB signals from master / 来自主机的AHB信号
-  signal ahbmo : ahb_mst_out_type;
-  signal ahbmi : ahb_mst_in_type;
   
-  -- AHB signals to/from slaves / 到/从从机的AHB信号
-  type ahb_slv_in_array is array (0 to NUM_COMPRESSORS-1) of AHB_Slv_In_Type;
-  type ahb_slv_out_array is array (0 to NUM_COMPRESSORS-1) of AHB_Slv_Out_Type;
-  signal ahbsi : ahb_slv_in_array;
-  signal ahbso : ahb_slv_out_array;
+  -- AHB master and slave vectors for ahbctrl
+  signal msti : grlib.amba.ahb_mst_in_type;
+  signal msto : grlib.amba.ahb_mst_out_vector;
+  signal slvi : grlib.amba.ahb_slv_in_type;
+  signal slvo : grlib.amba.ahb_slv_out_vector;
   
+  signal AHBmaster_in : shyloc_utils.amba.ahb_mst_in_type;
+  signal AHBmaster_out : shyloc_utils.amba.ahb_mst_out_type;
+  signal AHBslave_in : shyloc_utils.amba.ahb_slv_in_type;
+  signal AHBslave_out : shyloc_utils.amba.ahb_slv_out_type;
+
+  -- compressor ahb signals
+  -- compressor VU HR
+  signal HR_AHBSlave123_In:  shyloc_utils.amba.ahb_slv_in_type;
+  signal HR_AHBSlave123_Out: shyloc_utils.amba.ahb_slv_out_type;
+
+  signal HR_AHBSlave121_In:  shyloc_utils.amba.ahb_slv_in_type;
+  signal HR_AHBSlave121_Out: shyloc_utils.amba.ahb_slv_out_type;
+
+  -- compressor VU LR
+  signal LR_AHBSlave123_In:  shyloc_utils.amba.ahb_slv_in_type;
+  signal LR_AHBSlave123_Out: shyloc_utils.amba.ahb_slv_out_type;
+
+  signal LR_AHBSlave121_In: shyloc_utils.amba.ahb_slv_in_type;
+  signal LR_AHBSlave121_Out: shyloc_utils.amba.ahb_slv_out_type;
+
+  -- compressor VH
+  signal VH_AHBSlave121_In:  shyloc_utils.amba.ahb_slv_in_type;
+  signal VH_AHBSlave121_Out: shyloc_utils.amba.ahb_slv_out_type;
   -- Control signals between master controller and AHB master
   signal ctrli : ahbtbm_ctrl_in_type;
   signal ctrlo : ahbtbm_ctrl_out_type;
   
-  -- Compressor status signals / 压缩器状态信号
+  -- Compressor status signals 
   signal compressor_status_HR : compressor_status;
   signal compressor_status_LR : compressor_status;
   signal compressor_status_H  : compressor_status;
   
-  -- Individual compressor signals / 各个压缩器信号
+  -- Individual compressor signals 
   signal awaiting_config : std_logic_vector(NUM_COMPRESSORS-1 downto 0);
   signal ready          : std_logic_vector(NUM_COMPRESSORS-1 downto 0);
   signal finished       : std_logic_vector(NUM_COMPRESSORS-1 downto 0);
   signal error          : std_logic_vector(NUM_COMPRESSORS-1 downto 0);
   
-  -- Decoder select signal / 解码器选择信号
-  signal slave_sel      : integer range 0 to NUM_COMPRESSORS-1;
-  signal slave_sel_reg  : integer range 0 to NUM_COMPRESSORS-1;
-  signal slave_active   : std_logic;
+  -- Reset signal conversion
+  signal rst : std_ulogic;
 
 begin
+
+  -- Reset signal conversion
+  rst <= not rst_n;
+
+  -----------------------------------------------------------------------------
+  -- AHB Controller (Arbiter/Decoder/Mux) instantiation
+  -- AHB控制器（仲裁器/解码器/多路复用器）实例化
+  -----------------------------------------------------------------------------
+  ahbctrl_inst : entity grlib.ahbctrl
+    generic map (
+      defmast  => 0,      -- Default master
+      split    => 0,      -- No split support
+      rrobin   => 0,      -- Fixed priority arbitration
+      timeout  => 0,      -- No timeout
+      ioaddr   => 16#FFF#,-- I/O area disabled
+      iomask   => 16#FFF#,
+      cfgaddr  => 16#FF0#,-- Config area 
+      cfgmask  => 16#FF0#,
+      nahbm    => NAHBM,  -- 1 master
+      nahbs    => NAHBS,  -- 5 slaves
+      ioen     => 0,      -- Disable I/O area
+      disirq   => 1,      -- Disable interrupt routing
+      fixbrst  => 0,      -- No fixed burst support
+      debug    => 2,      -- Enable debug output
+      fpnpen   => 0,      -- Disable full PnP decoding
+      icheck   => 0,
+      devid    => 0,
+      enbusmon => 0,      -- Disable bus monitor
+      assertwarn => 0,
+      asserterr  => 0,
+      hmstdisable => 0,
+      hslvdisable => 0,
+      arbdisable => 0,
+      mprio    => 0,
+      mcheck   => 0,
+      ccheck   => 0,
+      acdm     => 0,
+      index    => 0,
+      ahbtrace => 0,
+      hwdebug  => 0,
+      fourgslv => 0,
+      shadow   => 0,
+      unmapslv => 0
+    )
+    port map (
+      rst     => rst,
+      clk     => clk_ahb,
+      msti    => msti,      -- for controller single ahb master in type  output port
+      msto    => msto,              -- for controller ahb master out vectortype input port
+      slvi    => slvi,             -- for controller single ahb slave in type  output port
+      slvo    => slvo,
+      testen  => '0',
+      testrst => '1',
+      scanen  => '0',
+      testoen => '1'
+    );
 
   -----------------------------------------------------------------------------
   -- AHB Master Controller instantiation / AHB主控制器实例化
@@ -147,15 +228,12 @@ begin
     port map (
       clk         => clk_ahb,
       rst_n       => rst_n,
-      -- Compressor status / 压缩器状态
       compressor_status_HR => compressor_status_HR,
       compressor_status_LR => compressor_status_LR,
       compressor_status_H  => compressor_status_H,
-      -- RAM interface / RAM接口
       ram_wr_en   => ram_wr_en,
       wr_addr     => ram_wr_addr,
       wr_data     => ram_wr_data,
-      -- AHB control / AHB控制
       ctrli       => ctrli,
       ctrlo       => ctrlo
     );
@@ -169,121 +247,49 @@ begin
       clk   => clk_ahb,
       ctrli => ctrli,
       ctrlo => ctrlo,
-      ahbmi => ahbmi,
-      ahbmo => ahbmo
+      ahbmi => AHBmaster_in,
+      ahbmo => AHBmaster_out  -- Connect to first master slot
     );
 
-  -----------------------------------------------------------------------------
-  -- AHB Decoder Logic / AHB解码器逻辑
-  -- Maps master requests to appropriate slave based on address
-  -- 根据地址将主机请求映射到适当的从机
-  -----------------------------------------------------------------------------
-  ahb_decoder_proc : process(ahbmo, ahbso, slave_sel_reg)
-    variable addr_masked : std_logic_vector(31 downto 0);
-  begin
-    -- Default assignments / 默认赋值
-    slave_active <= '0';
-    slave_sel <= 0;
-    
-    -- Extract upper address bits for decoding / 提取高位地址用于解码
-    addr_masked := ahbmo.haddr and x"FFFFF000";  -- 4KB boundaries
-    
-    case addr_masked is
-      when COMPRESSOR_BASE_ADDR_HR_123 =>
-        slave_sel <= 0;  -- HR compressor 123
-        slave_active <= '1';
-      when COMPRESSOR_BASE_ADDR_HR_121 =>
-        slave_sel <= 1;  -- HR compressor 121
-        slave_active <= '1';
-      when COMPRESSOR_BASE_ADDR_LR_123 =>
-        slave_sel <= 2;  -- LR compressor 123
-        slave_active <= '1';
-      when COMPRESSOR_BASE_ADDR_LR_121 =>
-        slave_sel <= 3;  -- LR compressor 121
-        slave_active <= '1';
-      when COMPRESSOR_BASE_ADDR_H_121 =>
-        slave_sel <= 4;  -- H compressor 121
-        slave_active <= '1';
-      when others =>
-        slave_sel <= NUM_COMPRESSORS-1;  -- Default to last slave (error handling)
-        slave_active <= '0';  -- No active slave
-    end case;
+  -- Initialize unused master outputs comment because we only use one master
+ -- ahbmo_init: for i in 1 to NAHBMST-1 generate
+  --  ahbmo(i) <= ahbm_none;
+ -- end generate;
+  AHBmaster_in.HGRANT <= msti.hgrant(0);
+  AHBmaster_in.HREADY <= msti.hready;
+  AHBmaster_in.HRESP  <= msti.hresp;
+  AHBmaster_in.HRDATA <= msti.hrdata;
 
-    
-    -- Connect selected slave to master / 将选定的从机连接到主机
-    if slave_active = '1' then
-      ahbmi.hgrant  <= ahbmo.hbusreq;  -- Simple grant (improve for real system)
-      ahbmi.hready  <= ahbso(slave_sel_reg).hready;
-      ahbmi.hresp   <= ahbso(slave_sel_reg).hresp;
-      ahbmi.hrdata  <= ahbso(slave_sel_reg).hrdata;
-    else
-      -- No slave selected - return error / 未选择从机 - 返回错误
-      ahbmi.hgrant  <= '0';
-      ahbmi.hready  <= '1';
-      ahbmi.hresp   <= "01";  -- ERROR response
-      ahbmi.hrdata  <= (others => '0');
-    end if;
-    
-    -- Route master signals to all slaves / 将主机信号路由到所有从机
-    for i in 0 to NUM_COMPRESSORS-1 loop
-      if i = slave_sel and slave_active = '1' then
-        -- Active slave gets real signals / 活动从机获得真实信号
-        ahbsi(i).hsel    <= '1';
-        ahbsi(i).haddr   <= ahbmo.haddr;
-        ahbsi(i).hwrite  <= ahbmo.hwrite;
-        ahbsi(i).htrans  <= ahbmo.htrans;
-        ahbsi(i).hsize   <= ahbmo.hsize;
-        ahbsi(i).hburst  <= ahbmo.hburst;
-        ahbsi(i).hwdata  <= ahbmo.hwdata;
-        ahbsi(i).hprot   <= ahbmo.hprot;
-        ahbsi(i).hready  <= '1';  -- Simplified
-        ahbsi(i).hmaster <= (others => '0');
-        ahbsi(i).hmastlock <= '0';
-      else
-        -- Inactive slaves / 非活动从机
-        ahbsi(i).hsel    <= '0';
-        ahbsi(i).haddr   <= (others => '0');
-        ahbsi(i).hwrite  <= '0';
-        ahbsi(i).htrans  <= "00";  -- IDLE
-        ahbsi(i).hsize   <= "000";
-        ahbsi(i).hburst  <= "000";
-        ahbsi(i).hwdata  <= (others => '0');
-        ahbsi(i).hprot   <= "0000";
-        ahbsi(i).hready  <= '1';
-        ahbsi(i).hmaster <= (others => '0');
-        ahbsi(i).hmastlock <= '0';
-      end if;
-    end loop;
-  end process;
-  
-  -- Register slave select for data phase / 为数据阶段注册从机选择
-  slave_sel_reg_proc : process(clk_ahb, rst_n)
-  begin
-    if rst_n = '0' then
-      slave_sel_reg <= 0;
-    elsif rising_edge(clk_ahb) then
-      if ahbmi.hready = '1' then
-        slave_sel_reg <= slave_sel;
-      end if;
-    end if;
-  end process;
+  msto(0).HBUSREQ <= AHBmaster_out.hbusreq;
+  msto(0).HLOCK   <= AHBmaster_out.hlock;
+  msto(0).HTRANS  <= AHBmaster_out.htrans;
+  msto(0).HADDR   <= AHBmaster_out.haddr;
+  msto(0).HWRITE  <= AHBmaster_out.hwrite;
+  msto(0).HSIZE   <= AHBmaster_out.hsize;
+  msto(0).HBURST  <= AHBmaster_out.hburst;
+  msto(0).HPROT   <= AHBmaster_out.hprot;
+  msto(0).HWDATA  <= AHBmaster_out.hwdata;
+  msto(0).HIRQ    <= (others => '0');  -- No IRQ support
+  msto(0).HCONFIG <= (0 => ahb_device_reg ( VENDOR_GAISLER, 0, 0, 0, 0), others => zero32);
+  msto(0).HINDEX  <= 0;
+
 
   -----------------------------------------------------------------------------
-  -- Compressor Core Instantiations / 压缩器核心实例化
+  -- Compressor Core Instantiations 
   -----------------------------------------------------------------------------
   
-  -- HR Compressor (High Resolution) / 高分辨率压缩器
+  -- HR Compressor (High Resolution) - Slave 0 (123) and Slave 1 (121)
   compressor_HR : entity work.SHyLoC_toplevel_v2
     port map (
       Clk_S            => clk_sys,
       Rst_N            => rst_n_hr,
-      AHBSlave121_In   => ahbsi(0),
+      AHBSlave121_In   => HR_AHBSlave121_In,      -- Connected to slave 1
       Clk_AHB          => clk_ahb,
       Reset_AHB        => rst_n_hr,
-      AHBSlave121_Out  => ahbso(0),
-      AHBSlave123_In   => ahbsi(0),
-      AHBSlave123_Out  => open,  -- Not used in slave mode
-      AHBMaster123_In  => AHB_MST_IN_DEFAULT,
+      AHBSlave121_Out  => HR_AHBSlave121_Out,   -- Output for slave 1
+      AHBSlave123_In   => HR_AHBSlave123_In,                -- Connected to slave 0
+      AHBSlave123_Out  => HR_AHBSlave123_Out,   -- Output for slave 0
+      AHBMaster123_In  => AHB_MST_IN_DEFAULT,   -- Default master input not used
       AHBMaster123_Out => open,
       DataIn_shyloc    => data_in_HR,
       DataIn_NewValid  => data_in_valid_HR,
@@ -298,18 +304,54 @@ begin
       Finished         => finished(0),
       Error            => error(0)
     );
-    
-  -- LR Compressor (Low Resolution) / 低分辨率压缩器
+  -- slave 0 CCSDS121  
+  slvo(0).hready <=  HR_AHBSlave121_Out.HREADY; 
+  slvo(0).hresp  <=  HR_AHBSlave121_Out.HRESP;
+  slvo(0).hrdata <=  HR_AHBSlave121_Out.HRDATA;
+  slvo(0).hsplit <=  HR_AHBSlave121_Out.HSPLIT;
+  slvo(0).hconfig <= (0 => zero32,  4 => ahb_membar(16#100#, '1', '1', 16#FFF#),  others => zero32);
+  slvo(0).hindex <= 0;
+  -- slave 1 CCSDS123  
+  slvo(1).hready <=  HR_AHBSlave123_Out.HREADY; 
+  slvo(1).hresp  <=  HR_AHBSlave123_Out.HRESP;
+  slvo(1).hrdata <=  HR_AHBSlave123_Out.HRDATA;
+  slvo(1).hsplit <=  HR_AHBSlave123_Out.HSPLIT;
+  slvo(1).hconfig <= (0 => zero32,  4 => ahb_membar(16#200#, '1', '1', 16#FFF#),  others => zero32);
+  slvo(1).hindex <= 1;
+  --ahb slave input
+  HR_AHBSlave121_In.HSEL      <= slvi.hsel(0);
+  HR_AHBSlave121_In.HADDR     <= slvi.haddr;       
+  HR_AHBSlave121_In.HWRITE    <= slvi.hwrite;    
+  HR_AHBSlave121_In.HTRANS    <= slvi.htrans;      
+  HR_AHBSlave121_In.HSIZE     <= slvi.hsize;       
+  HR_AHBSlave121_In.HBURST    <= slvi.hburst;      
+  HR_AHBSlave121_In.HWDATA    <= slvi.hwdata;     
+  HR_AHBSlave121_In.HPROT     <= slvi.hprot;       
+  HR_AHBSlave121_In.HREADY    <= slvi.hready;    
+  HR_AHBSlave121_In.HMASTER   <= slvi.hmaster;     
+  HR_AHBSlave121_In.HMASTLOCK <= slvi.hmastlock;   
+  HR_AHBSlave123_In.HSEL <= slvi.hsel(1);
+  HR_AHBSlave123_In.HADDR     <= slvi.haddr;       
+  HR_AHBSlave123_In.HWRITE    <= slvi.hwrite;    
+  HR_AHBSlave123_In.HTRANS    <= slvi.htrans;      
+  HR_AHBSlave123_In.HSIZE     <= slvi.hsize;       
+  HR_AHBSlave123_In.HBURST    <= slvi.hburst;      
+  HR_AHBSlave123_In.HWDATA    <= slvi.hwdata;     
+  HR_AHBSlave123_In.HPROT     <= slvi.hprot;       
+  HR_AHBSlave123_In.HREADY    <= slvi.hready;    
+  HR_AHBSlave123_In.HMASTER   <= slvi.hmaster;     
+  HR_AHBSlave123_In.HMASTLOCK <= slvi.hmastlock; 
+  -- LR Compressor (Low Resolution) - Slave 2 (123) and Slave 3 (121)
   compressor_LR : entity work.SHyLoC_toplevel_v2
     port map (
       Clk_S            => clk_sys,
       Rst_N            => rst_n_lr,
-      AHBSlave121_In   => ahbsi(1),
+      AHBSlave121_In   => LR_AHBSlave121_In,      -- Connected to slave 3
       Clk_AHB          => clk_ahb,
       Reset_AHB        => rst_n_lr,
-      AHBSlave121_Out  => ahbso(1),
-      AHBSlave123_In   => ahbsi(1),
-      AHBSlave123_Out  => open,
+      AHBSlave121_Out  => LR_AHBSlave121_Out,   -- Output for slave 3
+      AHBSlave123_In   => LR_AHBSlave123_In,      -- Connected to slave 2
+      AHBSlave123_Out  => LR_AHBSlave123_Out,   -- Output for slave 2
       AHBMaster123_In  => AHB_MST_IN_DEFAULT,
       AHBMaster123_Out => open,
       DataIn_shyloc    => data_in_LR,
@@ -317,7 +359,7 @@ begin
       DataOut          => data_out_LR,
       DataOut_NewValid => data_out_valid_LR,
       Ready_Ext        => ready_ext,
-      ForceStop        => force_stop,
+      ForceStop        => force_stop_lr,
       AwaitingConfig   => awaiting_config(1),
       Ready            => ready(1),
       FIFO_Full        => open,
@@ -325,26 +367,60 @@ begin
       Finished         => finished(1),
       Error            => error(1)
     );
-    
-  -- H Compressor (Hyperspectral) / 高光谱压缩器
-  compressor_H : entity work.SHyLoC_toplevel_v2
+  -- slave 2 CCSDS121  
+  slvo(2).hready <=  LR_AHBSlave121_Out.HREADY; 
+  slvo(2).hresp  <=  LR_AHBSlave121_Out.HRESP;
+  slvo(2).hrdata <=  LR_AHBSlave121_Out.HRDATA;
+  slvo(2).hsplit <=  LR_AHBSlave121_Out.HSPLIT;
+  slvo(2).hconfig <= (0 => zero32,  4 => ahb_membar(16#400#, '1', '1', 16#FFF#),  others => zero32);
+  slvo(2).hindex <= 2;
+  -- slave 3 CCSDS123  
+  slvo(3).hready <=  LR_AHBSlave123_Out.HREADY; 
+  slvo(3).hresp  <=  LR_AHBSlave123_Out.HRESP;
+  slvo(3).hrdata <=  LR_AHBSlave123_Out.HRDATA;
+  slvo(3).hsplit <=  LR_AHBSlave123_Out.HSPLIT;
+  slvo(3).hconfig <= (0 => zero32,  4 => ahb_membar(16#500#, '1', '1', 16#FFF#),  others => zero32);
+  slvo(3).hindex <= 2;
+   --ahb slave input
+  LR_AHBSlave121_In.HSEL <= slvi.hsel(2);
+  LR_AHBSlave121_In.HADDR     <= slvi.haddr;       
+  LR_AHBSlave121_In.HWRITE    <= slvi.hwrite;    
+  LR_AHBSlave121_In.HTRANS    <= slvi.htrans;      
+  LR_AHBSlave121_In.HSIZE     <= slvi.hsize;       
+  LR_AHBSlave121_In.HBURST    <= slvi.hburst;      
+  LR_AHBSlave121_In.HWDATA    <= slvi.hwdata;     
+  LR_AHBSlave121_In.HPROT     <= slvi.hprot;       
+  LR_AHBSlave121_In.HREADY    <= slvi.hready;    
+  LR_AHBSlave121_In.HMASTER   <= slvi.hmaster;     
+  LR_AHBSlave121_In.HMASTLOCK <= slvi.hmastlock;   
+  LR_AHBSlave123_In.HSEL <= slvi.hsel(3);
+  LR_AHBSlave123_In.HADDR     <= slvi.haddr;       
+  LR_AHBSlave123_In.HWRITE    <= slvi.hwrite;    
+  LR_AHBSlave123_In.HTRANS    <= slvi.htrans;      
+  LR_AHBSlave123_In.HSIZE     <= slvi.hsize;       
+  LR_AHBSlave123_In.HBURST    <= slvi.hburst;      
+  LR_AHBSlave123_In.HWDATA    <= slvi.hwdata;     
+  LR_AHBSlave123_In.HPROT     <= slvi.hprot;       
+  LR_AHBSlave123_In.HREADY    <= slvi.hready;    
+  LR_AHBSlave123_In.HMASTER   <= slvi.hmaster;     
+  LR_AHBSlave123_In.HMASTLOCK <= slvi.hmastlock; 
+  -- H Compressor (Hyperspectral) - Slave 4
+  compressor_H : entity VH_compressor.ccsds121_shyloc_top_VH
     port map (
       Clk_S            => clk_sys,
       Rst_N            => rst_n_h,
-      AHBSlave121_In   => ahbsi(2),
+      AHBSlave121_In   => VH_AHBSlave121_In,      -- Connected to slave 4
       Clk_AHB          => clk_ahb,
       Reset_AHB        => rst_n_h,
-      AHBSlave121_Out  => ahbso(2),
-      AHBSlave123_In   => ahbsi(2),
-      AHBSlave123_Out  => open,
-      AHBMaster123_In  => AHB_MST_IN_DEFAULT,
-      AHBMaster123_Out => open,
-      DataIn_shyloc    => data_in_H,
+      AHBSlave121_Out  => VH_AHBSlave121_Out,   -- Output for slave 4
+      DataIn           => data_in_H,
       DataIn_NewValid  => data_in_valid_H,
+      IsHeaderIn       => '0',
+      NbitsIn          => "000000",
       DataOut          => data_out_H,
       DataOut_NewValid => data_out_valid_H,
       Ready_Ext        => ready_ext,
-      ForceStop        => force_stop,
+      ForceStop        => force_stop_h,
       AwaitingConfig   => awaiting_config(2),
       Ready            => ready(2),
       FIFO_Full        => open,
@@ -353,11 +429,30 @@ begin
       Error            => error(2)
     );
 
+  -- slave 4 CCSDS121  
+  slvo(4).hready <=  VH_AHBSlave121_Out.HREADY; 
+  slvo(4).hresp  <=  VH_AHBSlave121_Out.HRESP;
+  slvo(4).hrdata <=  VH_AHBSlave121_Out.HRDATA;
+  slvo(4).hsplit <=  VH_AHBSlave121_Out.HSPLIT;
+  slvo(4).hconfig <= (0 => zero32,  4 => ahb_membar(16#700#, '1', '1', 16#FFF#),  others => zero32);
+  slvo(4).hindex  <= 4;
+  --ahb slave input
+  VH_AHBSlave121_In.HSEL <= slvi.hsel(4);
+  VH_AHBSlave121_In.HADDR     <= slvi.haddr;       
+  VH_AHBSlave121_In.HWRITE    <= slvi.hwrite;    
+  VH_AHBSlave121_In.HTRANS    <= slvi.htrans;      
+  VH_AHBSlave121_In.HSIZE     <= slvi.hsize;       
+  VH_AHBSlave121_In.HBURST    <= slvi.hburst;      
+  VH_AHBSlave121_In.HWDATA    <= slvi.hwdata;     
+  VH_AHBSlave121_In.HPROT     <= slvi.hprot;       
+  VH_AHBSlave121_In.HREADY    <= slvi.hready;    
+  VH_AHBSlave121_In.HMASTER   <= slvi.hmaster;     
+  VH_AHBSlave121_In.HMASTLOCK <= slvi.hmastlock;   
   -----------------------------------------------------------------------------
-  -- Status signal generation / 状态信号生成
+  -- Status signal generation 
   -----------------------------------------------------------------------------
   
-  -- Pack status for each compressor / 打包每个压缩器的状态
+  -- Pack status for each compressor
   compressor_status_HR.AwaitingConfig <= awaiting_config(0);
   compressor_status_HR.ready <= ready(0);
   compressor_status_HR.finished <= finished(0);
@@ -373,13 +468,12 @@ begin
   compressor_status_H.finished <= finished(2);
   compressor_status_H.error <= error(2);
   
-  -- System status outputs / 系统状态输出
+  -- System status outputs
   system_ready <= '1' when ready = (ready'range => '1') else '0';
   system_error <= '1' when error /= (error'range => '0') else '0';
   
-  -- config_done would come from the master controller
-  -- This is a simplified connection - implement proper status aggregation
-  -- config_done将来自主控制器
-  -- 这是一个简化的连接 - 实现适当的状态聚合
+  -- config_done signal (simplified)
+  config_done <= '1' when awaiting_config = (awaiting_config'range => '0') 
+                     and ready /= (ready'range => '0') else '0';
 
 end architecture rtl;

@@ -180,7 +180,7 @@ begin
   end process reg;
 
   -- Main combinational process
-  process(should_return_to_idle_reg, arbiter_grant, arbiter_config_req, ram_wr_en, r, empty_cmb, arbiter_grant_valid, r_update_reg, w_update_reg,
+  process(should_return_to_idle_reg, size, htrans, hburst, beats_reg, appidle,  arbiter_grant, arbiter_config_req, ram_wr_en, r, empty_cmb, arbiter_grant_valid, r_update_reg, w_update_reg,
           remaining_writes, state_next_ahbw, state_reg_ahbw, ctrl.o.update, address_write, 
           ahb_wr_cnt_reg, ram_rd_data_cmb, ram_rd_valid_cmb, ahb_target_addr, ram_read_num, data_out_fifo)
     variable v : config_reg_type;
@@ -203,6 +203,7 @@ begin
     beats <= beats_reg;
     remaining_writes_cmb <= remaining_writes;
     config_done_cmb <= '0'; 
+    v.clr := '1';  -- Clear state
   --  v.data_valid := '0';
     /*
     should_return_to_idle_cmb <= (arbiter_config_req = '0') or (ram_wr_en = '1');
@@ -222,7 +223,7 @@ begin
         ahb_wr_cnt_cmb <= (others => '0');
         remaining_writes_cmb <= (others => '0');
         address_write_cmb <= (others => '0');
-        
+        appidle_cmb <= true; 
         -- Check for arbitration request and ensure no RAM write conflict
         if arbiter_config_req = '1' and ram_wr_en = '0' then             -- and state_reg_ahbw = s0
           v.config_state := ARBITER_WR;
@@ -239,6 +240,7 @@ begin
         -- Process granted request
         if arbiter_grant_valid = '1' then
           v.start_preload_ram := '1';
+          v.clr := '0';  -- ready to receive CFG
           if empty_cmb = '0' then
             v.config_state := WRITE_REQ;
             remaining_writes_cmb <= to_unsigned(ram_read_num, 4);
@@ -248,6 +250,7 @@ begin
         end if;
 
       when WRITE_REQ =>
+         v.clr := '0';
         -- Exit if RAM write is active
         if (arbiter_config_req = '0') or (ram_wr_en = '1') then
           v.config_state := IDLE;
@@ -306,6 +309,7 @@ begin
         end if; 
 
       when AHB_Burst_WR =>
+        v.clr := '0';
         -- Exit if RAM write is active
         if (arbiter_config_req = '0') or (ram_wr_en = '1') then
           v.config_state := IDLE;
@@ -315,7 +319,7 @@ begin
         size_cmb <= "10";
         data_cmb <= data_out_fifo;
         debug_cmb <= 2;
-        
+        appidle_cmb <= false; 
         if ctrl.o.update = '1' then
           htrans_cmb <= "11";  -- Sequential transfer
           if r_update_reg = '1' then
@@ -342,10 +346,10 @@ begin
           end if;
 
           -- Check for end of burst
-          if (state_reg_ahbw = s0) or (state_reg_ahbw = s2) then
+          if (state_reg_ahbw = s0) or (state_reg_ahbw = s4) then
             if ahb_wr_cnt_reg = ram_read_num then
- --             appidle_cmb <= true;               
               v.config_state := config_enable;
+              appidle_cmb <= false;
  --             config_done_cmb <= '1';
             end if;
           end if;
@@ -360,20 +364,9 @@ begin
             htrans_cmb <= "10";  -- non-Sequential transfer
             size_cmb <= "10";   -- 32-bit transfer
             hburst_cmb <= '0';  -- Single transfer
-            /*
-            if appidle = true then  
-              appidle_cmb <= false;
-              ahb_wr_cnt_cmb <= ahb_wr_cnt_reg + 1;
-            else 
-              v.config_state := IDLE;  -- Return to IDLE after writing control register
-              config_done_cmb <= '1';
-              appidle_cmb <= true;
-            end if;
+            config_done_cmb <= '1';
+            v.config_state := IDLE;  -- Return to IDLE after writing control register
           end if;
-        */
-        config_done_cmb <= '1';
-        v.config_state := IDLE;  -- Return to IDLE after writing control register
-        end if;
 
       when ERROR =>
         -- Error handling - return to IDLE
@@ -384,8 +377,9 @@ begin
     end case;
 
     -- RAM read control logic
-    if r.ram_read_cnt < ram_read_num then
-      if r.start_preload_ram = '1' then
+
+    if r.ram_read_cnt < ram_read_num and r.config_state /= IDLE and r.config_state /= ERROR then
+      if v.start_preload_ram = '1' then
         v.ram_rd_en := '1';
     --    v.data_in := ram_rd_data_cmb;
         v.ram_rd_addr := std_logic_vector(unsigned(ram_start_addr) + r.ram_read_cnt);
@@ -407,7 +401,6 @@ begin
     else
       w_update_out <= '0';
     end if;
-
     rin <= v;    
 
   end process;

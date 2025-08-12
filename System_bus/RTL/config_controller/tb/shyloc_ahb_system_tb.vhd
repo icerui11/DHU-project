@@ -148,14 +148,13 @@ architecture behavior of shyloc_ahb_system_tb is
   -----------------------------------------------------------------------------
   -- Address Constants from DUT
   -----------------------------------------------------------------------------
-  constant COMPRESSOR_BASE_ADDR_HR_123 : std_logic_vector(31 downto 0) := x"20000000";
-  constant COMPRESSOR_BASE_ADDR_HR_121 : std_logic_vector(31 downto 0) := x"10000000";
-  constant COMPRESSOR_BASE_ADDR_LR_123 : std_logic_vector(31 downto 0) := x"40000000";
-  constant COMPRESSOR_BASE_ADDR_LR_121 : std_logic_vector(31 downto 0) := x"50000000";
-  constant COMPRESSOR_BASE_ADDR_H_121  : std_logic_vector(31 downto 0) := x"70000000";
+  constant COMPRESSOR_BASE_ADDR_HR_123 : integer := 16#200#;  -- 0x20000000
+  constant COMPRESSOR_BASE_ADDR_HR_121 : integer := 16#100#;  -- 0x10000000
+  constant COMPRESSOR_BASE_ADDR_LR_123 : integer := 16#500#;  -- 0x50000000
+  constant COMPRESSOR_BASE_ADDR_LR_121 : integer := 16#400#;  -- 0x40000000
+  constant COMPRESSOR_BASE_ADDR_H_121  : integer := 16#700#;  -- 0x70000000
 
 begin
-
   -----------------------------------------------------------------------------
   -- Clock Generation
   -----------------------------------------------------------------------------
@@ -321,9 +320,11 @@ begin
     rst_n <= '0';
     wait for 40 ns;
     rst_n <= '1';
+    rst_n_h <= '1';
+    rst_n_lr <= '1';
     -- Wait for configuration to complete
     wait_for_config_done(300 ns, "HR CCSDS123");
-    
+
     -- Allow some time for the system to stabilize
     wait for 500 ns;
     

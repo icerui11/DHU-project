@@ -3,7 +3,7 @@
 -- Author: Rui Yin
 -- File: SHyLoC_toplevel_v2.vhd
 -- File history:
---      <v2.0>: <05.04.2025>: <Modified to support conditional component instantiation>
+--      <v2.0>: <05.08.2025>: <Modified to support conditional component instantiation>
 --      <v1.0>: <Original version>
 -- 
 -- Description: CCSDS-123 IP Core and CCSDS-121 IP Core Wrapper
@@ -38,6 +38,66 @@ use shyloc_utils.amba.all;
 
 
 entity SHyLoC_toplevel_v2 is  
+  generic (
+    EN_RUNCFG       : integer := EN_RUNCFG;  --! Enables (1) or disables (0) runtime configuration.
+    RESET_TYPE      : integer := RESET_TYPE;  --! Reset flavour asynchronous (0) synchronous (1)
+    EDAC            : integer := EDAC;  --! Edac implementation (0) No EDAC (1) Only internal memories (2) Only external memories (3) both.
+    PREDICTION_TYPE: integer := PREDICTION_TYPE;  --! Selects the prediction architecture to be implemented (0) BIP (1) BIP-MEM (2) BSQ (3) BIL (4) BIL-MEM.
+    ENCODING_TYPE   : integer := ENCODING_TYPE;  --! (0) no sample-adaptive module instantitaed (1)  instantiate sample adaptive module
+
+    HSINDEX_123      : integer := HSINDEX_123;     --! AHB slave index
+    HSCONFIGADDR_123 : integer := HSCONFIGADDR_123;  --! ADDR field of the AHB Slave.
+    HSADDRMASK_123   : integer := HSADDRMASK_123;  --! MASK field of the AHB Slave.
+
+    HMINDEX_123   : integer := HMINDEX_123;  --! AHB master index.
+    HMAXBURST_123 : integer := HMAXBURST_123;  --! AHB master burst beat limit (0 means unlimited) -- not used
+
+    ExtMemAddress_GEN : integer := ExtMemAddress_GEN;  --! External memory address (used when EN_RUNCFG = 0)
+
+    Nx_GEN             : integer := Nx_GEN;  --! Maximum number of samples in a line the IP core is implemented for. 
+    Ny_GEN             : integer := Ny_GEN;  --! Maximum number of samples in a column the IP core is implemented for. 
+    Nz_GEN             : integer := Nz_GEN;  --! Maximum number of bands the IP core is implemented for. 
+    D_GEN              : integer := D_GEN;  --! Maximum input sample bitwidth IP core is implemented for. 
+    IS_SIGNED_GEN      : integer := IS_SIGNED_GEN;  --! Singedness of input samples (used when EN_RUNCFG = 0).
+    DISABLE_HEADER_GEN : integer := DISABLE_HEADER_GEN;  --! Disables header in the compressed image(used when EN_RUNCFG = 0).
+    ENDIANESS_GEN      : integer := ENDIANESS_GEN;  --! Endianess of the input image (used when EN_RUNCFG = 0).
+
+    P_MAX          : integer := P_MAX;  --! Maximum number of P the IP core is implemented for. 
+    PREDICTION_GEN : integer := PREDICTION_GEN;  --! (0) Full prediction (1) Reduced prediction.
+    LOCAL_SUM_GEN  : integer := LOCAL_SUM_GEN;  --! (0) Neighbour oriented (1) Column oriented.
+    OMEGA_GEN      : integer := OMEGA_GEN;  --! Weight component resolution.
+    R_GEN          : integer := R_GEN;  --! Register size
+
+    VMAX_GEN        : integer := VMAX_GEN;   --! Factor for weight update.
+    VMIN_GEN        : integer := VMIN_GEN;   --! Factor for weight update.
+    T_INC_GEN       : integer := T_INC_GEN;  --! Weight update factor change interval
+    WEIGHT_INIT_GEN : integer := WEIGHT_INIT_GEN;  --! Weight initialization mode.
+
+    ENCODER_SELECTION_GEN : integer := ENCODER_SELECTION_GEN;  --! Selects between sample-adaptive(1) or block-adaptive (2) or no encoding (3) (used when EN_RUNCFG = 0)
+    INIT_COUNT_E_GEN      : integer := INIT_COUNT_E_GEN;  --! Initial count exponent.
+    ACC_INIT_TYPE_GEN     : integer := ACC_INIT_TYPE_GEN;  --! Accumulator initialization type.
+    ACC_INIT_CONST_GEN    : integer := ACC_INIT_CONST_GEN;  --! Accumulator initialization constant.
+    RESC_COUNT_SIZE_GEN   : integer := RESC_COUNT_SIZE_GEN;  --! Rescaling counter size.
+    U_MAX_GEN             : integer := U_MAX_GEN;  --! Unary length limit.
+    W_BUFFER_GEN          : integer := W_BUFFER_GEN;
+
+    Q_GEN : integer := Q_GEN;
+    -- These parameters control core characteristics of CCSDS121 compression algorithm  
+    HSINDEX_121           : integer := HSINDEX_121;          --! AHB slave index.
+    HSCONFIGADDR_121      : integer := HSCONFIGADDR_121;    --! ADDR field of the AHB Slave.
+    HSADDRMASK_121        : integer := HSADDRMASK_121;      --! MASK field of the AHB slave.
+    J_GEN                : integer := J_GEN;              --! Block Size  
+    REF_SAMPLE_GEN       : integer := REF_SAMPLE_GEN;     --! Reference Sample Interval  
+    CODESET_GEN          : integer := CODESET_GEN;        --! Code Option  
+
+    -- These parameters define characteristics of output data stream  
+    W_BUFFER_GEN         : integer := W_BUFFER_GEN;       --! Bit width of the output buffer  
+    -- System Integration Parameters  
+    -- These parameters control integration with external systems  
+    PREPROCESSOR_GEN     : integer := PREPROCESSOR_GEN;   --! (0) No preprocessor; (1) CCSDS123 preprocessor; (2) Other preprocessor  
+    DISABLE_HEADER_GEN   : integer := DISABLE_HEADER_GEN; --! (0) Enable header; (1) Disable header  
+    TECH                 : integer := TECH                --! Memory technology selection  
+    );   
 
 port (
         -- System Interface
@@ -161,6 +221,55 @@ begin
     -- 3D mode: CCSDS123 with internal sample-adaptive encoder
     GEN_3D_INTERNAL_MODE: if MODE_3D_sample generate
         ccsds123_only: entity shyloc_123.ccsds123_top(arch)
+        generic map ( -- System Configuration Parameters
+            EN_RUNCFG => EN_RUNCFG,   -- Runtime configuration enable
+            RESET_TYPE => RESET_TYPE, -- Reset type selection
+            EDAC => EDAC,             --! Edac implementation (0) No EDAC (1) Only internal memories (2) Only external memories (3) both.
+            PREDICTION_TYPE => PREDICTION_TYPE, -- Prediction architecture
+            ENCODING_TYPE => ENCODING_TYPE, -- Encoding module selection
+
+            -- AHB Bus Configuration
+            HSINDEX_123      => HSINDEX_123,     -- AHB slave index
+            HSCONFIGADDR_123 => HSCONFIGADDR_123,-- Slave address field
+            HSADDRMASK_123   => HSADDRMASK_123,  -- Address mask field
+            HMINDEX_123      => HMINDEX_123,     -- AHB master index
+            HMAXBURST_123    => HMAXBURST_123,   -- Master burst limit
+
+            -- Memory Configuration
+            ExtMemAddress_GEN => ExtMemAddress_GEN, -- External memory address
+
+            -- Image Dimension Parameters
+            Nx_GEN             => Nx_GEN,        -- Maximum samples per line
+            Ny_GEN             => Ny_GEN,        -- Maximum samples per column
+            Nz_GEN             => Nz_GEN,        -- Maximum spectral bands
+            D_GEN              => D_GEN,         -- Input sample bit width
+            IS_SIGNED_GEN      => IS_SIGNED_GEN, -- Sample signedness
+            DISABLE_HEADER_GEN => DISABLE_HEADER_GEN, -- Header disable flag
+            ENDIANESS_GEN      => ENDIANESS_GEN, -- Data endianness
+
+            -- Prediction Algorithm Parameters
+            P_MAX          => P_MAX,             -- Maximum prediction bands
+            PREDICTION_GEN => PREDICTION_GEN,    -- Full(0) or reduced(1) prediction
+            LOCAL_SUM_GEN  => LOCAL_SUM_GEN,     -- Neighbor(0) or column(1) oriented
+            OMEGA_GEN      => OMEGA_GEN,         -- Weight component resolution
+            R_GEN          => R_GEN,             -- Register size
+
+            -- Weight Update Parameters
+            VMAX_GEN        => VMAX_GEN,         -- Maximum weight update factor
+            VMIN_GEN        => VMIN_GEN,         -- Minimum weight update factor
+            T_INC_GEN       => T_INC_GEN,        -- Weight update interval
+            WEIGHT_INIT_GEN => WEIGHT_INIT_GEN,  -- Weight initialization mode
+
+            -- Encoder Configuration
+            ENCODER_SELECTION_GEN => ENCODER_SELECTION_GEN, -- Encoder type selection
+            INIT_COUNT_E_GEN      => INIT_COUNT_E_GEN,      -- Initial count exponent
+            ACC_INIT_TYPE_GEN     => ACC_INIT_TYPE_GEN,     -- Accumulator init type
+            ACC_INIT_CONST_GEN    => ACC_INIT_CONST_GEN,    -- Accumulator init constant
+            RESC_COUNT_SIZE_GEN   => RESC_COUNT_SIZE_GEN,   -- Rescaling counter size
+            U_MAX_GEN             => U_MAX_GEN,             -- Unary length limit
+            W_BUFFER_GEN          => W_BUFFER_GEN,          -- Buffer width
+            Q_GEN                 => Q_GEN                  -- Quantization parameter
+            );
         port map (
             Clk_S               => Clk_S, 
             Rst_N               => rst_n, 
@@ -202,6 +311,55 @@ begin
         --! CCSDS-123 IP Core (Preprocessor)
         ---------------------------
         ccsds123: entity shyloc_123.ccsds123_top(arch)
+        generic map ( -- System Configuration Parameters
+            EN_RUNCFG => EN_RUNCFG,   -- Runtime configuration enable
+            RESET_TYPE => RESET_TYPE, -- Reset type selection
+            EDAC => EDAC,             --! Edac implementation (0) No EDAC (1) Only internal memories (2) Only external memories (3) both.
+            PREDICTION_TYPE => PREDICTION_TYPE, -- Prediction architecture
+            ENCODING_TYPE => ENCODING_TYPE, -- Encoding module selection
+
+            -- AHB Bus Configuration
+            HSINDEX_123      => HSINDEX_123,     -- AHB slave index
+            HSCONFIGADDR_123 => HSCONFIGADDR_123,-- Slave address field
+            HSADDRMASK_123   => HSADDRMASK_123,  -- Address mask field
+            HMINDEX_123      => HMINDEX_123,     -- AHB master index
+            HMAXBURST_123    => HMAXBURST_123,   -- Master burst limit
+
+            -- Memory Configuration
+            ExtMemAddress_GEN => ExtMemAddress_GEN, -- External memory address
+
+            -- Image Dimension Parameters
+            Nx_GEN             => Nx_GEN,        -- Maximum samples per line
+            Ny_GEN             => Ny_GEN,        -- Maximum samples per column
+            Nz_GEN             => Nz_GEN,        -- Maximum spectral bands
+            D_GEN              => D_GEN,         -- Input sample bit width
+            IS_SIGNED_GEN      => IS_SIGNED_GEN, -- Sample signedness
+            DISABLE_HEADER_GEN => DISABLE_HEADER_GEN, -- Header disable flag
+            ENDIANESS_GEN      => ENDIANESS_GEN, -- Data endianness
+
+            -- Prediction Algorithm Parameters
+            P_MAX          => P_MAX,             -- Maximum prediction bands
+            PREDICTION_GEN => PREDICTION_GEN,    -- Full(0) or reduced(1) prediction
+            LOCAL_SUM_GEN  => LOCAL_SUM_GEN,     -- Neighbor(0) or column(1) oriented
+            OMEGA_GEN      => OMEGA_GEN,         -- Weight component resolution
+            R_GEN          => R_GEN,             -- Register size
+
+            -- Weight Update Parameters
+            VMAX_GEN        => VMAX_GEN,         -- Maximum weight update factor
+            VMIN_GEN        => VMIN_GEN,         -- Minimum weight update factor
+            T_INC_GEN       => T_INC_GEN,        -- Weight update interval
+            WEIGHT_INIT_GEN => WEIGHT_INIT_GEN,  -- Weight initialization mode
+
+            -- Encoder Configuration
+            ENCODER_SELECTION_GEN => ENCODER_SELECTION_GEN, -- Encoder type selection
+            INIT_COUNT_E_GEN      => INIT_COUNT_E_GEN,      -- Initial count exponent
+            ACC_INIT_TYPE_GEN     => ACC_INIT_TYPE_GEN,     -- Accumulator init type
+            ACC_INIT_CONST_GEN    => ACC_INIT_CONST_GEN,    -- Accumulator init constant
+            RESC_COUNT_SIZE_GEN   => RESC_COUNT_SIZE_GEN,   -- Rescaling counter size
+            U_MAX_GEN             => U_MAX_GEN,             -- Unary length limit
+            W_BUFFER_GEN          => W_BUFFER_GEN,          -- Buffer width
+            Q_GEN                 => Q_GEN                  -- Quantization parameter
+            );
         port map (
             clk_s            => clk_s, 
             rst_n            => rst_n, 
@@ -236,8 +394,8 @@ begin
         -- Instance of the CCSDS121-IP core (Encoder)
         ccsds121top: entity shyloc_121.ccsds121_shyloc_top(arch)
         port map (
-            Clk_S => Clk_S, 
-            Rst_N => Rst_N, 
+            Clk_S                   => Clk_S, 
+            Rst_N                   => Rst_N, 
             AHBSlave121_In          => AHBSlave121_In,                                    
             AHBSlave121_Out         => AHBSlave121_Out,
             Clk_AHB                 => Clk_AHB,
