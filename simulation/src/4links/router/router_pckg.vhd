@@ -9,13 +9,11 @@
 -- @ VHDL Version			:	2008
 -- @ Supported Toolchain	:	Xilinx Vivado IDE/Intel Quartus 18.1+
 -- @ Target Device			:	N/A
-
 -- @ Revision #				: 	1
-
 -- File Description         :	N/A
 --								
-
 -- Document Number			:	TBD
+-- modification History		:	17.03.2025 add c_cum_fifoports
 ----------------------------------------------------------------------------------------------------------------------------------
 library ieee;			
 use ieee.std_logic_1164.all;
@@ -39,8 +37,8 @@ package router_pckg is
 	constant c_fabric_bus_width 	: natural range 1 to 4 		:= 1;				-- nonet-witdth of Xbar fabric data channel. 1 = 9 bits, 4 = 36 bits
 	constant c_spw_clk_freq			: real						:= 100_000_000.0;	-- frequency of SpaceWire Clock in Hz (default 200MHz)
 	constant c_router_clk_freq		: real 						:= 100_000_000.0;	-- frequency of Router Fabric & Arbitration (sim only)
-	constant c_num_ports 			: natural range 2 to 32  	:= 9;		        -- number of router ports, 0 is internal address, maximum 32 (31 + 1)
-	constant c_port_mode			: string 					:= "diff";        -- valid options are "single", "diff" and "custom". 
+	constant c_num_ports 			: natural range 2 to 32  	:= 7;		        -- number of router ports, 0 is internal address, maximum 32 (31 + 1)
+	constant c_port_mode			: string 					:= "single";        -- valid options are "single", "diff" and "custom". 
 	constant c_priority				: string 					:= "fifo";          -- valid options are "fifo" and "none"
 	constant c_ram_style			: string 					:= "auto";			-- type of ram (xilinx) to use for FiFo (block, auto, see Xillinx user guide)
 	constant c_tc_master_mask		: t_dword 	:= b"0000_0000_0000_0000_0000_0000_0010_0000";	-- set single-bit high to set that port as TimeCode Master
@@ -50,9 +48,9 @@ package router_pckg is
 		2 	=> '0',
 		3 	=> '0',
 		4	=> '0',
-		5   => '0',
-		6   => '0',
-		7   => '0',
+		5   => '1',
+		6   => '1',
+		7   => '1',
 		8   => '0',
 		9   => '0',
 		10  => '0',
@@ -79,6 +77,7 @@ package router_pckg is
 		31  => '0'
 	);
 
+	constant c_num_fifoports		: natural range 0 to 31     := 3;	        -- number of ports that are FIFOs.
 	constant c_num_config_reg		: natural range 96 to 255 	:= 128;		-- number of config registers 
 	constant c_num_stat_reg			: natural range 96 to 255 	:= 128;		-- number of status registers 
 	-- Module Addresses for AXI Bus access through config Port 0 RMAP address field. 
@@ -94,9 +93,8 @@ package router_pckg is
 	
 	-- minimum is 32 as 0 to 31 are pre-assigned 
 	constant c_tc_address			: integer range 0 to 31 := 0;	-- address of last time code in status registers 
-
 	
-
+	constant c_router_port_addr     : integer range 0 to 31 := 1;   -- router_fifo_ctrl transmit to which port address   
 	--------------------------------------------------------------------------------------------------------------------------
 	-- Subtype & Type Declarations --
 	--------------------------------------------------------------------------------------------------------------------------

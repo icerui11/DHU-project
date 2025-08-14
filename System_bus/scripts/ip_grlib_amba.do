@@ -1,0 +1,9 @@
+vcom -2008 -work grlib $DUT/DHU-project/System_bus/RTL/grlib/stdlib/version.vhd
+vcom -2008 -work grlib $DUT/DHU-project/System_bus/RTL/grlib/stdlib/config_types.vhd
+vcom -2008 -work grlib $DUT/DHU-project/System_bus/RTL/grlib/stdlib/config.vhd
+vcom -2008 -work grlib $DUT/DHU-project/System_bus/RTL/grlib/stdlib/stdlib.vhd
+vcom -2008 -work grlib $DUT/DHU-project/System_bus/RTL/grlib/amba/amba.vhd
+vcom -2008 -work grlib $DUT/DHU-project/System_bus/RTL/grlib/amba/devices.vhd
+vcom -2008 -work grlib $DUT/DHU-project/System_bus/RTL/grlib/stdlib/stdio.vhd
+vcom -2008 -work grlib $DUT/DHU-project/System_bus/RTL/grlib/stdlib/testlib.vhd
+vcom -2008 -work grlib $DUT/DHU-project/System_bus/RTL/grlib/amba/ahbctrl.vhd

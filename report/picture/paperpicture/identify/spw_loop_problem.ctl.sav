@@ -1,0 +1,152 @@
+[*]
+[*] GTKWave Analyzer v3.3.66 (w)1999-2015 BSI
+[*] Wed Jul 03 11:27:06 2024
+[*]
+[dumpfile] "C:\Users\yinrui\Desktop\03Test\IP123liberotest\dokupicture\paperpicture\identify\IICE.vcd"
+[savefile] "C:\Users\yinrui\Desktop\03Test\IP123liberotest\dokupicture\paperpicture\identify\spw_loop_problem.ctl.sav"
+[timestart] 0
+[size] 1920 1137
+[pos] -191 -191
+*-13.576968 69590 44960 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] DUT.
+[treeopen] DUT.rtl.
+[treeopen] DUT.rtl.spw_wrap_top_level_RTG4_0.
+[treeopen] DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.
+[treeopen] DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.spw_instance.
+[treeopen] DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.spw_instance.rtl.
+[treeopen] DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.spw_instance.rtl.u_spw.
+[treeopen] DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.spw_instance.rtl.u_spw.rtl.
+[treeopen] DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.spw_instance.rtl.u_spw.rtl.u_spw_rx_flowcredit_x.
+[treeopen] DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.spw_instance.rtl.u_spw.rtl.u_spw_rx_flowcredit_x.rtl.
+[sst_width] 402
+[signals_width] 354
+[sst_expanded] 1
+[sst_vpaned_height] 342
+@420
+DUT.identify_cycle
+@28
+DUT.identify_sampleclock
+DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.spw_instance.rtl.u_spw.rtl.u_spw_tx_flowcontrol.rtl.fcts[6:0]
+@820
+DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.spw_instance.rtl.u_spw.rtl.u_spw_tx_flowcontrol.rtl.fct_used[39:0]
+DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.spw_instance.rtl.u_spw.rtl.u_spw_tx_flowcontrol.rtl.waiting[39:0]
+DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.spw_instance.rtl.u_spw.rtl.u_spw_tx_flowcontrol.rtl.full[39:0]
+DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.spw_instance.rtl.u_spw.rtl.u_spw_tx_flowcontrol.rtl.excess_fcts[39:0]
+@28
+DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.spw_instance.rtl.u_spw.rtl.u_spw_tx_flowcontrol.rtl.tx_sent[2:0]
+@820
+DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.spw_instance.rtl.u_spw.rtl.u_spw_tx_flowcontrol.out_or[39:0]
+DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.spw_instance.rtl.u_spw.rtl.u_spw_tx_flowcontrol.stalled[39:0]
+DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.spw_instance.rtl.u_spw.rtl.u_spw_tx_flowcontrol.too_many_fcts[39:0]
+@22
+DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.spw_instance.rtl.u_spw.rtl.u_spw_tx_flowcontrol.out_data[8:0]
+@820
+DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.spw_instance.rtl.u_spw.rtl.u_spw_tx_flowcontrol.out_ir[39:0]
+DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.spw_instance.rtl.u_spw.rtl.u_spw_tx_flowcontrol.rx_enable[39:0]
+DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.spw_instance.rtl.u_spw.rtl.u_spw_tx_flowcontrol.in_ir[39:0]
+@28
+DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.spw_instance.rtl.u_spw.rtl.u_spw_tx_flowcontrol.in_data[8:0]
+@820
+DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.spw_instance.rtl.u_spw.rtl.u_spw_tx_flowcontrol.in_or[39:0]
+DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.spw_instance.rtl.u_spw.rtl.u_spw_tx_flowcontrol.fct_received[39:0]
+DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.spw_instance.rtl.u_spw.rtl.u_spw_ctrl.rtl.state[79:0]
+DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.spw_instance.rtl.u_spw.rtl.u_spw_ctrl.rx_nchar[39:0]
+DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.spw_instance.rtl.u_spw.rtl.u_spw_ctrl.link_start[39:0]
+DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.spw_instance.rtl.u_spw.rtl.u_spw_ctrl.rx_fct[39:0]
+DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.spw_instance.rtl.u_spw.rtl.u_spw_ctrl.link_ok[39:0]
+DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.spw_instance.rtl.u_spw.rtl.u_spw_ctrl.link_autostart[39:0]
+DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.spw_instance.rtl.u_spw.rtl.u_spw_ctrl.rx_enable[39:0]
+DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.spw_instance.rtl.u_spw.rtl.u_spw_ctrl.rx_tchar[39:0]
+DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.spw_instance.rtl.u_spw.rtl.u_spw_ctrl.tx_ok_to_fct[39:0]
+DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.spw_instance.rtl.u_spw.rtl.u_spw_ctrl.rx_init[39:0]
+DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.spw_instance.rtl.u_spw.rtl.u_spw_ctrl.tx_enable[39:0]
+DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.spw_instance.rtl.u_spw.rtl.u_spw_rx_to_data.rtl.rx_fct[39:0]
+DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.spw_instance.rtl.u_spw.rtl.u_spw_rx_to_data.rtl.rx_tchar[39:0]
+DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.spw_instance.rtl.u_spw.rtl.u_spw_rx_to_data.rtl.rx_nchar[39:0]
+DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.spw_instance.rtl.u_spw.rtl.u_spw_rx_to_data.rtl.state[63:0]
+DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.spw_instance.rtl.u_spw.rtl.u_spw_rx_to_data.see_fct[39:0]
+DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.spw_instance.rtl.u_spw.rtl.u_spw_rx_to_data.error[39:0]
+DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.spw_instance.rtl.u_spw.rtl.u_spw_rx_to_data.too_many_fcts[39:0]
+DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.spw_instance.rtl.u_spw.rtl.u_spw_rx_to_data.fct_received[39:0]
+DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.spw_instance.rtl.u_spw.rtl.u_spw_rx_to_data.null_seen[39:0]
+DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.spw_instance.rtl.u_spw.rtl.u_spw_rx_to_data.timeout_error[39:0]
+DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.spw_instance.rtl.u_spw.rtl.u_spw_tx_discard.rtl.mid_packet[39:0]
+DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.spw_instance.rtl.u_spw.rtl.u_spw_tx_discard.rtl.discard[39:0]
+@28
+DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.spw_instance.rtl.u_spw.rtl.u_spw_tx_discard.out_data[8:0]
+@22
+DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.spw_instance.rtl.u_spw.rtl.u_spw_tx_discard.in_data[8:0]
+@820
+DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.spw_instance.rtl.u_spw.rtl.u_spw_tx_discard.link_ok[39:0]
+DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.spw_instance.rtl.u_spw.rtl.u_tx_ds.rtl.state[55:0]
+DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.spw_instance.rtl.u_spw.rtl.u_tx_ds.rtl.token_sent[87:0]
+DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.spw_instance.rtl.u_spw.rtl.u_tx_ds.rtl.next_token[87:0]
+DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.spw_instance.rtl.u_spw.rtl.u_tx_ds.rtl.new_token[39:0]
+DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.spw_instance.rtl.u_spw.rtl.u_tx_ds.enable[39:0]
+DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.spw_instance.rtl.u_spw.rtl.u_tx_ds.fct[39:0]
+DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.spw_instance.rtl.u_spw.rtl.u_tx_ds.fct_sent[39:0]
+@28
+DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.spw_instance.rtl.u_spw.rtl.u_spw_rx_flowcredit_x.rtl.nchars_read[2:0]
+@820
+DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.spw_instance.rtl.u_spw.rtl.u_spw_rx_flowcredit_x.rtl.up[39:0]
+@28
+DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.spw_instance.rtl.u_spw.rtl.u_spw_rx_flowcredit_x.rtl.extn_count[3:0]
+@820
+DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.spw_instance.rtl.u_spw.rtl.u_spw_rx_flowcredit_x.rtl.down[39:0]
+@29
+DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.spw_instance.rtl.u_spw.rtl.u_spw_rx_flowcredit_x.rtl.fct_to_send[7:1]
+@28
+DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.spw_instance.rtl.u_spw.rtl.u_spw_rx_flowcredit_x.rtl.last_lsb
+@820
+DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.spw_instance.rtl.u_spw.rtl.u_spw_rx_flowcredit_x.fct_sent[39:0]
+DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.spw_instance.rtl.u_spw.rtl.u_spw_rx_flowcredit_x.tx_can_send_fct[39:0]
+DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.spw_instance.rtl.u_spw.rtl.u_spw_rx_flowcredit_x.send_fct[39:0]
+DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.spw_instance.rtl.u_spw.rtl.u_spw_timeout_det.timeout_error[39:0]
+DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.spw_instance.rtl.u_spw.rtl.u_spw_fifo_2C.rtl.oe[39:0]
+@28
+DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.spw_instance.rtl.u_spw.rtl.u_spw_fifo_2C.rtl.wa[10:0]
+@820
+DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.spw_instance.rtl.u_spw.rtl.u_spw_fifo_2C.rtl.clear_reg[39:0]
+DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.spw_instance.rtl.u_spw.rtl.u_spw_fifo_2C.rtl.wr_en
+@28
+DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.spw_instance.rtl.u_spw.rtl.u_spw_fifo_2C.rtl.ra[10:0]
+@820
+DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.spw_instance.rtl.u_spw.rtl.u_spw_fifo_2C.in_clock
+@28
+DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.spw_instance.rtl.u_spw.rtl.u_spw_fifo_2C.din[8:0]
+@820
+DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.spw_instance.rtl.u_spw.rtl.u_spw_fifo_2C.out_clock
+@28
+DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.spw_instance.rtl.u_spw.rtl.u_spw_fifo_2C.dout[8:0]
+@820
+DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.spw_instance.rtl.u_spw.rxd_r
+DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.spw_instance.rtl.u_spw.rxs_r
+DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.spw_instance.rtl.u_spw.txs
+DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.spw_instance.rtl.u_spw.txd
+DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.spw_instance.disable
+DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.spw_instance.rx_esc_esc
+DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.spw_instance.rx_esc_eep
+DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.spw_instance.rx_ir
+DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.spw_instance.rx_parity_error
+DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.spw_instance.rx_esc_eop
+DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.spw_instance.rx_or
+DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.spw_instance.connected
+DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.spw_instance.tx_or
+DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.spw_instance.tx_ir
+@28
+DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.spw_instance.tx_data[8:0]
+DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.spw_instance.rx_data[8:0]
+@820
+DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.rx_or
+DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.reset
+DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.spw_connected
+DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.tx_ir
+DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.tx_or
+@28
+DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.rx_data_loop[8:0]
+@820
+DUT.rtl.spw_wrap_top_level_RTG4_0.rtl.rx_ir
+DUT.rtl.Debounce_Single_Input_0.reset_n_spw
+DUT.rtl.Debounce_Single_Input_0.spw_fmc_en
+[pattern_trace] 1
+[pattern_trace] 0

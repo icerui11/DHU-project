@@ -1,0 +1,34 @@
+Philip Andrew Simpson 
+ FPGA Design 
+ Best Practices for Team-based Reuse
+Second Edition 
+San Jose , CA , USA 2015  225
+1.	Steve Parkes. SpaceWire User’s Guide. Star-Dundee. p13
+2.	European Cooperation for Space Standardization, “ECSS E-ST-50-12C. Space engineering. SpaceWire: Links, nodes, routers and networks – by ECSS”, P28, 31 July 2008
+3.	ARM. AMBA AHB Protocol Specification.
+4.	ESA website. Science & Exploration, Envison factsheet.
+5.	Microsemi. UG0557, User Guide, SmartFusion2 SoC FPGA Advanced Development Kit.
+6.	European Cooperation for Space Standardization, ECSS E-ST-50-12C. P52. Space engineering. SpaceWire: Links, nodes, routers and networks – by ECSS, 31July2008
+7.	Steve Parkes, Star-Dundee limited, “SpaceWire User’s Guide”, P54, 2012
+8.	European Cooperation for Space Standardization, ECSS E-ST-50-12C. P88. Space engineering. SpaceWire: Links, nodes, routers and networks – by ECSS, 31July2008
+9.	Steve Parkes, Star-Dundee limited, “SpaceWire User’s Guide”, P72, 2012
+10.	STAR-Dundee, “STAR-System Documentation”, Version 5.04, P102.
+11.	STAR-Dundee, “STAR-System Documentation”, Version 5.04, P106.
+12.	Microsemi. UG0680: PolarFire FPGA Fabric User Guide, Revison 7.0, P170.
+13.	Synopsys, Synopsys FPGA Synthesis Attribute Reference Manual P127. January 2014.
+14.	University of Las Palmas de Gran Canaria Institute for Applied Microelectronics, “SHyLoC 2.0 IP Datasheet”. P113. 19 August 2020.
+15.	European Cooperation for Space Standardization, ECSS E-ST-50-12C. Space engineering. SpaceWire: Links, nodes, routers and networks – by ECSS, P102,31 July 2008.
+16.	B. Fiethe, D. Buchhorn, “VenSpec Envision Mission CCU DHU Design Trade-Off, P25, 07 July 2023.
+17.	B. Fiethe, D. Buchhorn, “VenSpec Envision Mission CCU DHU Design Trade-Off, P13, 07 July 2023.
+18.	L. Santos, A. Gomez, and R. Sarmiento, Implementation of CCSDS standards for lossless multispectral and hyperspectral satellite image compression, IEEE TRANSACTIONS ONAEROSPACEANDELECTRONICSYSTEMS, April 2020.
+19.	“Lossless Data Compression. Recommendation for Space Data System Standards”, CCSDS 121.0-B-3. Issue 3, Blue Book. Washington, D.C. P4-1, August 2020.
+20.	University of Las Palmas de Gran Canaria Institute for Applied Microelectronics, “SHyLoC 2.0 IP Datasheet”. P19. 19 August 2020.
+21.	LOW-COMPLEXITY LOSSLESS AND NEAR-LOSSLESS MULTISPECTRAL AND HYPERSPECTRAL IMAGE COMPRESSION. Recommendation for Space Data System Standards, CCSDS 123.0-B-1. Pink Book. Issue 1.1. Washington, D.C.: CCSDS, P5-17, June 2018.
+22.	B. Fiethe, D. Buchhorn, “VenSpec Envision Mission CCU DHU Design Trade-Off”, P9, 07 July 2023.
+23.	University of Las Palmas de Gran Canaria Institute for Applied Microelectronics, “SHyLoC 2.0 IP Datasheet”. P20. 19 August 2020.
+24.	European Cooperation for Space Standardization, ECSS E-ST-50-12C. “Space engineering. SpaceWire: Links, nodes, routers and networks – by ECSS”, P40 31 July 2008
+25.	Vaibbhav Taraate, “Digital Logic Design Using Verilog Coding and RTL Synthesis”, Springer, P233, 2016.
+26.	Sridhar Gangadharan, Sanjay Churiwala. “Constraining Designs for Synthesis and Timing Analysis A Practical Guide to Synopsys Design Constraints (SDC)”, Springer, P31, 2013.
+27.	Synopsys, “Inferring Microchip SmartFusion2 RAM Blocks Synopsys Application Note”, P3, April 2021.
+28.	Microchip, “CoreAHBLite v6.0 User Guide”, P28, 2023.
+https://www.researchgate.net/publication/329975404_FPGA-Based_Accelerators_of_Deep_Learning_Networks_for_Learning_and_Classification_A_Review
