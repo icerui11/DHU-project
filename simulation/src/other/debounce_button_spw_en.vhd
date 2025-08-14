@@ -29,7 +29,7 @@ entity Debounce_Single_Input is
     );
 end entity Debounce_Single_Input;
 
-architecture RTL of Debounce_Single_Input is
+architecture rtl of Debounce_Single_Input is
 
   signal r_Debounce_Count     : integer range 0 to DEBOUNCE_LIMIT := 0;
   signal r_Debounce_Count_spw : integer range 0 to DEBOUNCE_LIMIT := 0;

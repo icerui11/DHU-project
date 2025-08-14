@@ -3,17 +3,15 @@
 ----------------------------------------------------------------------------------------------------------------------------------
 -- @ File Name				:	router_fifo_ctrl_top.vhd
 -- @ Engineer				:	Rui
--- @ Date					: 	10.01.2024
+-- @ Date					: 	18.02.2024
 
--- @ VHDL Version			:   1987, 1993, 2008
+-- @ VHDL Version			:   2008
 -- @ Supported Toolchain	:	libero 12.0
 -- @ Target Device			: 	m2s150t
 
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
-
---context work.spw_context;
 
 library smartfusion2;
 use smartfusion2.all;
@@ -22,6 +20,9 @@ use smartfusion2.all;
 library shyloc_121; 
 --! Use generic shyloc121 parameters
 use shyloc_121.ccsds121_parameters.all;
+
+library shyloc_123; 
+use shyloc_123.ccsds123_parameters.all;
 
 context work.router_context;
 
@@ -34,13 +35,13 @@ entity router_fifo_ctrl_top is
     g_data_width		: integer 					:= 8;					-- data width of connecting RAM/fifo
     g_mode				: string 					:= "single";			-- valid options are "diff", "single" and "custom".
     g_priority          : string                    := c_priority;          
-    g_ram_style         : string                    := c_ram_style           
-);                                                                                                    
+    g_ram_style         : string                    := c_ram_style;
+    g_router_port_addr  : integer                   := c_router_port_addr           
+    );                                                                                                    
 
 port(
     rst_n               : in std_logic;				-- active low reset
     clk                 : in std_logic;				-- clock input
- --   enable  		: in 	std_logic := '0';										-- enable input, asserted high. 
 		
     rx_cmd_out		 : out 	std_logic_vector(2 downto 0)	:= (others => '0');		-- control char output bits
     rx_cmd_valid	 : out 	std_logic;												-- asserted when valid command to output
@@ -49,80 +50,59 @@ port(
     rx_data_out		 : out 	std_logic_vector(7 downto 0)	:= (others => '0');		-- received spacewire data output
     rx_data_valid	 : out 	std_logic := '0';										-- valid rx data on output
     rx_data_ready	 : in 	std_logic := '1';										-- assert to receive rx data
-    ram_enable_tx    : out   std_logic;
 
     ccsds_datain     : in std_logic_vector(shyloc_121.ccsds121_parameters.W_BUFFER_GEN-1 downto 0);     --convert to 8 bit data in asym_FIFO
     w_update         : in std_logic;                                                                    --connect with ccsds dataout newvalid
     asym_FIFO_full   : out std_logic;								                                    -- fifo full signal
     ccsds_ready_ext  : out std_logic;								                                    -- fifo ready signal
-
-    --TX_IR indicate fifo read data and transmit data to spw
-    TX_IR_fifo_rupdata : out std_logic;
+    
+    raw_ccsds_data     : out std_logic_vector(shyloc_123.ccsds123_parameters.D_GEN-1 downto 0);      -- transmit to ccsds 123 encoder
+    ccsds_datanewValid : out std_logic;	                                            -- enable ccsds data input
     --DS signal chose by the c_port_mode 
-    DDR_din_r		 : in	std_logic_vector(1 to g_num_ports-1)	:= (others => '0');	-- IO used for "custom" io mode 
-    DDR_din_f   	 : in	std_logic_vector(1 to g_num_ports-1)	:= (others => '0'); -- IO used for "custom" io mode 
-    DDR_sin_r   	 : in	std_logic_vector(1 to g_num_ports-1)	:= (others => '0'); -- IO used for "custom" io mode 
-    DDR_sin_f   	 : in	std_logic_vector(1 to g_num_ports-1)	:= (others => '0'); -- IO used for "custom" io mode 
-    SDR_Dout		 : out	std_logic_vector(1 to g_num_ports-1)	:= (others => '0'); -- IO used for "custom" io mode 
-    SDR_Sout		 : out	std_logic_vector(1 to g_num_ports-1)	:= (others => '0'); -- IO used for "custom" io mode 
-
     Din_p  			 : in 	std_logic_vector(1 to g_num_ports-1)	:= (others => '0');	-- IO used for "single" and "diff" io modes
-    Din_n            : in 	std_logic_vector(1 to g_num_ports-1)	:= (others => '0'); -- IO used for "single" and "diff" io modes
     Sin_p            : in 	std_logic_vector(1 to g_num_ports-1)	:= (others => '0'); -- IO used for "single" and "diff" io modes
-    Sin_n            : in 	std_logic_vector(1 to g_num_ports-1)	:= (others => '0'); -- IO used for "single" and "diff" io modes
     Dout_p           : out 	std_logic_vector(1 to g_num_ports-1)	:= (others => '0'); -- IO used for "single" and "diff" io modes
-    Dout_n           : out 	std_logic_vector(1 to g_num_ports-1)	:= (others => '0'); -- IO used for "single" and "diff" io modes
     Sout_p           : out 	std_logic_vector(1 to g_num_ports-1)	:= (others => '0'); -- IO used for "single" and "diff" io modes
-    Sout_n           : out 	std_logic_vector(1 to g_num_ports-1)	:= (others => '0'); -- IO used for "single" and "diff" io modes                                                     
-    spw_error        : out  std_logic;
 
-    router_connected    : out  std_logic_vector(31 downto 1) := (others => '0')            -- output, asserted when SpW Link is Connected
+    spw_error        : out  std_logic;
+    router_connected : out  std_logic_vector(31 downto 1) := (others => '0')            -- output, asserted when SpW Link is Connected
 );
 
 end router_fifo_ctrl_top;
 
 architecture rtl of router_fifo_ctrl_top is 
 
-    	-- Channels                                                                 	--
+    	-- Channels                                                                 	
 	signal spw_Tx_data              :    	nonet;                                  --
 	signal spw_Tx_OR                :    	std_logic := '0';                       -- converted to std_logic for use in entity/component outputs...
-	signal spw_Tx_IR                :  		std_logic;                                --
-	signal spw_Rx_data              :  		nonet;                                  --
-	signal spw_Rx_OR                :  		std_logic;                                --
-	signal spw_Rx_IR                :    	std_logic := '0';                       --
-	signal spw_Rx_ESC_ESC           :  		std_logic;                                --
-	signal spw_Rx_ESC_EOP           :  		std_logic;                                --
-	signal spw_Rx_ESC_EEP           :  		std_logic;                                --
-	signal spw_Rx_Parity_error      :  		std_logic;                                --
-	signal spw_Rx_bits              :  		integer range 0 to 2;                   --
-	signal spw_Rx_rate              :  		std_logic_vector(15 downto 0);          --
-	signal spw_Connected            : 		std_logic;                                --
+	signal spw_Tx_IR                :  		std_logic;                                
+	signal spw_Rx_data              :  		nonet;                                  
+	signal spw_Rx_OR                :  		std_logic;                               
+	signal spw_Rx_IR                :    	std_logic := '0';                      
+	signal spw_Rx_ESC_ESC           :  		std_logic;                                
+	signal spw_Rx_ESC_EOP           :  		std_logic;                                
+	signal spw_Rx_ESC_EEP           :  		std_logic;                                
+	signal spw_Rx_Parity_error      :  		std_logic;                                
+	signal spw_Rx_bits              :  		integer range 0 to 2;                   
+	signal spw_Rx_rate              :  		std_logic_vector(15 downto 0);          
     
-    signal reset           : std_logic := '1';								-- reset signal
+    signal reset           : std_logic := '1';								 -- reset signal
     signal ram_addr        : std_logic_vector(g_addr_width-1 downto 0);
-    signal ram_enable      : std_logic;
     signal fifo_data       : std_logic_vector(g_data_width-1 downto 0);	     -- data FROM fifo
-    signal fifo_clear      : std_logic := '0';								-- clear signal for fifo
-    signal fifo_dataout    : std_logic_vector(g_data_width-1 downto 0);	-- data out from fifo
-    signal fifo_r_update   : std_logic;								-- fifo read update signal
-    signal asym_FIFO_empty : std_logic;								-- fifo empty signal
- --   signal ccsds_ready_ext : std_logic;								-- fifo ready signal
-    signal fifo_ack        : std_logic;		-- fifo ack signal
-    signal write_done      : std_logic;		-- write done signal   
-    --signal declartion for fifo port
-    signal spw_fifo_in     : r_fifo_master_array(1 to g_num_ports-1) := (others => c_fifo_master);
-    signal spw_fifo_out    : r_fifo_slave_array(1 to g_num_ports-1) := (others => c_fifo_slave);
-    signal router_connect  : std_logic_vector(31 downto 1) := (others => '0');
+    signal fifo_clear      : std_logic := '0';								 -- clear signal for fifo
+    signal fifo_dataout    : std_logic_vector(g_data_width-1 downto 0);	     -- data out from fifo
+    signal fifo_r_update   : std_logic;								         -- fifo read update signal
+    signal asym_FIFO_empty : std_logic;								         -- fifo empty signal
+
+    signal fifo_ack        : std_logic;		                                 -- fifo ack signal
+    signal write_done      : std_logic;		                                 -- write done signal   
+
+    signal spw_fifo_in	   : r_fifo_master_array(1 to g_num_ports-1) := (others => c_fifo_master);
+    signal spw_fifo_out	   : r_fifo_slave_array(1 to g_num_ports-1)  := (others => c_fifo_slave);
 
 begin 
-    TX_IR_fifo_rupdata <= spw_Tx_IR;
- --   ccsds_ready_ext    <= ccsds_ready_ext;
 
     reset  <= '1' when rst_n = '0' else '0';                                -- microchip use active low reset
-    ram_enable_tx <= ram_enable;
-
-    router_connected <= router_connect;
-    spw_Connected    <= router_connect(1);                                  -- router controller connected signal from fifo-spw port
 
     router_inst: entity work.router_top_level_RTG4(rtl)                 	-- instantiate SpaceWire Router 
 	generic map(
@@ -137,27 +117,16 @@ begin
 	port map( 
 		router_clk              => clk,
 		rst_in					=> reset,	           -- router reset active high
-	
-		DDR_din_r				=> (others => '0'),	
-		DDR_din_f   			=> (others => '0'),  
-		DDR_sin_r   			=> (others => '0'),  
-		DDR_sin_f   			=> (others => '0'),  
-		SDR_Dout				=> open,
-		SDR_Sout				=> open,
 		
 		Din_p               	=> Din_p, 
-		Din_n               	=> (others => '0'), 
 		Sin_p               	=> Sin_p, 
-		Sin_n               	=> (others => '0'), 
 		Dout_p              	=> Dout_p, 
-		Dout_n              	=> open, 
 		Sout_p              	=> Sout_p, 
-		Sout_n              	=> open,  
 
 		spw_fifo_in             => spw_fifo_in,
 		spw_fifo_out	        => spw_fifo_out,
 		
-		Port_Connected			=> router_connect
+		Port_Connected			=> router_connected
 	);
 /*
     constant c_fifo_master : r_fifo_master :=(
@@ -183,14 +152,13 @@ begin
 
     gen_fifo_controller: for i in 1 to g_num_ports-1 generate 
         gen_ctrl: if (g_is_fifo(i) = '1') generate
-            router_fifo_ctrl_inst: entity work.router_fifo_spwctrl(rtl)
+            router_fifo_ctrl_inst: entity work.router_fifo_spwctrl_16bit_v2(rtl)
             generic map (
-            g_addr_width	=> g_addr_width,
-            router_port_num => i,                      -- 
-            g_count_max 	=> g_data_width            -- count for every ram address
+            g_addr_width	 => g_addr_width,
+            g_router_port_addr => g_router_port_addr,             -- fifo data to which port
+            g_count_max 	 => g_data_width                    -- count for every ram address
             )
             port map( 
-
             -- standard register control signals --
             clk_in				=> 	clk,						-- clk input, rising edge trigger
             rst_in				=>	reset,						-- reset input, active high
@@ -201,9 +169,8 @@ begin
             fifo_ack            =>  fifo_ack,                   
             write_done          =>  write_done,                           
             -- RAM signals
-
-            ram_data_in			=> 	fifo_data,					-- ram read data
-            
+            ram_data_in			=> 	fifo_data,					              -- ram read data
+  
             -- SpW Data Signals
             spw_Tx_data			=> 	spw_fifo_in(i).rx_data(7 downto 0),	      -- router fifo rxdata, is different from normal spw
             spw_Tx_Con			=> 	spw_fifo_in(i).rx_data(8),				  -- SpW Control Char Bit
@@ -220,20 +187,33 @@ begin
             rx_cmd_ready	    =>  rx_cmd_ready,                            
 
             rx_data_out		    =>	rx_data_out,                             --rx_data_out, output 8 bit data to SHyLoc as raw data
-            rx_data_valid	    =>	rx_data_valid,                           --not spw_Rx_Con; assert data valid if data received
+  --          rx_data_valid	    =>	rx_data_valid,                           --not spw_Rx_Con; assert data valid if data received and handshake is asserted
             rx_data_ready	    =>	rx_data_ready,                                                
             
+            -- ccsds raw data input
+            raw_ccsds_data      =>  raw_ccsds_data,                         -- output, raw ccsds data
+		    ccsds_datanewValid  =>  ccsds_datanewValid,                     -- output, enable ccsds data input
+
             -- SpW Control Signals
-            spw_Connected	 	=> 	spw_Connected,			-- asserted when SpW Link is Connected
-            spw_Rx_ESC_ESC	 	=> 	spw_Rx_ESC_ESC,     	-- SpW ESC_ESC error 
-            spw_ESC_EOP 	 	=> 	spw_Rx_ESC_EOP,   		-- SpW ESC_EOP error 
-            spw_ESC_EEP      	=> 	spw_Rx_ESC_EEP,     	-- SpW ESC_EEP error 
-            spw_Parity_error 	=> 	spw_Rx_Parity_error,    -- SpW Parity error
-            
-            error_out			=> 	spw_error						-- assert when error
-    );
+            spw_Connected	 	=>  '1',			                        -- asserted when SpW Link is Connected(in this case, always asserted when fifo port is generated)
+            spw_Rx_ESC_ESC	 	=> 	spw_Rx_ESC_ESC,                     	-- SpW ESC_ESC error 
+            spw_ESC_EOP 	 	=> 	spw_Rx_ESC_EOP,   		                -- SpW ESC_EOP error 
+            spw_ESC_EEP      	=> 	spw_Rx_ESC_EEP,     	                -- SpW ESC_EEP error 
+            spw_Parity_error 	=> 	spw_Rx_Parity_error,                    -- SpW Parity error
+     
+            error_out			=> 	spw_error				                -- assert when error
+            );
+        
+            spw_fifo_in(i).connected <= '1';                                -- assert router fifo connected when fifo port is generated
 
         asym_FIFO_inst_0: entity work.asym_FIFO 
+        generic map(
+            RESET_TYPE  => 1,         --! Reset type (Synchronous or asynchronous).
+            W_Size      => 32,        --! Bit width of the stored values.
+            R_Size      => 8,         --! Bit width of the read values.
+            NE          => 256,        --! Number of elements of the FIFO.
+            W_ADDR      => 8,         --! Bit width of the address.
+            TECH        => 0)         --! Parameter used to change technology; (0) uses inferred memories.
         port map( 
             -- Inputs
             clk      => clk,
@@ -252,7 +232,7 @@ begin
             ack      => fifo_ack,
             data_out_chunk => fifo_data 
             );
-            
+          
         end generate gen_ctrl; 
     end generate gen_fifo_controller;
 end rtl;

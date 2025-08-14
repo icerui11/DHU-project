@@ -4,7 +4,7 @@
 -- @ File Name				:	router_fifo_spwctrl.vhd
 -- @ Engineer				:	Rui
 -- @ Date					: 	10.01.2024
-
+-- @ version				:	2.0
 -- @ VHDL Version			:   1987, 1993, 2008
 -- @ Supported Toolchain	:	libero 12.0
 -- @ Target Device			: 	m2s150t
@@ -28,8 +28,7 @@ use ieee.numeric_std.all;
 entity router_fifo_spwctrl is
 	generic(
 		g_addr_width	: natural := 9;								 	-- address width of connecting RAM
---		CCSDS_INbitwidth : integer := 16;								-- input bitwidth of CCSDS data
-        router_port_num : integer range 1 to 254 :=1;                  -- router port number, not include port 0
+        g_router_port_addr : integer range 1 to 32 :=1;                  -- router port addr, not include port 0, defined in package
 		g_count_max 	: integer := 8   	                           -- count period between every ram address
 	);
 	port( 
@@ -43,12 +42,10 @@ entity router_fifo_spwctrl is
         ccsds_ready_ext : out std_logic;	-- ccsds ready signal
         fifo_ack    : in 	std_logic;		-- fifo ack signal
         write_done  : out 	std_logic;		-- write done signal
---        ccsds_data  : out 	std_logic_vector(CCSDS_INbitwidth-1 downto 0);	-- ccsds data output
         
 		-- RAM signals
 		ram_data_in		: in 	std_logic_vector(7 downto 0) ;	-- data read from RAM
 
-		
 		-- SpW Data Signals
 		spw_Tx_data		: out   std_logic_vector(7 downto 0);		-- SpW Tx_data
 		spw_Tx_Con		: out 	std_logic;					-- SpW character control bit
@@ -92,7 +89,7 @@ architecture rtl of router_fifo_spwctrl is
 	-- Constant Declarations --
 	----------------------------------------------------------------------------------------------------------------------------
 	constant c_spw_eop	: 	std_logic_vector(7 downto 0) := x"02";
-    constant c_port_addr:   std_logic_vector(7 downto 0) := std_logic_vector(to_unsigned(router_port_num,8));
+    constant c_port_addr:   std_logic_vector(7 downto 0) := std_logic_vector(to_unsigned(g_router_port_addr,8));
 	----------------------------------------------------------------------------------------------------------------------------
 	-- Type Declarations --
 	----------------------------------------------------------------------------------------------------------------------------
@@ -139,7 +136,7 @@ begin
 			if(rst_in = '1') then							-- Synchronous reset condition. 
 				s_time_counter	<= 0;
 				spw_Tx_Con 		<= '0';
-				spw_Tx_data		<= (others => '0');
+	--			spw_Tx_data		<= (others => '0');
 				spw_Tx_OR		<= '0';
 				s_state 		<= ready;
 			else

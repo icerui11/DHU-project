@@ -17,4 +17,5 @@ vcom -2008 -quiet  -work work $DUT/SpW_router/spw_tx_discard.vhd
 vcom -2008 -quiet  -work work $DUT/SpW_router/spw_tx_ds.vhd
 vcom -2008 -quiet  -work work $DUT/SpW_router/spw_tx_flowcontrol.vhd
 vcom -2008 -quiet  -work work $DUT/SpW_router/spw_RTG4.vhd
-vcom -2008 -quiet  -work work $DUT/SpW_router/spw_wrap_top_level_RTG4.vhd
+#vcom -2008 -quiet  -work work $DUT/SpW_router/spw_wrap_top_level_RTG4.vhd
+vcom -2008 -quiet  -work work $DUT/DHU-project/simulation/src/4links/spw_rtl/spw_wrap_top_level_RTG4.vhd

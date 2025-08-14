@@ -548,8 +548,8 @@ begin
 				spw_fifo_out(i).rx_ready 		<= rx_spw_rx_data_ready(i);
 				spw_fifo_out(i).rx_time_ready	<= tc_rx_slave(i).tready;
 				
-			--	spw_status_memory(i)(0) <= connected(i);
-				
+				spw_status_memory(i)(0) <= connected(i);                          --remove comment to enable connected status
+				Port_Connected(i) <= connected(i);                                --indicate fifo port is connected  
 			else generate
 			
 				spw_port_inst: entity work.spw_wrap_top_level_RTG4(rtl)
