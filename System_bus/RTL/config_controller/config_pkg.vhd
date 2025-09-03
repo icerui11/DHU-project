@@ -22,7 +22,7 @@ use shyloc_123.ccsds123_constants.all;
 package config_pkg is
 
     -- Constants
-    constant c_num_compressors : integer := 3; -- Number of compressors    
+    constant c_num_compressors : integer := 1; -- Number of compressors    
 --    constant c_ram_addr_width : integer := 8;               -- RAM address width
     -- Config RAM parameters
     constant c_input_data_width  : integer := 8;   -- Input data width

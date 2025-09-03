@@ -10,14 +10,14 @@ package VH_ccsds121_parameters is
    constant EN_RUNCFG: integer  := 1;          --! (0) Disables runtime configuration; (1) Enables runtime configuration.
    constant RESET_TYPE: integer :=  0;          --! (0) Asynchronous reset; (1) Synchronous reset.
    constant HSINDEX_121: integer := 7;          --! AHB slave index.
-   constant HSCONFIGADDR_121: integer := 16#700#;    --! ADDR field of the AHB Slave.
+   constant HSCONFIGADDR_121: integer := 16#100#;    --! ADDR field of the AHB Slave.
    constant HSADDRMASK_121: integer := 16#FFF#;      --! MASK field of the AHB slave.
    constant EDAC: integer := 0;              --! (0) Inhibits EDAC implementation; (1) EDAC is implemented.
   constant Nx_GEN: integer := 80;          --! Maximum allowed number of samples in a line.
   constant Ny_GEN: integer := 30;          --! Maximum allowed number of samples in a row.
   constant Nz_GEN: integer := 340;          --! Maximum allowed number of bands.
-   constant D_GEN : integer := 16;            --! Maximum dynamic range of the input samples.
-   constant IS_SIGNED_GEN : integer := 0;   constant ENDIANESS_GEN : integer := 1;        --! (0) Little-Endian; (1) Big-Endian.
+   constant D_GEN : integer := 32;            --! Maximum dynamic range of the input samples.
+   constant IS_SIGNED_GEN : integer := 0;   constant ENDIANESS_GEN : integer := 0;        --! (0) Little-Endian; (1) Big-Endian.
    constant J_GEN: integer := 32;            --! Block Size.
    constant REF_SAMPLE_GEN: integer := 64;      --! Reference Sample Interval.
    constant CODESET_GEN: integer := 0;          --! Code Option.

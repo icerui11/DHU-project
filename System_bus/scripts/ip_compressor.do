@@ -37,3 +37,6 @@ vcom -2008 -work VH_compressor $DUT/DHU-project/System_bus/RTL/Compressor/VH_com
 vcom -2008 -work VH_compressor $DUT/DHU-project/System_bus/RTL/Compressor/VH_compressor/VH_ccsds121_predictor_fsm.vhd
 vcom -2008 -work VH_compressor $DUT/DHU-project/System_bus/RTL/Compressor/VH_compressor/ccsds121_predictor_top_VH.vhd
 vcom -2008 -work VH_compressor $DUT/DHU-project/System_bus/RTL/Compressor/VH_compressor/ccsds121_shyloc_top_VH.vhd
+# compile fifo for compressor
+vcom -2008 -work VH_compressor $DUT/DHU-project/System_bus/RTL/Compressor/FIFO/router_shyloc_fifo.vhd
+
