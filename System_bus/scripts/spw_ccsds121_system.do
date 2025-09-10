@@ -62,7 +62,7 @@ do $DUT/DHU-project/System_bus/scripts/ip_grlib_amba.do
 vcom -2008 -work VH_compressor $DUT/DHU-project/System_bus/RTL/Topwrapper/spw_ccsds121_system_top.vhd
 vcom -2008 -work work $DUT/DHU-project/System_bus/RTL/Topwrapper/spw_ccsds121_system_top.vhd
 vcom -2008 -work work -quiet $DUT/DHU-project/System_bus/RTL/tb/spw_ccsds121_system_top_tb.vhd
-vsim -coverage work.spw_ccsds121_system_top_tb -voptargs="+acc"
+vsim -t -1ps -coverage work.spw_ccsds121_system_top_tb -voptargs="+acc"
 
 add wave -position end  sim:/spw_ccsds121_system_top_tb/dut/u_router_shyloc_fifo/clk_in
 add wave -position end  sim:/spw_ccsds121_system_top_tb/dut/u_router_shyloc_fifo/rst_n

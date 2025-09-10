@@ -306,10 +306,10 @@ begin
     report "Test Phase 3: Testing SpaceWire FIFO with 16-bit data assembly";
     
     -- Clear any existing FIFO content
-    clear_fifo <= '1';
-    wait for SYS_CLK_PERIOD * 2;
-    clear_fifo <= '0';
-    wait for SYS_CLK_PERIOD * 5;
+  --  clear_fifo <= '1';
+ --   wait for SYS_CLK_PERIOD * 2;
+  --  clear_fifo <= '0';
+  --  wait for SYS_CLK_PERIOD * 5;
     
     -- Send 16-bit test pattern (D_GEN = 16, so FIFO should assemble 2 bytes per sample)
     report "Sending 16-bit SpaceWire test pattern";
@@ -342,23 +342,38 @@ begin
     -- Test different data patterns to verify FIFO assembly logic
     -- Send single bytes and verify FIFO state changes
     for i in 0 to 7 loop
-      send_spw_data(std_logic_vector(to_unsigned(i, 8)));
+      send_spw_data(std_logic_vector(to_unsigned(i, 8)), 1);
       wait for SYS_CLK_PERIOD * 3;
       
       report "Sent byte " & integer'image(i) & 
              ": FIFO state = " & integer'image(to_integer(unsigned(debug_fifo_state))) &
              ", Byte count = " & integer'image(to_integer(unsigned(debug_byte_count)));
     end loop;
-    
+    --- Test Phase 7: Reset and Reconfiguration for 32-bit data
+    test_phase <= 7;
+    rst_n <= '0';
+    wait for SYS_CLK_PERIOD * 10;
+    rst_n <= '1';
+    write_config_to_ram(80, CCSDS121_CONFIG_DATA_32bits, 16);   
     -- Test Phase 6: Error Conditions
     test_phase <= 6;
     report "Test Phase 6: Testing error conditions and overflow";
-    
+    for i in 0 to 7 loop
+      -- Send more test data
+      send_spw_pattern(test_pattern_16bit, 8, 1);
+      
+      -- Wait and check for compressed output
+      wait for SYS_CLK_PERIOD * 30;
+      
+      report "Iteration " & integer'image(i) & ": SpW bytes sent = " & 
+             integer'image(spw_bytes_sent) & ", Compressed words received = " & 
+             integer'image(compressed_words_received);
+    end loop;
     -- Test FIFO overflow by sending data faster than compressor can consume
     report "Testing FIFO overflow conditions";
     for i in 0 to 100 loop
       if system_ready = '1' then
-        send_spw_data(x"FF", 0);  -- Send without waiting
+        send_spw_data(x"FF", 1);  -- Send without waiting
       else
         exit;  -- FIFO is full
       end if;
