@@ -128,8 +128,9 @@ architecture rtl of spw_ccsds121_system_top is
   signal ccsds_to_fifo_ready : std_logic;
   
   -- FIFO configuration
-  signal config_fifo : config_121;
-  
+  signal config_fifo : config_121;      -- configuration parameter pass to FIFO
+  signal config_valid_out : std_logic;
+  signal config_s_out : config_121;
   -- Individual compressor control signals
   signal comp_awaiting_config : std_logic;
   signal comp_ready          : std_logic;
@@ -341,7 +342,10 @@ begin
       DataIn_NewValid      => fifo_to_ccsds_valid,
       IsHeaderIn           => '0',
       NbitsIn              => (others => '0'),
-      
+      -- Configuration interface
+      config_valid_out     => config_valid_out,
+      config_s_out         => config_s_out,
+
       -- Data output interface
       DataOut              => data_out,
       DataOut_NewValid     => data_out_valid,
@@ -400,7 +404,16 @@ begin
   
   -- FIFO configuration assignment (should be set via AHB or external means)
   -- For now, setting default values - in real system this would come from configuration
-  config_fifo.D <= std_logic_vector(to_unsigned(VH_compressor.VH_ccsds121_parameters.D_GEN, config_fifo.D'length));
+ -- config_fifo.D <= std_logic_vector(to_unsigned(VH_compressor.VH_ccsds121_parameters.D_GEN, config_fifo.D'length));
   -- Add other necessary config_fifo assignments here
-
+  process(clk_sys)
+  begin 
+    if rising_edge(clk_sys) then
+      if rst_n = '0' then
+        config_fifo.D <= std_logic_vector(to_unsigned(VH_compressor.VH_ccsds121_parameters.D_GEN, config_fifo.D'length));
+      elsif config_valid_out = '1' then
+        config_fifo.D <= config_s_out.D;
+      end if;
+    end if;
+  end process;
 end architecture rtl;
