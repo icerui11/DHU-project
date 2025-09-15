@@ -56,24 +56,27 @@ use ieee.numeric_std.all;
 -- Package Declarations --
 ----------------------------------------------------------------------------------------------------------------------------------
 -- use work.ip4l_data_types.all;
+context work.router_context;
+/*
 library work;
-use work.router_pckg.all;	
-use work.router_records.all;
+use router.router_pckg.all;	
+use router.router_records.all;
 	
-use work.rmap_initiator_lib.all;
+use rmap.rmap_initiator_lib.all;
 	
-use work.spw_data_types.all;
-use work.spw_codes.all;
+use spw.spw_data_types.all;
+use spw.spw_codes.all;
 
 library std;
 use std.env.finish;
+*/
 ----------------------------------------------------------------------------------------------------------------------------------
 -- Entity Declarations --
 ----------------------------------------------------------------------------------------------------------------------------------
 entity router_top_level_RTG4 is
     generic(
 		g_clock_freq	: t_freq_array 					:= c_spw_clk_freq;		-- these are located in router_pckg.vhd
-        	g_num_ports 	: natural range 1 to 32 := c_num_ports;         -- these are located in router_pckg.vhd
+        g_num_ports 	: natural range 1 to 32 := c_num_ports;         -- these are located in router_pckg.vhd
 		g_mode			: string				:= c_port_mode;         -- these are located in router_pckg.vhd
 		g_is_fifo		: t_dword 				:= c_fifo_ports;        -- these are located in router_pckg.vhd
 		g_priority		: string 				:= c_priority;          -- these are located in router_pckg.vhd

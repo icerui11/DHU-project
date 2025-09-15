@@ -36,9 +36,9 @@ package router_pckg is
 	--------------------------------------------------------------------------------------------------------------------------
 	-- router top level generic configuration constants --
 	constant c_fabric_bus_width 	: natural range 1 to 4 		:= 1;				-- nonet-witdth of Xbar fabric data channel. 1 = 9 bits, 4 = 36 bits
-	constant c_spw_clk_freq			: real						:= 100_000_000.0;	-- frequency of SpaceWire Clock in Hz (default 200MHz)
+--	constant c_spw_clk_freq			: real						:= 100_000_000.0;	-- frequency of SpaceWire Clock in Hz (default 200MHz) , commented for independent clock
 	constant c_router_clk_freq		: real 						:= 100_000_000.0;	-- frequency of Router Fabric & Arbitration (sim only)
-	constant c_num_ports 			: natural range 2 to 32  	:= 4;		        -- number of router ports, 0 is internal address, maximum 32 (31 + 1)
+	constant c_num_ports 			: natural range 2 to 32  	:= 8;		        -- number of router ports, 0 is internal address, maximum 32 (31 + 1)
 	constant c_port_mode			: string 					:= "single";        -- valid options are "single", "diff" and "custom". 
 	constant c_priority				: string 					:= "fifo";          -- valid options are "fifo" and "none"
 	constant c_ram_style			: string 					:= "auto";			-- type of ram (xilinx) to use for FiFo (block, auto, see Xillinx user guide)
@@ -96,13 +96,34 @@ package router_pckg is
 	constant c_tc_address			: integer range 0 to 31 := 0;	-- address of last time code in status registers 
 	
 	constant c_router_port_addr     : integer range 0 to 31 := 1;   -- router_fifo_ctrl transmit to which port address   
-	--------------------------------------------------------------------------------------------------------------------------
+		--------------------------------------------------------------------------------------------------------------------------
 	-- Subtype & Type Declarations --
 	--------------------------------------------------------------------------------------------------------------------------
 	-- this subtype is passed around the x-bar fabric, it's why we can't simply use the generic Configuration for port numbers 
 	subtype t_ports is std_logic_vector(c_num_ports-1 downto 0);
 	-- this type is especially useful for connecting the X-bar fabric and port arbitration controller(s). 
 	type t_ports_array is array (natural range <>) of t_ports;
+	type t_freq_array is array (1 to c_num_ports-1) of real;
+	type t_time_array is array (1 to c_num_ports-1) of time;
+	--------------------------------------------------------------------------------------------------------------------------
+	-- Subtype & Type Constants --
+	--------------------------------------------------------------------------------------------------------------------------
+  
+	constant c_spw_clk_freq : t_freq_array := (
+		
+		1 => 80_000_000.0,	-- port 1
+		2 => 20_000_000.0,	-- port 2
+		3 => 80_000_000.0,	-- port 3
+		4 => 80_000_000.0,	-- port 4
+		others => 80_000_000.0  -- default for non-used ports
+	);
+	constant c_spw_clk_periods : t_time_array := (
+		1 => 12.5 ns,
+		2 => 50  ns,
+		3 => 12.5 ns,
+		4 => 12.5 ns,
+		others => 12.5 ns  -- default for non-used ports
+	);
 	
 	--------------------------------------------------------------------------------------------------------------------------
 	-- Subtype & Type Constants --
