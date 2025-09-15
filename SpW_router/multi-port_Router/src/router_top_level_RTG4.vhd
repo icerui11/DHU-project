@@ -71,7 +71,11 @@ use std.env.finish;
 ----------------------------------------------------------------------------------------------------------------------------------
 entity router_top_level_RTG4 is
     generic(
+<<<<<<< HEAD
 		g_clock_freq	: t_freq_array 			:= c_spw_clk_freq;		-- these are located in router_pckg.vhd
+=======
+		g_clock_freq	: t_freq_array 					:= c_spw_clk_freq;		-- these are located in router_pckg.vhd
+>>>>>>> 15400a9 (router testbench add)
         g_num_ports 	: natural range 1 to 32 := c_num_ports;         -- these are located in router_pckg.vhd
 		g_mode			: string				:= c_port_mode;         -- these are located in router_pckg.vhd
 		g_is_fifo		: t_dword 				:= c_fifo_ports;        -- these are located in router_pckg.vhd
