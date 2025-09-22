@@ -310,8 +310,9 @@ begin
         Error             => r_shyloc(i).Error
     );
     end generate gen_SHyLoC;
-   -- Stimulus process first SHyLoC
-    gen_stim: process (router_clk) 
+
+--    gen_stim: process (router_clk) 
+    gen_stim: process (spw_clk(2))
         -- File and data variables
         variable pixel_file : character;
         variable v_value_high : natural;
@@ -321,12 +322,13 @@ begin
         variable total_samples : unsigned(31 downto 0);
         variable file_status   : file_open_status;
         variable route_addr    : std_logic_vector(8 downto 0);
-        constant spw_port      : integer := 1;                       -- Use SpW port 1
+        constant spw_port      : integer := 2;                       -- Use SpW port 1. Testcase 2: from slow port 2 to fast port 1
         variable compress_cnt    : integer := 0;                       -- compress counter
         constant read_cycle      : integer := 1;                       -- compress times
 
     begin
-        if rising_edge(router_clk) then
+  --      if rising_edge(router_clk) then --for testcase1
+		if rising_edge(spw_clk(2)) then --for testcase2
         -- Default signal settings
            codecs(1).Tx_OR <= '0';
             if rst_n = '0' then
@@ -344,7 +346,7 @@ begin
                     total_samples := to_unsigned(work.ccsds123_tb_parameters.Nx_tb * 
                                               work.ccsds123_tb_parameters.Ny_tb * 
                                               work.ccsds123_tb_parameters.Nz_tb*2, 32);
-                    route_addr := '0' & std_logic_vector(to_unsigned(36, 8)); -- Assume router port 5
+                    route_addr := '0' & std_logic_vector(to_unsigned(32, 8)); -- Assume router port 5(36), port 2 is slow port 32
                     codecs(spw_port).Tx_OR <= '0';
                     if compress_cnt < read_cycle then
                         datatx_state <= WAIT_CONNECTION;
@@ -535,16 +537,6 @@ begin
         end if;
     end process write_pixel_data_process;
    
-	-- port2 to port1 raw data
-	gen_stim2: process (spw_clk(2))
-	variable VM_port : integer := 2;
-	begin 
-	    if rising_edge(spw_clk(2)) then 
-			codecs(VM_port).Tx_OR <= '0';
-			if rst_n = '0' then
-               codecs(VM_port).Tx_OR <= '0';
-			else 
-				
     gen_rst: process
     begin
         -- Initial reset
@@ -554,19 +546,32 @@ begin
         wait;
     end process;
 
-    stim_sequencer: process
+    TEST_case2: process                           --verify slow to fast port transmission
     begin 
-        reset_n_s <= '0';
+        reset_n_s <= '1';                         -- at beginning de-assert reset for shyloc 
         r_shyloc(1).ForceStop <= '0';                                              -- default value
         wait until (codecs(1).Connected = '1' and router_connected(1) = '1');	-- wait for SpW instances to establish connection, make sure Spw link is connected
-
-        reset_n_s <= '1';
-
+    --    reset_n_s <= '1';
         wait;
         wait until r_shyloc(1).Finished = '1';
         assert false report "**** system Testbench done ****" severity note; 
  --       stop(0);
         wait;
     end process;
-	
+
+/*                                                  
+    stim_sequencer: process                       -- verify SHyloc compressor connect to router function
+    begin 
+        reset_n_s <= '0';
+        r_shyloc(1).ForceStop <= '0';                                              -- default value
+        wait until (codecs(1).Connected = '1' and router_connected(1) = '1');	-- wait for SpW instances to establish connection, make sure Spw link is connected
+        reset_n_s <= '1';
+        wait;
+        wait until r_shyloc(1).Finished = '1';
+        assert false report "**** system Testbench done ****" severity note; 
+ --       stop(0);
+        wait;
+    end process;
+*/
+
 end bench;

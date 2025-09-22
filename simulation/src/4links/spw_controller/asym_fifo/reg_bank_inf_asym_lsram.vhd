@@ -41,11 +41,11 @@ begin
 process(clk, rst_n)
 begin
     if (rst_n = '0' and RESET_TYPE = 0) then 
-        bank <= (others => (others => '0'));
+  --      bank <= (others => (others => '0'));
         dataout_valid <= '0'; 
     elsif (clk'event and clk = '1') then
         if (clear = '1' or (rst_n = '0' and RESET_TYPE = 1)) then
-            bank <= (others => (others => '0'));
+  --          bank <= (others => (others => '0'));
             dataout_valid <= '0'; 
         else
             --  Simple write operation

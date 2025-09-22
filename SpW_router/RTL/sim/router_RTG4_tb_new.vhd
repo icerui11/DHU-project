@@ -553,7 +553,7 @@ begin
     generic map(
 		g_clock_freq => c_router_clk_freq,
         g_num_ports => c_num_ports,
-		g_mode		=> "diff",
+		g_mode		=> "single",
 		g_priority	=> c_priority
     )
 	port map( 
