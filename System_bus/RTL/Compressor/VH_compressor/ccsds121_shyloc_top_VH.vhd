@@ -127,7 +127,9 @@ TECH                 : integer := TECH               --! Memory technology selec
     -- Data Output Interface
     DataOut        : out std_logic_vector (W_BUFFER_GEN-1 downto 0);  --! Output compressed bit stream.
     DataOut_NewValid  : out std_logic;                  --! Flag to validate output bit stream.
-        
+    -- config port:
+    config_valid_out : out std_logic;             --! Validation of configuration parameters
+    config_s_out  : out config_121;             --! Current configuration parameters
     -- Control Interface
     ForceStop    : in std_logic;             --! Force the stop of the compression.
     Ready_Ext    : in std_logic;             --! External receiver not ready.
@@ -137,7 +139,7 @@ TECH                 : integer := TECH               --! Memory technology selec
     EOP        : out std_logic;             --! Compression of last sample has started.
     Finished    : out std_logic;             --! The IP has finished compressing all samples.
     Error      : out std_logic             --! There has been an error during the compression.
-      
+    
   );
 end ccsds121_shyloc_top_VH;
  
@@ -328,4 +330,7 @@ begin
       Finished =>     Finished,      --! The IP has finished compressing all samples.
       Error =>       Error        --! There has been an error during the compression.
     );
+    -- expose config signal to the external fifo module
+    config_s_out <=    Pred_config;
+    config_valid_out <=  config_valid;
 end arch;

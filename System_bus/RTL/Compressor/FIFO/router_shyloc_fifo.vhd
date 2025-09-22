@@ -25,9 +25,10 @@ use ieee.math_real.all;
 --! Use shyloc_utils for FIFO
 library shyloc_utils;
 
-
 library VH_compressor;
+--! Use specific shyloc121 parameters
 use VH_compressor.VH_ccsds121_parameters.all;
+use VH_compressor.ccsds121_constants_VH.all;
 
 entity router_shyloc_fifo is
     generic (
@@ -48,15 +49,14 @@ entity router_shyloc_fifo is
         -- Data Interface from SpW Controller 
         rx_data_in      : in  std_logic_vector(7 downto 0);         --! Data from SpW controller
         rx_data_valid   : in  std_logic;                            --! Data valid from SpW controller
-        rx_data_ready   : out std_logic;                            --! Ready to receive data
         
         -- CCSDS Compressor Interface 
-        ccsds_data_input  : out std_logic_vector(D_GEN-1 downto 0);   --! Output data to compressor
+        ccsds_data_input: out std_logic_vector(D_GEN-1 downto 0);   --! Output data to compressor
         ccsds_data_valid: out std_logic;                            --! Data valid signal
         ccsds_data_ready: in  std_logic;                            --! Compressor ready to receive
         
         -- Control Interface 
-        enable          : in  std_logic;                            --! Module enable
+    --    enable          : in  std_logic;                            --! Module enable
         clear_fifo      : in  std_logic;                            --! Clear FIFO
         
         -- Status and Control 
@@ -91,7 +91,7 @@ architecture rtl of router_shyloc_fifo is
     constant BYTE_COUNT_WIDTH : integer := integer(ceil(log2(real(BYTES_NEEDED + 1))));
     
    signal bytes_needed_int : integer range 1 to 4;
-   signal assemble_cnt     : integer range 0 to 4 := 0;
+   signal assemble_cnt     : integer range 0 to 3 := 0;
    signal assemble_finished: std_logic := '0';
     --! State machine states 
     type assemble_state is (
@@ -100,14 +100,17 @@ architecture rtl of router_shyloc_fifo is
         ASSEMBLE_DATA   
     );
     --! Internal signals 
-    signal assemble_state         : assemble_state := IDLE;
+   -- signal assemble_state         : assemble_state := IDLE;
     signal byte_counter     : unsigned(BYTE_COUNT_WIDTH-1 downto 0) := (others => '0');
     signal data_buffer      : std_logic_vector(D_GEN-1 downto 0) := (others => '0'); -- Max 4 bytes
-    signal assembled_data   : std_logic_vector(D_GEN-1 downto 0) := (others => '0');
+ --   signal assembled_data   : std_logic_vector(D_GEN-1 downto 0) := (others => '0');
     signal data_valid_reg   : std_logic := '0';
-    signal rx_ready_reg     : std_logic := '1';
-    
-    --! FIFO signals FIFO信号
+ --   signal rx_ready_reg     : std_logic := '1';
+    signal fifo_rd_en_prev : std_logic := '0';         -- save previous cycle read enable
+    signal processing_sample : std_logic := '0';
+    signal sample_valid     : std_logic := '0';
+
+    --! FIFO signals
     signal fifo_wr_en       : std_logic := '0';
     signal fifo_rd_en       : std_logic := '0';
     signal fifo_data_in     : std_logic_vector(D_GEN-1 downto 0) := (others => '0');
@@ -118,26 +121,10 @@ architecture rtl of router_shyloc_fifo is
     signal fifo_aempty      : std_logic;
     signal fifo_hfull       : std_logic;
     signal fifo_edac_error  : std_logic;
-    
-    --! Control signals 控制信号
-    signal rst_n            : std_logic;
+    --! Control signals
     signal error_reg        : std_logic := '0';
     
 begin
-
-    process(config_s)
-    begin
-       if to_integer(unsigned(config_s.D)) <= 8 then
-            bytes_needed_int <= 1;
-        elsif to_integer(unsigned(config_s.D)) <= 16 then
-            bytes_needed_int <= 2;
-        elsif to_integer(unsigned(config_s.D)) <= 24 then
-            bytes_needed_int <= 3;
-        else
-            bytes_needed_int <= 4;  -- For D_GEN <= 32
-        end if;
-    end process;
-    
     --! FIFO instantiation for buffering assembled data
     u_data_fifo : entity shyloc_utils.fifop2(arch)
         generic map (
@@ -164,110 +151,92 @@ begin
             data_out        => fifo_data_out
         );
     
+    process(config_s)
+    begin
+       if to_integer(unsigned(config_s.D)) <= 8 then
+            bytes_needed_int <= 1;
+        elsif to_integer(unsigned(config_s.D)) <= 16 then
+            bytes_needed_int <= 2;
+        elsif to_integer(unsigned(config_s.D)) <= 24 then
+            bytes_needed_int <= 3;
+        else
+            bytes_needed_int <= 4;  -- For D_GEN <= 32
+        end if;
+    end process;
+    
+
+    comb_proc : process(rx_data_valid, assemble_cnt, rx_data_in)
+      variable cnt_v : integer range 0 to 3 := 0;
+    begin
+        cnt_v := assemble_cnt;
+        if rx_data_valid = '1' then
+            data_buffer(cnt_v * 8 + 7 downto cnt_v * 8) <= rx_data_in;
+        end if;
+    end process;
+
     assemble_proc : process(clk_in)
     begin
         if rising_edge(clk_in) then 
+            fifo_wr_en <= '0';
             if rst_n = '0' then  
                 assemble_cnt <= 0; 
-                assemble_finished <= '0';
-            else
-               if rx_data_valid = '1' then 
-                   if assemble_cnt < bytes_needed_int then
-                       --! Collect data bytes into buffer
-                       data_buffer(assemble_cnt * 8 + 7 downto assemble_cnt * 8) <= rx_data_in;
-                       assemble_cnt <= assemble_cnt + 1;
-                       assemble_finished <= '0';
-                   else 
-                       data_buffer(assemble_cnt * 8 + 7 downto assemble_cnt * 8) <= rx_data_in;
-                       assemble_cnt <= 0;
-                       assemble_finished <= '1';
-                   end if;
+                fifo_wr_en <= '0';
+            else  
+                if rx_data_valid = '1' then 
+                       assemble_cnt <= (assemble_cnt + 1) mod bytes_needed_int;
+                        if assemble_cnt = bytes_needed_int - 1 then
+                            fifo_data_in <= data_buffer;
+                            fifo_wr_en <= '1';
+                        end if;
                 end if;
             end if;
         end if;
     end process;
 
-    fifo_wr_en <= assemble_finished; 
-    fifo_data_in <= data_buffer;
-/*
-    rx_assemby_proc : process(clk_in)
-    begin 
-        if rising_edge(clk_in) then 
-            if rst_n = '0' then 
-                assemble_cnt <= 0; 
-                assemble_state <= IDLE;
-                fifo_wr_en <= '0';
-            else
-                case assemble_state is
-                    when IDLE =>
-                        if rx_data_valid = '1' then 
-                            data_buffer(7 downto 0) <= rx_data_in;
-                            assemble_cnt <= 1;
-                            if bytes_needed_int = 1 then 
-                                assemble_state <= ASSEMBLE_DATA;
-                            else
-                                assemble_state <= COLLECT_DATA;
-                            end if;
-                        end if;
-                    
-                    when COLLECT_DATA =>
-                        if rx_data_valid = '1' then 
-                            data_buffer(assemble_cnt * 8 + 7 downto assemble_cnt * 8) <= rx_data_in;
-                            assemble_cnt <= assemble_cnt + 1;
-                            if assemble_cnt + 1 = bytes_needed_int then 
-                                assemble_state <= ASSEMBLE_DATA;
-                            end if;
-                        end if;
-                    
-                    when ASSEMBLE_DATA =>
-                        --! Assemble final data word based on D_GEN
-                        case bytes_needed_int is
-                            when 1 =>
-                                assembled_data(D_GEN-1 downto 0) <= x"000" & data_buffer(7 downto 0);
-                            when 2 =>
-                                assembled_data(D_GEN-1 downto 0) <= x"00" & data_buffer(15 downto 0);
-                            when 3 =>
-                                assembled_data(D_GEN-1 downto 0) <= x"0" & data_buffer(23 downto 0);
-                            when others => -- 4 bytes
-                                assembled_data(D_GEN-1 downto 0) <= data_buffer(31 downto 0);
-                        end case;
-                        
-                        fifo_data_in <= assembled_data(D_GEN-1 downto 0);
-                        fifo_wr_en <= '1';
-                        assemble_cnt <= 0;
-                        assemble_state <= IDLE; -- Return to IDLE or COLLECT_DATA based on next input
-                        
-                    when others =>
-                        assemble_state <= IDLE;
-                end case;
-            end if;
-        end if;     
-*/
+
     --! FIFO read control and output to compressor
     fifo_read_proc : process(clk_in)
     begin
         if rising_edge(clk_in) then
             if rst_n = '0' then
                 fifo_rd_en <= '0';
-                data_valid_reg <= '0';
+   --             data_valid_reg <= '0';
             else      
+                fifo_rd_en_prev <= fifo_rd_en;
                 -- Read from FIFO when compressor is ready and FIFO has data
                 if ccsds_data_ready = '1' and fifo_empty = '0' then
                     fifo_rd_en <= '1';
-                    data_valid_reg <= '1';
                 else
                     fifo_rd_en <= '0';
-                    data_valid_reg <= '0';
                 end if;
+   --             data_valid_reg <= fifo_rd_en_prev;  -- Delay data valid to match FIFO read latency
+                ccsds_data_input      <= fifo_data_out;
             end if;
         end if;
     end process;
     
+ --   ccsds_data_valid <= data_valid_reg; 
+    ccsds_data_valid <= sample_valid; 
+    sample_valid <= '1' when (processing_sample = '1' and ccsds_data_ready = '1')
+        else '0';
+    -- control flags
+    process (clk_in)
+    begin
+        if rising_edge(clk_in) then
+            if rst_n = '0' then
+               processing_sample <= '0';
+            else
+                if fifo_rd_en = '1' then
+                    processing_sample <= '1';
+                end if;
+                if (sample_valid = '1') then
+                    processing_sample <= '0';
+                end if;
+            end if;
+        end if;
+    end process;
     --! Output assignments 输出赋值
-    ccsds_data_input      <= fifo_data_out;
-    ccsds_data_valid    <= data_valid_reg;
-    error_out           <= error_reg or fifo_edac_error;
-    rx_data_ready       <= rx_ready_reg;
-    
+    error_out <= error_reg or fifo_edac_error;
+
 
 end rtl;

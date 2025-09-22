@@ -271,8 +271,8 @@ begin
     write_config_to_ram(24, HR_CONFIG_DATA_121, 16);
     
     -- Trigger configuration by toggling reset
-    wait for 100 ns;
-    rst_n_hr <= '0';
+   -- wait for 100 ns;
+   -- rst_n_hr <= '0';
     wait for 40 ns;
     rst_n_hr <= '1';
 

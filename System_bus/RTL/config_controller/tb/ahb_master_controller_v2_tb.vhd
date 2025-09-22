@@ -114,7 +114,7 @@ constant HR_CONFIG_DATA : config_data_array := (
     x"00", x"00", x"00", x"00",
     x"20", x"10", x"50", x"00",
     x"00", x"02", x"1E", x"00",
-    x"40", x"41", x"54", x"01",
+    x"80", x"41", x"54", x"01",
   others => x"00"
 );
 

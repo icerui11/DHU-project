@@ -2,19 +2,15 @@
 -- File Description  --
 ----------------------------------------------------------------------------------------------------------------------------------
 -- @ File Name				:	router_top_level_RTG4.vhd
--- @ Engineer				:	James E Logan
+-- @ Engineer				:	James E Logan, modified by Rui Yin
 -- @ Role					:	FPGA Engineer
--- @ Company				:	4Links ltd
--- @ Date					: 	dd/mm/yyyy
+-- @ Company				:	4Links ltd, IDK TUBS
+-- @ Date					: 	18.09.2025
 
--- @ VHDL Version			:   1987, 1993, 2008
--- @ Supported Toolchain	:	Xilinx Vivado IDE
--- @ Target Device			: 	Xilinx US+ Family
-
+-- @ VHDL Version			:   2008
+-- @ Target Device			: 	Microchip RTG4 S
 -- @ Revision #				:	2
-
--- File Description         :
-
+-- File Description         :  seperate spw clock from spw Router
 -- Document Number			:  xxx-xxxx-xxx
 ----------------------------------------------------------------------------------------------------------------------------------
 -------------------------------------------------------------------------------
@@ -75,7 +71,7 @@ use std.env.finish;
 ----------------------------------------------------------------------------------------------------------------------------------
 entity router_top_level_RTG4 is
     generic(
-		g_clock_freq	: t_freq_array 					:= c_spw_clk_freq;		-- these are located in router_pckg.vhd
+		g_clock_freq	: t_freq_array 			:= c_spw_clk_freq;		-- these are located in router_pckg.vhd
         g_num_ports 	: natural range 1 to 32 := c_num_ports;         -- these are located in router_pckg.vhd
 		g_mode			: string				:= c_port_mode;         -- these are located in router_pckg.vhd
 		g_is_fifo		: t_dword 				:= c_fifo_ports;        -- these are located in router_pckg.vhd
@@ -562,7 +558,7 @@ begin
 				spw_fifo_out(i).rx_ready 		<= rx_spw_rx_data_ready(i);
 				spw_fifo_out(i).rx_time_ready	<= tc_rx_slave(i).tready;
 				
-			--	spw_status_memory(i)(0) <= connected(i);
+                spw_status_memory(i)(0) <= connected(i);                          --remove comment to enable connected status
 				
 			else generate
 			
@@ -673,7 +669,7 @@ begin
 			rx_spw_fifo: entity work.spw_rx_dp_fifo_buffer(rtl)
 			generic map(
 				g_rd_mult 		=> 	c_fabric_bus_width,
-				g_fifo_depth 	=> 	16,
+				g_fifo_depth 	=> 	4,
 				g_ram_style 	=> 	g_ram_style
 			)
 			port map(

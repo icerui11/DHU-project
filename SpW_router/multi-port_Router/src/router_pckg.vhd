@@ -2,7 +2,7 @@
 -- File Description  --
 ----------------------------------------------------------------------------------------------------------------------------------
 -- @ File Name				:	router_pckg.vhd
--- @ Engineer				: 	James E Logan
+-- @ Engineer				: 	James E Logan, modified by Rui Yin
 -- @ Role					:	FPGA & Electronics Engineer
 -- @ Company				:	4Links ltd
 
@@ -11,7 +11,7 @@
 -- @ Target Device			:	N/A
 -- @ Revision #				: 	1
 -- File Description         :	N/A
---								
+--								modify c_spw_clk_freq type from real to array for independent clock for each SpW node
 -- Document Number			:	TBD
 -- modification History		:	17.03.2025 add c_cum_fifoports
 --                           v2.0 add independent clock for SpW node
