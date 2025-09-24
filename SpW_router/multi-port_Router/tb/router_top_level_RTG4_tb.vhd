@@ -312,6 +312,7 @@ begin
     end generate gen_SHyLoC;
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 --    gen_stim: process (router_clk) 
     gen_stim: process (spw_clk(2))
@@ -324,6 +325,11 @@ begin
 --    gen_stim: process (router_clk) 
     gen_stim: process (spw_clk(2))
 >>>>>>> db749e1 (update)
+=======
+
+--    gen_stim: process (router_clk) 
+    gen_stim: process (spw_clk(2))
+>>>>>>> 7697d5b74c732eb85b7f31696344321d2d1ce3e3
         -- File and data variables
         variable pixel_file : character;
         variable v_value_high : natural;
@@ -335,6 +341,7 @@ begin
         variable route_addr    : std_logic_vector(8 downto 0);
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         constant spw_port      : integer := 2;                       -- Use SpW port 1. Testcase 2: from slow port 2 to fast port 1
 =======
         constant spw_port      : integer := 1;                       -- Use SpW port 1
@@ -342,10 +349,14 @@ begin
 =======
         constant spw_port      : integer := 2;                       -- Use SpW port 1. Testcase 2: from slow port 2 to fast port 1
 >>>>>>> db749e1 (update)
+=======
+        constant spw_port      : integer := 2;                       -- Use SpW port 1. Testcase 2: from slow port 2 to fast port 1
+>>>>>>> 7697d5b74c732eb85b7f31696344321d2d1ce3e3
         variable compress_cnt    : integer := 0;                       -- compress counter
         constant read_cycle      : integer := 1;                       -- compress times
 
     begin
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
   --      if rising_edge(router_clk) then --for testcase1
@@ -357,6 +368,10 @@ begin
   --      if rising_edge(router_clk) then --for testcase1
 		if rising_edge(spw_clk(2)) then --for testcase2
 >>>>>>> db749e1 (update)
+=======
+  --      if rising_edge(router_clk) then --for testcase1
+		if rising_edge(spw_clk(2)) then --for testcase2
+>>>>>>> 7697d5b74c732eb85b7f31696344321d2d1ce3e3
         -- Default signal settings
            codecs(1).Tx_OR <= '0';
             if rst_n = '0' then
@@ -376,6 +391,7 @@ begin
                                               work.ccsds123_tb_parameters.Nz_tb*2, 32);
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
                     route_addr := '0' & std_logic_vector(to_unsigned(32, 8)); -- Assume router port 5(36), port 2 is slow port 32
 =======
                     route_addr := '0' & std_logic_vector(to_unsigned(36, 8)); -- Assume router port 5
@@ -383,6 +399,9 @@ begin
 =======
                     route_addr := '0' & std_logic_vector(to_unsigned(32, 8)); -- Assume router port 5(36), port 2 is slow port 32
 >>>>>>> db749e1 (update)
+=======
+                    route_addr := '0' & std_logic_vector(to_unsigned(32, 8)); -- Assume router port 5(36), port 2 is slow port 32
+>>>>>>> 7697d5b74c732eb85b7f31696344321d2d1ce3e3
                     codecs(spw_port).Tx_OR <= '0';
                     if compress_cnt < read_cycle then
                         datatx_state <= WAIT_CONNECTION;
@@ -575,6 +594,7 @@ begin
    
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 	-- port2 to port1 raw data
 	gen_stim2: process (spw_clk(2))
@@ -589,6 +609,8 @@ begin
 >>>>>>> 15400a9 (router testbench add)
 =======
 >>>>>>> db749e1 (update)
+=======
+>>>>>>> 7697d5b74c732eb85b7f31696344321d2d1ce3e3
     gen_rst: process
     begin
         -- Initial reset
@@ -600,8 +622,11 @@ begin
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> db749e1 (update)
+=======
+>>>>>>> 7697d5b74c732eb85b7f31696344321d2d1ce3e3
     TEST_case2: process                           --verify slow to fast port transmission
     begin 
         reset_n_s <= '1';                         -- at beginning de-assert reset for shyloc 
@@ -618,17 +643,21 @@ begin
 /*                                                  
     stim_sequencer: process                       -- verify SHyloc compressor connect to router function
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
     stim_sequencer: process
 >>>>>>> 15400a9 (router testbench add)
 =======
 >>>>>>> db749e1 (update)
+=======
+>>>>>>> 7697d5b74c732eb85b7f31696344321d2d1ce3e3
     begin 
         reset_n_s <= '0';
         r_shyloc(1).ForceStop <= '0';                                              -- default value
         wait until (codecs(1).Connected = '1' and router_connected(1) = '1');	-- wait for SpW instances to establish connection, make sure Spw link is connected
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         reset_n_s <= '1';
 =======
 
@@ -638,12 +667,16 @@ begin
 =======
         reset_n_s <= '1';
 >>>>>>> db749e1 (update)
+=======
+        reset_n_s <= '1';
+>>>>>>> 7697d5b74c732eb85b7f31696344321d2d1ce3e3
         wait;
         wait until r_shyloc(1).Finished = '1';
         assert false report "**** system Testbench done ****" severity note; 
  --       stop(0);
         wait;
     end process;
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 */
@@ -655,4 +688,8 @@ begin
 */
 
 >>>>>>> db749e1 (update)
+=======
+*/
+
+>>>>>>> 7697d5b74c732eb85b7f31696344321d2d1ce3e3
 end bench;

@@ -73,6 +73,7 @@ entity router_top_level_RTG4 is
     generic(
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 		g_clock_freq	: t_freq_array 			:= c_spw_clk_freq;		-- these are located in router_pckg.vhd
 =======
 		g_clock_freq	: t_freq_array 					:= c_spw_clk_freq;		-- these are located in router_pckg.vhd
@@ -80,6 +81,9 @@ entity router_top_level_RTG4 is
 =======
 		g_clock_freq	: t_freq_array 			:= c_spw_clk_freq;		-- these are located in router_pckg.vhd
 >>>>>>> db749e1 (update)
+=======
+		g_clock_freq	: t_freq_array 			:= c_spw_clk_freq;		-- these are located in router_pckg.vhd
+>>>>>>> 7697d5b74c732eb85b7f31696344321d2d1ce3e3
         g_num_ports 	: natural range 1 to 32 := c_num_ports;         -- these are located in router_pckg.vhd
 		g_mode			: string				:= c_port_mode;         -- these are located in router_pckg.vhd
 		g_is_fifo		: t_dword 				:= c_fifo_ports;        -- these are located in router_pckg.vhd
